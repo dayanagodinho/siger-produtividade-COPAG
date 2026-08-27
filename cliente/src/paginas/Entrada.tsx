@@ -26,8 +26,9 @@ export function Entrada() {
   return (
     <div className="tela-entrada">
       <form className="caixa-entrada" onSubmit={submeter}>
-        <h1>Controle de Produtividade</h1>
-        <p className="subtitulo">Apuração mensal por setor, em regime híbrido.</p>
+        <img className="marca-entrada" src="/marca-sigap.svg" alt="" width={48} height={48} />
+        <h1>SIGAP</h1>
+        <p className="subtitulo">Sistema de Gestão de Atividades e Produtividade</p>
 
         {erro && <Aviso tipo="erro">{erro}</Aviso>}
 

@@ -20,6 +20,7 @@ import {
   Vazio,
 } from '../componentes/comuns';
 import { Cabecalho } from '../componentes/Layout';
+import { Icone } from '../componentes/icones';
 
 interface ItemDaFila {
   id: number;
@@ -153,14 +154,14 @@ export function FilaValidacao() {
                   className="botao"
                   onClick={() => setDevolucaoEmLote(true)}
                 >
-                  Devolver em lote
+                  {Icone.devolve} Devolver em lote
                 </button>
                 <button
                   type="button"
                   className="botao botao-principal"
                   onClick={() => void agirEmLote('VALIDAR')}
                 >
-                  Validar em lote
+                  {Icone.confere} Conferir em lote
                 </button>
               </>
             ) : undefined
@@ -275,7 +276,7 @@ export function FilaValidacao() {
                               className="botao botao-pequeno"
                               onClick={() => void validar(item)}
                             >
-                              Validar
+                              {Icone.confere} Conferir
                             </button>
                           )}
                           <button
@@ -283,7 +284,7 @@ export function FilaValidacao() {
                             className="botao botao-discreto botao-pequeno"
                             onClick={() => setCorrigindo(item)}
                           >
-                            Corrigir
+                            {Icone.ajusta} Corrigir
                           </button>
                           {item.situacao !== 'DEVOLVIDO' && (
                             <button
@@ -291,7 +292,7 @@ export function FilaValidacao() {
                               className="botao botao-discreto botao-pequeno botao-risco"
                               onClick={() => setDevolvendo(item)}
                             >
-                              Devolver
+                              {Icone.devolve} Devolver
                             </button>
                           )}
                         </div>

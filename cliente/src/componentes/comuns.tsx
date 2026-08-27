@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Icone } from './icones';
 import { competenciaLegivel, listarCompetencias, numero, percentual } from '../servicos/formato';
 
 export function Cartao({
@@ -105,8 +106,13 @@ export function Modal({
       <div className="modal" onClick={(evento) => evento.stopPropagation()} role="dialog">
         <div className="modal-titulo">
           <h2>{titulo}</h2>
-          <button type="button" className="botao botao-discreto" onClick={aoFechar}>
-            Fechar
+          <button
+            type="button"
+            className="botao botao-discreto"
+            onClick={aoFechar}
+            aria-label="Fechar"
+          >
+            {Icone.fecha} Fechar
           </button>
         </div>
         {children}

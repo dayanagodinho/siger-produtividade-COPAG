@@ -1,4 +1,4 @@
-# Colocar o sistema no ar (passo a passo)
+# Colocar o SIGAP no ar (passo a passo)
 
 Guia para quem nunca usou Railway. Do zero até a tela de entrada funcionando,
 sem precisar abrir terminal em momento algum.

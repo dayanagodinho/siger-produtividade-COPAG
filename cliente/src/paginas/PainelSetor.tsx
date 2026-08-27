@@ -15,6 +15,7 @@ import {
 } from '../componentes/comuns';
 import { ColunasPorPessoa, Figura, Rosca } from '../componentes/graficos';
 import { Cabecalho } from '../componentes/Layout';
+import { Icone } from '../componentes/icones';
 import { useSessao } from '../servicos/sessao';
 
 interface ServidorApurado {
@@ -125,7 +126,7 @@ export function PainelSetor() {
                 )
               }
             >
-              Exportar XLSX
+              {Icone.baixar} Exportar XLSX
             </button>
             {apuracao && !apuracao.fechado && (
               <button
@@ -133,7 +134,7 @@ export function PainelSetor() {
                 className="botao botao-principal"
                 onClick={() => setFechando(true)}
               >
-                Fechar competência
+                {Icone.cadeado} Fechar competência
               </button>
             )}
           </>

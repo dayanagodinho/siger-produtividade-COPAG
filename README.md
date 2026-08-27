@@ -1,4 +1,4 @@
-# Sistema de Controle de Produtividade
+# SIGAP — Sistema de Gestão de Atividades e Produtividade
 
 Controle mensal de produtividade de servidores públicos em regime de trabalho
 híbrido. A apuração é por setor e não distingue dia presencial de dia remoto: o
@@ -9,6 +9,11 @@ complexidade de 1 a 4. O sistema soma os pontos, divide pelos dias efetivos e
 produz a média do servidor, a referência do grupo e as duas médias do setor.
 
 ---
+
+A logo do sistema fica em `cliente/public/marca-sigap.svg`. Para trocar, basta
+substituir esse arquivo — nenhum código precisa mudar. Um `.png` ou `.jpg` também
+serve, desde que mantenha o mesmo nome de arquivo ou que a referência em
+`Layout.tsx` e `Entrada.tsx` seja ajustada.
 
 ## Como rodar
 

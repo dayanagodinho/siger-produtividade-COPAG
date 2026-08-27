@@ -74,7 +74,7 @@ async function iniciar(): Promise<void> {
   const app = criarAplicacao();
   app.listen(configuracao.porta, () => {
     console.log(
-      `Controle de Produtividade no ar em http://localhost:${configuracao.porta} (${configuracao.ambiente})`,
+      `SIGAP no ar em http://localhost:${configuracao.porta} (${configuracao.ambiente})`,
     );
   });
 }

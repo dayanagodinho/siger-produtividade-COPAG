@@ -50,7 +50,7 @@ export async function criarPrimeiroAdministrador(): Promise<string | null> {
         String(administrador.rows[0].id),
         administrador.rows[0].id,
         nome,
-        'Primeiro administrador criado automaticamente na primeira subida do sistema',
+        'Primeiro administrador criado automaticamente na primeira subida do SIGAP',
       ],
     );
 

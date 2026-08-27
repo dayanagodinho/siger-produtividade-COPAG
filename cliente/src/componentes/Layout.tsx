@@ -1,153 +1,178 @@
-import { NavLink, Outlet } from 'react-router-dom';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import { useSessao } from '../servicos/sessao';
 import { ROTULO_DO_PERFIL } from '../servicos/formato';
+import { Icone } from './icones';
 
-/* Ícones em traço, no mesmo peso do texto do menu. */
-const tracado = {
-  fill: 'none',
-  stroke: 'currentColor',
-  strokeWidth: 1.7,
-  strokeLinecap: 'round' as const,
-  strokeLinejoin: 'round' as const,
-};
+interface Tela {
+  destino: string;
+  rotulo: string;
+  secao: string;
+  icone: ReactNode;
+}
 
-const Icone = {
-  painel: (
-    <svg viewBox="0 0 24 24" {...tracado} aria-hidden="true">
-      <path d="M3 12l9-8 9 8" />
-      <path d="M5 10v10h14V10" />
-    </svg>
-  ),
-  lancamentos: (
-    <svg viewBox="0 0 24 24" {...tracado} aria-hidden="true">
-      <path d="M7 3h10a2 2 0 012 2v14a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z" />
-      <path d="M9 8h6M9 12h6M9 16h3" />
-    </svg>
-  ),
-  validacao: (
-    <svg viewBox="0 0 24 24" {...tracado} aria-hidden="true">
-      <path d="M20 6L9 17l-5-5" />
-    </svg>
-  ),
-  ausencias: (
-    <svg viewBox="0 0 24 24" {...tracado} aria-hidden="true">
-      <path d="M5 5h14a1 1 0 011 1v13a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z" />
-      <path d="M8 3v4M16 3v4M4 10h16" />
-    </svg>
-  ),
-  setor: (
-    <svg viewBox="0 0 24 24" {...tracado} aria-hidden="true">
-      <path d="M4 20V10M10 20V4M16 20v-8M22 20H2" />
-    </svg>
-  ),
-  historico: (
-    <svg viewBox="0 0 24 24" {...tracado} aria-hidden="true">
-      <circle cx="12" cy="12" r="8" />
-      <path d="M12 7v5l3 2" />
-    </svg>
-  ),
-  cadastros: (
-    <svg viewBox="0 0 24 24" {...tracado} aria-hidden="true">
-      <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" />
-      <path d="M19 12a7 7 0 00-.1-1l2-1.5-2-3.4-2.3 1a7 7 0 00-1.7-1L14.5 3h-4l-.4 2.6a7 7 0 00-1.7 1l-2.3-1-2 3.4L6 11a7 7 0 000 2l-2 1.5 2 3.4 2.3-1a7 7 0 001.7 1l.4 2.6h4l.4-2.6a7 7 0 001.7-1l2.3 1 2-3.4-2-1.5c.1-.3.1-.7.1-1z" />
-    </svg>
-  ),
-  auditoria: (
-    <svg viewBox="0 0 24 24" {...tracado} aria-hidden="true">
-      <circle cx="11" cy="11" r="7" />
-      <path d="M20 20l-4.3-4.3" />
-    </svg>
-  ),
-  senha: (
-    <svg viewBox="0 0 24 24" {...tracado} aria-hidden="true">
-      <rect x="4" y="10" width="16" height="11" rx="2" />
-      <path d="M8 10V7a4 4 0 018 0v3" />
-    </svg>
-  ),
-  sair: (
-    <svg viewBox="0 0 24 24" {...tracado} aria-hidden="true">
-      <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
-      <path d="M16 17l5-5-5-5M21 12H9" />
-    </svg>
-  ),
-};
+function telasDe(ehChefia: boolean, ehAdmin: boolean): Tela[] {
+  const telas: Tela[] = [
+    { destino: '/', rotulo: 'Meu painel', secao: 'Minha produção', icone: Icone.painel },
+    { destino: '/lancamentos', rotulo: 'Meus lançamentos', secao: 'Minha produção', icone: Icone.lancamentos },
+  ];
+  if (ehChefia) {
+    telas.push(
+      { destino: '/validacao', rotulo: 'Conferência de lançamentos', secao: 'Chefia', icone: Icone.validacao },
+      { destino: '/ausencias', rotulo: 'Ausências', secao: 'Chefia', icone: Icone.ausencias },
+      { destino: '/setor', rotulo: 'Painel do setor', secao: 'Chefia', icone: Icone.setor },
+      { destino: '/historico', rotulo: 'Histórico', secao: 'Chefia', icone: Icone.historico },
+    );
+  }
+  if (ehAdmin) {
+    telas.push(
+      { destino: '/administracao', rotulo: 'Cadastros e parâmetros', secao: 'Administração', icone: Icone.cadastros },
+      { destino: '/auditoria', rotulo: 'Auditoria', secao: 'Administração', icone: Icone.auditoria },
+    );
+  }
+  telas.push({ destino: '/senha', rotulo: 'Trocar senha', secao: 'Conta', icone: Icone.senha });
+  return telas;
+}
 
 export function Layout() {
   const { usuario, ehChefia, ehAdmin } = useSessao();
   if (!usuario) return null;
 
+  const telas = telasDe(ehChefia, ehAdmin);
+  const secoes = [...new Set(telas.map((t) => t.secao))];
   const classe = ({ isActive }: { isActive: boolean }) => (isActive ? 'ativo' : '');
 
   return (
     <div className="aplicacao">
       <nav className="menu-lateral">
         <div className="menu-marca">
-          <span className="selo" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round">
-              <path d="M5 19V9M12 19V5M19 19v-6" />
-            </svg>
-          </span>
+          {/* Para trocar a logo, basta substituir cliente/public/marca-sigap.svg
+              (ou apontar para um .png com o mesmo nome). Nenhum código muda. */}
+          <img className="selo" src="/marca-sigap.svg" alt="" width={36} height={36} />
           <div>
-            <strong>Produtividade</strong>
+            <strong>SIGAP</strong>
             <span>{usuario.setor_nome}</span>
           </div>
         </div>
 
         <div className="menu-navegacao">
-          <span className="menu-secao">Minha produção</span>
-          <NavLink to="/" end className={classe}>
-            {Icone.painel} Meu painel
-          </NavLink>
-          <NavLink to="/lancamentos" className={classe}>
-            {Icone.lancamentos} Meus lançamentos
-          </NavLink>
-
-          {ehChefia && (
-            <>
-              <span className="menu-secao">Chefia</span>
-              <NavLink to="/validacao" className={classe}>
-                {Icone.validacao} Fila de validação
-              </NavLink>
-              <NavLink to="/ausencias" className={classe}>
-                {Icone.ausencias} Ausências
-              </NavLink>
-              <NavLink to="/setor" className={classe}>
-                {Icone.setor} Painel do setor
-              </NavLink>
-              <NavLink to="/historico" className={classe}>
-                {Icone.historico} Histórico
-              </NavLink>
-            </>
-          )}
-
-          {ehAdmin && (
-            <>
-              <span className="menu-secao">Administração</span>
-              <NavLink to="/administracao" className={classe}>
-                {Icone.cadastros} Cadastros e parâmetros
-              </NavLink>
-              <NavLink to="/auditoria" className={classe}>
-                {Icone.auditoria} Auditoria
-              </NavLink>
-            </>
-          )}
-
-          <span className="menu-secao">Conta</span>
-          <NavLink to="/senha" className={classe}>
-            {Icone.senha} Trocar senha
-          </NavLink>
+          {secoes.map((secao) => (
+            <div key={secao} className="menu-bloco">
+              <span className="menu-secao">{secao}</span>
+              {telas
+                .filter((tela) => tela.secao === secao)
+                .map((tela) => (
+                  <NavLink
+                    key={tela.destino}
+                    to={tela.destino}
+                    end={tela.destino === '/'}
+                    className={classe}
+                  >
+                    {tela.icone} {tela.rotulo}
+                  </NavLink>
+                ))}
+            </div>
+          ))}
         </div>
 
-        <div className="menu-rodape">Controle de Produtividade · versão 1.0</div>
+        <div className="menu-rodape">SIGAP · Sistema de Gestão de Atividades e Produtividade (1.0)</div>
       </nav>
 
       <main className="area-principal">
         <Outlet />
-        <p className="rodape-area">
-          COPAG · Coordenação de Gestão do Pagamento de Pessoal
-        </p>
+        <p className="rodape-area">COPAG · Coordenação de Gestão do Pagamento de Pessoal</p>
       </main>
+    </div>
+  );
+}
+
+/** Busca de tela do topo, no mesmo padrão do SIPAG: lupa e atalho Ctrl+K. */
+function BuscaDeTela() {
+  const { ehChefia, ehAdmin } = useSessao();
+  const navegar = useNavigate();
+  const local = useLocation();
+  const [termo, setTermo] = useState('');
+  const [aberta, setAberta] = useState(false);
+  const campo = useRef<HTMLInputElement>(null);
+
+  const telas = useMemo(() => telasDe(ehChefia, ehAdmin), [ehChefia, ehAdmin]);
+
+  const achados = useMemo(() => {
+    const busca = termo
+      .trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '');
+    if (!busca) return telas;
+    return telas.filter((tela) =>
+      `${tela.rotulo} ${tela.secao}`
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '')
+        .includes(busca),
+    );
+  }, [termo, telas]);
+
+  useEffect(() => {
+    function atalho(evento: KeyboardEvent) {
+      if ((evento.ctrlKey || evento.metaKey) && evento.key.toLowerCase() === 'k') {
+        evento.preventDefault();
+        campo.current?.focus();
+        setAberta(true);
+      }
+      if (evento.key === 'Escape') setAberta(false);
+    }
+    window.addEventListener('keydown', atalho);
+    return () => window.removeEventListener('keydown', atalho);
+  }, []);
+
+  useEffect(() => setAberta(false), [local.pathname]);
+
+  function ir(destino: string) {
+    setTermo('');
+    setAberta(false);
+    navegar(destino);
+  }
+
+  return (
+    <div className="busca-tela">
+      <span className="lupa" aria-hidden="true">
+        {Icone.lupa}
+      </span>
+      <input
+        ref={campo}
+        value={termo}
+        onChange={(evento) => {
+          setTermo(evento.target.value);
+          setAberta(true);
+        }}
+        onFocus={() => setAberta(true)}
+        onBlur={() => window.setTimeout(() => setAberta(false), 150)}
+        onKeyDown={(evento) => {
+          if (evento.key === 'Enter' && achados[0]) ir(achados[0].destino);
+        }}
+        placeholder="Buscar tela..."
+        aria-label="Buscar tela"
+      />
+      <kbd>Ctrl+K</kbd>
+      {aberta && (
+        <ul className="resultados-busca">
+          {achados.length === 0 ? (
+            <li className="sem-resultado">Nenhuma tela com esse nome.</li>
+          ) : (
+            achados.map((tela) => (
+              <li key={tela.destino}>
+                <button type="button" onMouseDown={() => ir(tela.destino)}>
+                  {tela.icone}
+                  <span>{tela.rotulo}</span>
+                  <em>{tela.secao}</em>
+                </button>
+              </li>
+            ))
+          )}
+        </ul>
+      )}
     </div>
   );
 }
@@ -162,39 +187,54 @@ export function Cabecalho({
   acoes?: ReactNode;
 }) {
   const { usuario, sair } = useSessao();
+  const local = useLocation();
+  const navegar = useNavigate();
 
   return (
     <header className="cabecalho">
-      <div>
+      <div className="cabecalho-titulo">
+        {local.pathname !== '/' && (
+          <nav className="trilha" aria-label="Você está em">
+            <button type="button" onClick={() => navegar('/')} aria-label="Ir para o meu painel">
+              {Icone.casa}
+            </button>
+            <span aria-hidden="true">{Icone.seta}</span>
+            <strong>{titulo}</strong>
+          </nav>
+        )}
         <h1>{titulo}</h1>
         {descricao && <p>{descricao}</p>}
       </div>
-      <div className="acoes">
-        {acoes}
-        {usuario && (
-          <>
-            <span className="chip-usuario">
-              <span className="inicial" aria-hidden="true">
-                {usuario.nome.slice(0, 1).toUpperCase()}
-              </span>
-              <div>
-                <strong>{usuario.nome.split(' ').slice(0, 2).join(' ')}</strong>
-                <span>
-                  {usuario.matricula} · {ROTULO_DO_PERFIL[usuario.perfil]}
+
+      <div className="cabecalho-acoes">
+        <BuscaDeTela />
+        <div className="acoes">
+          {acoes}
+          {usuario && (
+            <>
+              <span className="chip-usuario">
+                <span className="inicial" aria-hidden="true">
+                  {usuario.nome.slice(0, 1).toUpperCase()}
                 </span>
-              </div>
-            </span>
-            <button
-              type="button"
-              className="botao botao-discreto"
-              onClick={() => void sair()}
-              title="Sair do sistema"
-              aria-label="Sair do sistema"
-            >
-              {Icone.sair}
-            </button>
-          </>
-        )}
+                <div>
+                  <strong>{usuario.nome.split(' ').slice(0, 2).join(' ')}</strong>
+                  <span>
+                    {usuario.matricula} · {ROTULO_DO_PERFIL[usuario.perfil]}
+                  </span>
+                </div>
+              </span>
+              <button
+                type="button"
+                className="botao botao-discreto"
+                onClick={() => void sair()}
+                title="Sair do sistema"
+                aria-label="Sair do sistema"
+              >
+                {Icone.sair}
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </header>
   );

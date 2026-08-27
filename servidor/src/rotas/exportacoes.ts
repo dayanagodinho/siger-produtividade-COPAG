@@ -30,7 +30,7 @@ const ROTULO_DA_SITUACAO: Record<string, string> = {
 
 function prepararPlanilha(nome: string): { livro: ExcelJS.Workbook; aba: ExcelJS.Worksheet } {
   const livro = new ExcelJS.Workbook();
-  livro.creator = 'Controle de Produtividade';
+  livro.creator = 'SIGAP - Sistema de Gestão de Atividades e Produtividade';
   livro.created = new Date();
   const aba = livro.addWorksheet(nome, {
     views: [{ state: 'frozen', ySplit: 1 }],

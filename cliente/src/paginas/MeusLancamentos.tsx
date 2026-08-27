@@ -19,6 +19,7 @@ import {
   Vazio,
 } from '../componentes/comuns';
 import { Cabecalho } from '../componentes/Layout';
+import { Icone } from '../componentes/icones';
 import { useSessao } from '../servicos/sessao';
 
 interface Lancamento {
@@ -165,7 +166,7 @@ export function MeusLancamentos() {
                 )
               }
             >
-              Exportar XLSX
+              {Icone.baixar} Exportar XLSX
             </button>
             <button
               type="button"
@@ -175,7 +176,7 @@ export function MeusLancamentos() {
                 setFormularioAberto(true);
               }}
             >
-              Novo lançamento
+              {Icone.mais} Novo lançamento
             </button>
           </>
         }
@@ -463,7 +464,7 @@ function FormularioLancamento({
             className="botao botao-principal"
             disabled={enviando}
           >
-            {enviando ? 'Salvando...' : 'Salvar lançamento'}
+            {Icone.confere} {enviando ? 'Salvando...' : 'Salvar lançamento'}
           </button>
         </>
       }
