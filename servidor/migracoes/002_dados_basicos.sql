@@ -3,16 +3,16 @@
 -- =====================================================================
 
 INSERT INTO niveis_complexidade (nivel, rotulo, criterio) VALUES
-  (1, 'Simples',       'Rotina padronizada, documentacao completa, sem excecoes.'),
-  (2, 'Intermediario', 'Volume moderado de documentos ou registros.'),
-  (3, 'Complexo',      'Multiplas retencoes, maior volume, ou analise nao trivial.'),
-  (4, 'Excepcional',   'Alto risco, situacao inedita ou que exige consulta/parecer.')
+  (1, 'Simples',       'Rotina padronizada, documentação completa, sem exceções.'),
+  (2, 'Intermediário', 'Volume moderado de documentos ou registros.'),
+  (3, 'Complexo',      'Múltiplas retenções, maior volume, ou análise não trivial.'),
+  (4, 'Excepcional',   'Alto risco, situação inédita ou que exige consulta/parecer.')
 ON CONFLICT (nivel) DO NOTHING;
 
 INSERT INTO parametros (chave, valor, descricao) VALUES
-  ('PESO_EXECUCAO',      100, 'Percentual do nivel aplicado a lancamentos com papel Execucao.'),
-  ('PESO_REVISAO',        40, 'Percentual do nivel aplicado a lancamentos com papel Revisao.'),
-  ('PESO_HOMOLOGACAO',    20, 'Percentual do nivel aplicado a lancamentos com papel Homologacao.'),
-  ('FAIXA_ABAIXO',        85, 'Atingimento abaixo deste percentual e classificado como Abaixo da referencia.'),
-  ('FAIXA_ACIMA',        115, 'Atingimento acima deste percentual e classificado como Acima da referencia.')
+  ('PESO_EXECUCAO',      100, 'Percentual do nível aplicado a lançamentos com papel Execução.'),
+  ('PESO_REVISAO',        40, 'Percentual do nível aplicado a lançamentos com papel Revisão.'),
+  ('PESO_HOMOLOGACAO',    20, 'Percentual do nível aplicado a lançamentos com papel Homologação.'),
+  ('FAIXA_ABAIXO',        85, 'Atingimento abaixo deste percentual é classificado como Abaixo da referência.'),
+  ('FAIXA_ACIMA',        115, 'Atingimento acima deste percentual é classificado como Acima da referência.')
 ON CONFLICT (chave) DO NOTHING;

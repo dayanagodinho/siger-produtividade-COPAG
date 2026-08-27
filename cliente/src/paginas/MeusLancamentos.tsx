@@ -1,0 +1,528 @@
+import { useCallback, useEffect, useState } from 'react';
+import { api, mensagemDeErro } from '../servicos/api';
+import {
+  ROTULO_DO_PAPEL,
+  ROTULO_DO_STATUS,
+  competenciaAtual,
+  competenciaLegivel,
+  data as formatarData,
+  numero,
+} from '../servicos/formato';
+import {
+  Aviso,
+  Campo,
+  Carregando,
+  Cartao,
+  MarcaSituacao,
+  Modal,
+  SeletorCompetencia,
+  Vazio,
+} from '../componentes/comuns';
+import { Cabecalho } from '../componentes/Layout';
+import { useSessao } from '../servicos/sessao';
+
+interface Lancamento {
+  id: number;
+  processo: string;
+  descricao: string | null;
+  nivel: number;
+  nivel_original: number | null;
+  nivel_alterado_por_nome: string | null;
+  papel: string;
+  quantidade: number;
+  percentual_papel: number;
+  pontos: number;
+  data_conclusao: string;
+  periodo_inicio: string | null;
+  periodo_fim: string | null;
+  link_externo: string | null;
+  status: string;
+  situacao: string;
+  justificativa: string | null;
+  servidor_nome: string;
+  validado_por_nome: string | null;
+}
+
+interface Nivel {
+  nivel: number;
+  rotulo: string;
+  criterio: string;
+  ativo: boolean;
+}
+
+const FORMULARIO_VAZIO = {
+  processo: '',
+  descricao: '',
+  nivel: 2,
+  papel: 'EXECUCAO',
+  quantidade: 1,
+  data_conclusao: new Date().toISOString().slice(0, 10),
+  periodo_inicio: '',
+  periodo_fim: '',
+  link_externo: '',
+  status: 'CONCLUIDO',
+};
+
+export function MeusLancamentos() {
+  const { usuario } = useSessao();
+  const [competencia, setCompetencia] = useState(competenciaAtual());
+  const [busca, setBusca] = useState('');
+  const [lancamentos, setLancamentos] = useState<Lancamento[]>([]);
+  const [niveis, setNiveis] = useState<Nivel[]>([]);
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState<string | null>(null);
+  const [sucesso, setSucesso] = useState<string | null>(null);
+  const [formularioAberto, setFormularioAberto] = useState(false);
+  const [editando, setEditando] = useState<Lancamento | null>(null);
+
+  const carregar = useCallback(() => {
+    setCarregando(true);
+    const parametros = new URLSearchParams({ competencia, servidor_id: String(usuario!.id) });
+    if (busca.trim()) parametros.set('processo', busca.trim());
+    api
+      .buscar<{ lancamentos: Lancamento[] }>(`/lancamentos?${parametros}`)
+      .then((resposta) => setLancamentos(resposta.lancamentos))
+      .catch((falha) => setErro(mensagemDeErro(falha)))
+      .finally(() => setCarregando(false));
+  }, [competencia, busca, usuario]);
+
+  useEffect(() => {
+    api.buscar<{ niveis: Nivel[] }>('/complexidade').then((r) => setNiveis(r.niveis));
+  }, []);
+
+  useEffect(carregar, [carregar]);
+
+  async function excluir(lancamento: Lancamento) {
+    if (!window.confirm(`Excluir o lançamento do processo ${lancamento.processo}?`)) return;
+    setErro(null);
+    try {
+      await api.excluir(`/lancamentos/${lancamento.id}`);
+      setSucesso('Lançamento excluído.');
+      carregar();
+    } catch (falha) {
+      setErro(mensagemDeErro(falha));
+    }
+  }
+
+  const totalValidado = lancamentos
+    .filter((l) => l.situacao === 'VALIDADO' && l.status === 'CONCLUIDO')
+    .reduce((soma, l) => soma + Number(l.pontos), 0);
+
+  return (
+    <>
+      <Cabecalho
+        titulo="Meus lançamentos"
+        descricao={`Processos registrados em ${competenciaLegivel(competencia)}`}
+        acoes={
+          <>
+            <button
+              type="button"
+              className="botao"
+              onClick={() =>
+                api.baixar(
+                  `/exportacoes/lancamentos.xlsx?competencia=${competencia}&servidor_id=${usuario!.id}`,
+                )
+              }
+            >
+              Exportar XLSX
+            </button>
+            <button
+              type="button"
+              className="botao botao-principal"
+              onClick={() => {
+                setEditando(null);
+                setFormularioAberto(true);
+              }}
+            >
+              Novo lançamento
+            </button>
+          </>
+        }
+      />
+
+      <div className="conteudo">
+        {erro && <Aviso tipo="erro">{erro}</Aviso>}
+        {sucesso && <Aviso tipo="sucesso">{sucesso}</Aviso>}
+
+        <Cartao>
+          <div className="filtros">
+            <SeletorCompetencia valor={competencia} aoMudar={setCompetencia} />
+            <Campo rotulo="Buscar processo">
+              <input
+                value={busca}
+                onChange={(evento) => setBusca(evento.target.value)}
+                placeholder="Ex.: 856481/2026"
+              />
+            </Campo>
+          </div>
+
+          {carregando ? (
+            <Carregando />
+          ) : lancamentos.length === 0 ? (
+            <Vazio titulo="Nenhum lançamento neste período">
+              Registre os processos concluídos no mês para que eles entrem na sua apuração.
+            </Vazio>
+          ) : (
+            <>
+              <div className="tabela-envolucro">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Processo</th>
+                      <th>Descrição</th>
+                      <th>Nível</th>
+                      <th>Papel</th>
+                      <th className="numerico">Pontos</th>
+                      <th>Conclusão</th>
+                      <th>Situação</th>
+                      <th />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {lancamentos.map((lancamento) => (
+                      <tr key={lancamento.id}>
+                        <td>
+                          <strong className="nao-quebra">{lancamento.processo}</strong>
+                          {lancamento.status === 'EM_ANDAMENTO' && (
+                            <div className="marca marca-neutra" style={{ marginTop: '0.2rem' }}>
+                              {ROTULO_DO_STATUS[lancamento.status]}
+                            </div>
+                          )}
+                        </td>
+                        <td className="discreto">
+                          <div className="resumo" title={lancamento.descricao ?? ''}>
+                            {lancamento.descricao || '—'}
+                          </div>
+                          {lancamento.justificativa && (
+                            <div style={{ marginTop: '0.35rem', color: 'var(--alerta)' }}>
+                              Chefia: {lancamento.justificativa}
+                            </div>
+                          )}
+                        </td>
+                        <td>
+                          {lancamento.nivel}
+                          {lancamento.nivel_original !== null && (
+                            <div className="campo-dica">
+                              corrigido de {lancamento.nivel_original} por{' '}
+                              {lancamento.nivel_alterado_por_nome}
+                            </div>
+                          )}
+                        </td>
+                        <td>
+                          {ROTULO_DO_PAPEL[lancamento.papel]}
+                          <div className="campo-dica">{numero(lancamento.percentual_papel, 0)}%</div>
+                        </td>
+                        <td className="numerico">{numero(lancamento.pontos, 2)}</td>
+                        <td>{formatarData(lancamento.data_conclusao)}</td>
+                        <td>
+                          <MarcaSituacao situacao={lancamento.situacao} />
+                          {lancamento.validado_por_nome && (
+                            <div className="campo-dica">{lancamento.validado_por_nome}</div>
+                          )}
+                        </td>
+                        <td>
+                          <div className="acoes acoes-tabela">
+                            <button
+                              type="button"
+                              className="botao botao-discreto botao-pequeno"
+                              onClick={() => {
+                                setEditando(lancamento);
+                                setFormularioAberto(true);
+                              }}
+                            >
+                              Editar
+                            </button>
+                            <button
+                              type="button"
+                              className="botao botao-discreto botao-pequeno botao-risco"
+                              onClick={() => void excluir(lancamento)}
+                            >
+                              Excluir
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="campo-dica" style={{ marginTop: '0.75rem' }}>
+                {lancamentos.length} lançamento(s) no período · {numero(totalValidado, 2)} ponto(s)
+                validados entram na média.
+              </p>
+            </>
+          )}
+        </Cartao>
+      </div>
+
+      {formularioAberto && (
+        <FormularioLancamento
+          niveis={niveis}
+          lancamento={editando}
+          aoFechar={() => setFormularioAberto(false)}
+          aoSalvar={(mensagem) => {
+            setFormularioAberto(false);
+            setSucesso(mensagem);
+            setErro(null);
+            carregar();
+          }}
+        />
+      )}
+    </>
+  );
+}
+
+interface Existente {
+  id: number;
+  servidor_nome: string;
+  papel: string;
+  data_conclusao: string;
+  nivel: number;
+}
+
+function FormularioLancamento({
+  niveis,
+  lancamento,
+  aoFechar,
+  aoSalvar,
+}: {
+  niveis: Nivel[];
+  lancamento: Lancamento | null;
+  aoFechar: () => void;
+  aoSalvar: (mensagem: string) => void;
+}) {
+  const [formulario, setFormulario] = useState(
+    lancamento
+      ? {
+          processo: lancamento.processo,
+          descricao: lancamento.descricao ?? '',
+          nivel: lancamento.nivel,
+          papel: lancamento.papel,
+          quantidade: Number(lancamento.quantidade),
+          data_conclusao: lancamento.data_conclusao.slice(0, 10),
+          periodo_inicio: lancamento.periodo_inicio?.slice(0, 10) ?? '',
+          periodo_fim: lancamento.periodo_fim?.slice(0, 10) ?? '',
+          link_externo: lancamento.link_externo ?? '',
+          status: lancamento.status,
+        }
+      : FORMULARIO_VAZIO,
+  );
+  const [existentes, setExistentes] = useState<Existente[]>([]);
+  const [erro, setErro] = useState<string | null>(null);
+  const [enviando, setEnviando] = useState(false);
+
+  const criterio = niveis.find((n) => n.nivel === Number(formulario.nivel));
+
+  // Regra 2.4: avisa que o processo ja foi lancado, sem impedir o registro.
+  useEffect(() => {
+    const processo = formulario.processo.trim();
+    if (processo.length < 4) {
+      setExistentes([]);
+      return;
+    }
+    const espera = setTimeout(() => {
+      api
+        .buscar<{ existentes: Existente[] }>(
+          `/lancamentos/verificar-processo?processo=${encodeURIComponent(processo)}`,
+        )
+        .then((resposta) =>
+          setExistentes(resposta.existentes.filter((e) => e.id !== lancamento?.id)),
+        )
+        .catch(() => setExistentes([]));
+    }, 350);
+    return () => clearTimeout(espera);
+  }, [formulario.processo, lancamento?.id]);
+
+  function alterar(campo: string, valor: string | number) {
+    setFormulario((atual) => ({ ...atual, [campo]: valor }));
+  }
+
+  async function submeter(evento: React.FormEvent) {
+    evento.preventDefault();
+    setErro(null);
+    setEnviando(true);
+    const corpo = {
+      ...formulario,
+      periodo_inicio: formulario.periodo_inicio || null,
+      periodo_fim: formulario.periodo_fim || null,
+      link_externo: formulario.link_externo || null,
+      descricao: formulario.descricao || null,
+    };
+    try {
+      if (lancamento) {
+        await api.atualizar(`/lancamentos/${lancamento.id}`, corpo);
+        aoSalvar('Lançamento atualizado. Ele volta para a fila de validação da chefia.');
+      } else {
+        const resposta = await api.enviar<{ aviso: string }>('/lancamentos', corpo);
+        aoSalvar(resposta.aviso);
+      }
+    } catch (falha) {
+      setErro(mensagemDeErro(falha));
+      setEnviando(false);
+    }
+  }
+
+  return (
+    <Modal
+      titulo={lancamento ? 'Editar lançamento' : 'Novo lançamento'}
+      aoFechar={aoFechar}
+      rodape={
+        <>
+          <button type="button" className="botao" onClick={aoFechar}>
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            form="formulario-lancamento"
+            className="botao botao-principal"
+            disabled={enviando}
+          >
+            {enviando ? 'Salvando...' : 'Salvar lançamento'}
+          </button>
+        </>
+      }
+    >
+      <form id="formulario-lancamento" onSubmit={submeter}>
+        {erro && <Aviso tipo="erro">{erro}</Aviso>}
+
+        <Campo rotulo="Número do processo">
+          <input
+            value={formulario.processo}
+            onChange={(evento) => alterar('processo', evento.target.value)}
+            placeholder="Ex.: 856481/2026"
+            required
+          />
+        </Campo>
+
+        {existentes.length > 0 && (
+          <Aviso tipo="atencao">
+            {existentes.map((existente) => (
+              <div key={existente.id}>
+                Processo {formulario.processo.trim()} já lançado por {existente.servidor_nome} como{' '}
+                {ROTULO_DO_PAPEL[existente.papel]} em {formatarData(existente.data_conclusao)}.
+              </div>
+            ))}
+            <div style={{ marginTop: '0.35rem' }}>
+              Se o seu lançamento é de outro papel — revisão ou homologação — pode salvar
+              normalmente.
+            </div>
+          </Aviso>
+        )}
+
+        <Campo rotulo="Descrição do que foi feito">
+          <textarea
+            value={formulario.descricao}
+            onChange={(evento) => alterar('descricao', evento.target.value)}
+            placeholder="Resuma a atividade realizada no processo."
+          />
+        </Campo>
+
+        <div className="linha-campos">
+          <Campo rotulo="Nível de complexidade">
+            <select
+              value={formulario.nivel}
+              onChange={(evento) => alterar('nivel', Number(evento.target.value))}
+            >
+              {niveis
+                .filter((nivel) => nivel.ativo)
+                .map((nivel) => (
+                  <option key={nivel.nivel} value={nivel.nivel}>
+                    {nivel.nivel} — {nivel.rotulo}
+                  </option>
+                ))}
+            </select>
+          </Campo>
+
+          <Campo rotulo="Papel no processo">
+            <select
+              value={formulario.papel}
+              onChange={(evento) => alterar('papel', evento.target.value)}
+            >
+              <option value="EXECUCAO">Execução</option>
+              <option value="REVISAO">Revisão</option>
+              <option value="HOMOLOGACAO">Homologação</option>
+            </select>
+          </Campo>
+        </div>
+
+        {/* O criterio precisa ficar visivel na hora de escolher o nivel. */}
+        {criterio && (
+          <Aviso tipo="informativo">
+            <strong>
+              Nível {criterio.nivel} — {criterio.rotulo}:
+            </strong>{' '}
+            {criterio.criterio}
+          </Aviso>
+        )}
+
+        <div className="linha-campos">
+          <Campo rotulo="Quantidade">
+            <input
+              type="number"
+              min={1}
+              step="1"
+              value={formulario.quantidade}
+              onChange={(evento) => alterar('quantidade', Number(evento.target.value))}
+            />
+          </Campo>
+
+          <Campo
+            rotulo="Data de conclusão"
+            dica="O ponto entra no mês desta data, mesmo que a execução tenha começado antes."
+          >
+            <input
+              type="date"
+              value={formulario.data_conclusao}
+              onChange={(evento) => alterar('data_conclusao', evento.target.value)}
+              required
+            />
+          </Campo>
+        </div>
+
+        <div className="linha-campos">
+          <Campo rotulo="Início da execução (opcional)">
+            <input
+              type="date"
+              value={formulario.periodo_inicio}
+              onChange={(evento) => alterar('periodo_inicio', evento.target.value)}
+            />
+          </Campo>
+          <Campo rotulo="Fim da execução (opcional)">
+            <input
+              type="date"
+              value={formulario.periodo_fim}
+              onChange={(evento) => alterar('periodo_fim', evento.target.value)}
+            />
+          </Campo>
+        </div>
+
+        <div className="linha-campos">
+          <Campo rotulo="Situação">
+            <select
+              value={formulario.status}
+              onChange={(evento) => alterar('status', evento.target.value)}
+            >
+              <option value="CONCLUIDO">Concluído</option>
+              <option value="EM_ANDAMENTO">Em andamento</option>
+            </select>
+          </Campo>
+          <Campo rotulo="Link externo (opcional)">
+            <input
+              type="url"
+              value={formulario.link_externo}
+              onChange={(evento) => alterar('link_externo', evento.target.value)}
+              placeholder="https://"
+            />
+          </Campo>
+        </div>
+
+        {formulario.status === 'EM_ANDAMENTO' && (
+          <Aviso tipo="informativo">
+            Lançamentos em andamento aparecem no painel como volume, mas ficam fora da média até
+            serem concluídos.
+          </Aviso>
+        )}
+      </form>
+    </Modal>
+  );
+}

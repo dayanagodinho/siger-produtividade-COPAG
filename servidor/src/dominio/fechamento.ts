@@ -35,8 +35,8 @@ export async function garantirCompetenciaAberta(
   const fechamento = await buscarFechamentoVigente(setorId, competencia);
   if (fechamento) {
     throw erroDeConflito(
-      `A competencia de ${rotularCompetencia(competencia)} ja foi fechada e nao aceita mais alteracoes. ` +
-        'Peca a reabertura do mes a administracao do sistema.',
+      `A competência de ${rotularCompetencia(competencia)} já foi fechada e não aceita mais alterações. ` +
+        'Peça a reabertura do mês a administração do sistema.',
     );
   }
 }

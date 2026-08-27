@@ -25,8 +25,8 @@ rotasDeComplexidade.get(
 );
 
 const esquema = z.object({
-  rotulo: textoObrigatorio('o rotulo do nivel', 60),
-  criterio: textoObrigatorio('a descricao do criterio', 600),
+  rotulo: textoObrigatorio('o rotulo do nível', 60),
+  criterio: textoObrigatorio('a descrição do critério', 600),
   ativo: z.boolean().optional().default(true),
 });
 
@@ -38,7 +38,7 @@ rotasDeComplexidade.put(
     const dados = validar(esquema, req.body);
 
     const anterior = await consultarUm('SELECT * FROM niveis_complexidade WHERE nivel = $1', [nivel]);
-    if (!anterior) throw erroNaoEncontrado('Nivel de complexidade nao encontrado.');
+    if (!anterior) throw erroNaoEncontrado('Nível de complexidade não encontrado.');
 
     const atualizado = await consultarUm(
       `UPDATE niveis_complexidade

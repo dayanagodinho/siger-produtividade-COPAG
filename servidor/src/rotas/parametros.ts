@@ -24,9 +24,9 @@ rotasDeParametros.get(
 
 const esquema = z.object({
   valor: z.coerce
-    .number({ invalid_type_error: 'Informe um numero.' })
-    .min(0, 'O valor nao pode ser negativo.')
-    .max(1000, 'O valor maximo aceito e 1000.'),
+    .number({ invalid_type_error: 'Informe um número.' })
+    .min(0, 'O valor não pode ser negativo.')
+    .max(1000, 'O valor máximo aceito é 1000.'),
 });
 
 /**
@@ -41,7 +41,7 @@ rotasDeParametros.put(
     const dados = validar(esquema, req.body);
 
     const anterior = await consultarUm('SELECT * FROM parametros WHERE chave = $1', [chave]);
-    if (!anterior) throw erroNaoEncontrado('Parametro nao encontrado.');
+    if (!anterior) throw erroNaoEncontrado('Parâmetro não encontrado.');
 
     const atualizado = await consultarUm(
       `UPDATE parametros
@@ -56,7 +56,7 @@ rotasDeParametros.put(
       usuario: req.usuario,
       valorAnterior: anterior,
       valorNovo: atualizado,
-      contexto: 'Vale para lancamentos futuros; os ja registrados mantem o valor congelado',
+      contexto: 'Vale para lançamentos futuros; os já registrados mantêm o valor congelado',
     });
     res.json({ parametro: atualizado });
   }),

@@ -35,7 +35,7 @@ rotasDeIndicadores.get(
         competencia_rotulo: rotularCompetencia(competencia),
         painel: null,
         mensagem:
-          'Voce ainda nao tem apuracao neste mes. Registre seus processos concluidos para acompanhar a media.',
+          'Você ainda não tem apuração neste mês. Registre seus processos concluídos para acompanhar a média.',
       });
       return;
     }
@@ -63,7 +63,7 @@ rotasDeIndicadores.get(
 
     const apuracao = await apurarCompetencia(alvo.setor_id, competencia);
     const linha = apuracao.servidores.find((s) => s.servidor_id === servidorId);
-    if (!linha) throw erroNaoEncontrado('Nao ha apuracao deste servidor no mes escolhido.');
+    if (!linha) throw erroNaoEncontrado('Não há apuração deste servidor no mês escolhido.');
 
     res.json({
       competencia,
@@ -151,7 +151,7 @@ rotasDeIndicadores.get(
       res.json({ setores });
       return;
     }
-    if (usuario.perfil !== 'CHEFE') throw erroDePermissao('Area restrita a chefia.');
+    if (usuario.perfil !== 'CHEFE') throw erroDePermissao('Área restrita a chefia.');
     const setor = await consultarUm(
       'SELECT id, nome, sigla FROM setores WHERE id = $1 AND excluido_em IS NULL',
       [usuario.setor_id],
@@ -189,6 +189,6 @@ function rotularOrigem(
       : null;
     return data ? `Meta fixa definida em ${data}` : 'Meta fixa definida pelo grupo';
   }
-  if (origem === 'MEDIANA_APURADA') return 'Referencia apurada no mes';
-  return 'Sem referencia definida para o grupo';
+  if (origem === 'MEDIANA_APURADA') return 'Referência apurada no mês';
+  return 'Sem referência definida para o grupo';
 }

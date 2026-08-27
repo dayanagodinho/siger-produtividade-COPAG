@@ -14,8 +14,8 @@ rotasDeAuditoria.use(exigirAutenticacao);
 
 const ROTULO_DA_ACAO: Record<string, string> = {
   CRIACAO: 'Criacao',
-  ALTERACAO: 'Alteracao',
-  EXCLUSAO: 'Exclusao',
+  ALTERACAO: 'Alteração',
+  EXCLUSAO: 'Exclusão',
 };
 
 /** Trilha completa: leitura restrita a administracao. */

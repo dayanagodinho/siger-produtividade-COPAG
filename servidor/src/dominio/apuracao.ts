@@ -87,7 +87,7 @@ export async function apurarCompetencia(
     'SELECT id, nome, sigla FROM setores WHERE id = $1 AND excluido_em IS NULL',
     [setorId],
   );
-  if (!setor) throw erroNaoEncontrado('Setor nao encontrado.');
+  if (!setor) throw erroNaoEncontrado('Setor não encontrado.');
 
   const { limites } = await carregarParametros();
 

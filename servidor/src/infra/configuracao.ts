@@ -7,7 +7,7 @@ function obrigatorio(chave: string, padrao?: string): string {
   const valor = process.env[chave] ?? padrao;
   if (!valor) {
     throw new Error(
-      `Variavel de ambiente ${chave} nao definida. Copie o arquivo .env.example para .env e preencha os valores.`,
+      `Variável de ambiente ${chave} não definida. Copie o arquivo .env.example para .env e preencha os valores.`,
     );
   }
   return valor;

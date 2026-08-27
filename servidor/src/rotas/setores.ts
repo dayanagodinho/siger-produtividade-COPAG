@@ -12,7 +12,7 @@ rotasDeSetores.use(exigirAutenticacao);
 const esquema = z.object({
   nome: textoObrigatorio('o nome do setor'),
   sigla: textoObrigatorio('a sigla do setor', 20),
-  chefe_servidor_id: idNumerico('o chefe responsavel').nullable().optional(),
+  chefe_servidor_id: idNumerico('o chefe responsável').nullable().optional(),
 });
 
 rotasDeSetores.get(
@@ -63,7 +63,7 @@ rotasDeSetores.put(
     const id = Number(req.params.id);
     const dados = validar(esquema, req.body);
     const anterior = await consultarUm('SELECT * FROM setores WHERE id = $1 AND excluido_em IS NULL', [id]);
-    if (!anterior) throw erroNaoEncontrado('Setor nao encontrado.');
+    if (!anterior) throw erroNaoEncontrado('Setor não encontrado.');
 
     const atualizado = await consultarUm(
       `UPDATE setores
@@ -89,7 +89,7 @@ rotasDeSetores.delete(
   rota(async (req, res) => {
     const id = Number(req.params.id);
     const anterior = await consultarUm('SELECT * FROM setores WHERE id = $1 AND excluido_em IS NULL', [id]);
-    if (!anterior) throw erroNaoEncontrado('Setor nao encontrado.');
+    if (!anterior) throw erroNaoEncontrado('Setor não encontrado.');
 
     const vinculados = await consultarUm<{ total: number }>(
       `SELECT count(*)::int AS total FROM servidores
@@ -110,6 +110,6 @@ rotasDeSetores.delete(
       usuario: req.usuario,
       valorAnterior: anterior,
     });
-    res.json({ mensagem: 'Setor excluido.' });
+    res.json({ mensagem: 'Setor excluído.' });
   }),
 );

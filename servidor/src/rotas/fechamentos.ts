@@ -79,7 +79,7 @@ rotasDeFechamentos.get(
       pronto_para_fechar: pendentes === 0,
       alerta:
         pendentes > 0
-          ? `Ha ${pendentes} lancamento(s) aguardando validacao. Eles nao entram na media e ficam congelados assim. Valide a fila antes de fechar ou confirme o fechamento assim mesmo.`
+          ? `Há ${pendentes} lançamento(s) aguardando validação. Eles não entram na média e ficam congelados assim. Valide a fila antes de fechar ou confirme o fechamento assim mesmo.`
           : null,
     });
   }),
@@ -89,7 +89,7 @@ rotasDeFechamentos.get(
   '/:id',
   rota(async (req, res) => {
     const consolidado = await lerConsolidado(Number(req.params.id));
-    if (!consolidado) throw erroNaoEncontrado('Consolidado nao encontrado.');
+    if (!consolidado) throw erroNaoEncontrado('Consolidado não encontrado.');
     const usuario = req.usuario!;
     if (usuario.perfil === 'SERVIDOR' || usuario.perfil === 'CHEFE') {
       garantirSetorSobGestao(
@@ -128,7 +128,7 @@ rotasDeFechamentos.post(
     const jaFechado = await buscarFechamentoVigente(setorId, dados.competencia);
     if (jaFechado) {
       throw erroDeConflito(
-        `A competencia de ${rotularCompetencia(dados.competencia)} ja esta fechada desde ${new Date(jaFechado.fechado_em).toLocaleDateString('pt-BR')}. Reabra o mes antes de fechar de novo.`,
+        `A competência de ${rotularCompetencia(dados.competencia)} já está fechada desde ${new Date(jaFechado.fechado_em).toLocaleDateString('pt-BR')}. Reabra o mês antes de fechar de novo.`,
       );
     }
 
@@ -136,7 +136,7 @@ rotasDeFechamentos.post(
     const pendentes = apuracao.servidores.reduce((soma, s) => soma + s.lancamentos_pendentes, 0);
     if (pendentes > 0 && !dados.confirmar_pendentes) {
       throw erroDeConflito(
-        `Ha ${pendentes} lancamento(s) na fila de validacao. Eles nao entram na media e ficarao congelados fora da apuracao. Valide a fila ou confirme o fechamento assim mesmo.`,
+        `Há ${pendentes} lançamento(s) na fila de validação. Eles não entram na média e ficarao congelados fora da apuração. Valide a fila ou confirme o fechamento assim mesmo.`,
         { pendentes_de_validacao: pendentes },
       );
     }
@@ -165,7 +165,7 @@ rotasDeFechamentos.post(
     const consolidado = await lerConsolidado(fechamentoId);
     res.status(201).json({
       consolidado,
-      mensagem: `Competencia de ${rotularCompetencia(dados.competencia)} fechada. Novos lancamentos e edicoes nesse mes ficam bloqueados.`,
+      mensagem: `Competência de ${rotularCompetencia(dados.competencia)} fechada. Novos lançamentos e edições nesse mês ficam bloqueados.`,
     });
   }),
 );
@@ -190,13 +190,13 @@ rotasDeFechamentos.post(
       reaberto_em: string | null;
       vigente: boolean;
     }>('SELECT id, setor_id, competencia, reaberto_em, vigente FROM fechamentos WHERE id = $1', [id]);
-    if (!fechamento) throw erroNaoEncontrado('Consolidado nao encontrado.');
+    if (!fechamento) throw erroNaoEncontrado('Consolidado não encontrado.');
     if (fechamento.reaberto_em) {
-      throw erroDeConflito('Este consolidado ja foi reaberto.');
+      throw erroDeConflito('Este consolidado já foi reaberto.');
     }
     if (!fechamento.vigente) {
       throw erroDeConflito(
-        'Esta e uma versao antiga do consolidado. Reabra a versao vigente da competencia.',
+        'Esta é uma versão antiga do consolidado. Reabra a versão vigente da competência.',
       );
     }
 
@@ -222,7 +222,7 @@ rotasDeFechamentos.post(
     });
 
     res.json({
-      mensagem: `Competencia de ${rotularCompetencia(fechamento.competencia)} reaberta. O consolidado anterior fica preservado no historico; ao fechar de novo sera criada a versao seguinte.`,
+      mensagem: `Competência de ${rotularCompetencia(fechamento.competencia)} reaberta. O consolidado anterior fica preservado no histórico; ao fechar de novo será criada a versão seguinte.`,
     });
   }),
 );

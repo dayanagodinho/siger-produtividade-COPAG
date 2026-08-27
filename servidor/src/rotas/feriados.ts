@@ -11,7 +11,7 @@ rotasDeFeriados.use(exigirAutenticacao);
 
 const esquema = z.object({
   data: dataIso,
-  descricao: textoObrigatorio('a descricao do feriado', 120),
+  descricao: textoObrigatorio('a descrição do feriado', 120),
 });
 
 rotasDeFeriados.get(
@@ -43,7 +43,7 @@ rotasDeFeriados.post(
       acao: 'CRIACAO',
       usuario: req.usuario,
       valorNovo: criado,
-      contexto: 'Feriado afeta o calculo de dias uteis',
+      contexto: 'Feriado afeta o cálculo de dias úteis',
     });
     res.status(201).json({ feriado: criado });
   }),
@@ -55,7 +55,7 @@ rotasDeFeriados.delete(
   rota(async (req, res) => {
     const id = Number(req.params.id);
     const anterior = await consultarUm('SELECT * FROM feriados WHERE id = $1', [id]);
-    if (!anterior) throw erroNaoEncontrado('Feriado nao encontrado.');
+    if (!anterior) throw erroNaoEncontrado('Feriado não encontrado.');
 
     await consultarUm('DELETE FROM feriados WHERE id = $1 RETURNING id', [id]);
     await registrarAuditoria({
@@ -64,8 +64,8 @@ rotasDeFeriados.delete(
       acao: 'EXCLUSAO',
       usuario: req.usuario,
       valorAnterior: anterior,
-      contexto: 'Feriado afeta o calculo de dias uteis',
+      contexto: 'Feriado afeta o cálculo de dias úteis',
     });
-    res.json({ mensagem: 'Feriado excluido.' });
+    res.json({ mensagem: 'Feriado excluído.' });
   }),
 );

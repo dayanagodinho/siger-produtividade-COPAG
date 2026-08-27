@@ -102,7 +102,7 @@ rotasDeValidacao.post(
 );
 
 const esquemaDevolucao = z.object({
-  justificativa: textoObrigatorio('a justificativa da devolucao', 1000),
+  justificativa: textoObrigatorio('a justificativa da devolução', 1000),
 });
 
 rotasDeValidacao.post(
@@ -115,7 +115,7 @@ rotasDeValidacao.post(
 );
 
 const esquemaLote = z.object({
-  ids: z.array(z.coerce.number().int().positive()).min(1, 'Selecione ao menos um lancamento.'),
+  ids: z.array(z.coerce.number().int().positive()).min(1, 'Selecione ao menos um lançamento.'),
   acao: z.enum(['VALIDAR', 'DEVOLVER'], {
     errorMap: () => ({ message: 'Escolha validar ou devolver.' }),
   }),
@@ -128,7 +128,7 @@ rotasDeValidacao.post(
   rota(async (req, res) => {
     const dados = validar(esquemaLote, req.body);
     if (dados.acao === 'DEVOLVER' && !dados.justificativa) {
-      throw erroDeRequisicao('Escreva a justificativa da devolucao. Ela e obrigatoria.');
+      throw erroDeRequisicao('Escreva a justificativa da devolução. Ela é obrigatória.');
     }
 
     const situacao = dados.acao === 'VALIDAR' ? 'VALIDADO' : 'DEVOLVIDO';
@@ -142,7 +142,7 @@ rotasDeValidacao.post(
       } catch (erro) {
         recusados.push({
           id,
-          motivo: erro instanceof Error ? erro.message : 'Nao foi possivel concluir.',
+          motivo: erro instanceof Error ? erro.message : 'Não foi possível concluir.',
         });
       }
     }
@@ -152,8 +152,8 @@ rotasDeValidacao.post(
       recusados,
       mensagem:
         recusados.length === 0
-          ? `${concluidos.length} lancamento(s) ${situacao === 'VALIDADO' ? 'validado(s)' : 'devolvido(s)'}.`
-          : `${concluidos.length} concluido(s) e ${recusados.length} sem alteracao. Veja os motivos na lista.`,
+          ? `${concluidos.length} lançamento(s) ${situacao === 'VALIDADO' ? 'validado(s)' : 'devolvido(s)'}.`
+          : `${concluidos.length} concluído(s) e ${recusados.length} sem alteração. Veja os motivos na lista.`,
     });
   }),
 );
@@ -172,14 +172,14 @@ async function aplicarDecisao(
       WHERE l.id = $1 AND l.excluido_em IS NULL`,
     [id],
   );
-  if (!anterior) throw erroNaoEncontrado('Lancamento nao encontrado.');
+  if (!anterior) throw erroNaoEncontrado('Lançamento não encontrado.');
   garantirSetorSobGestao(usuario, anterior.setor_id);
   await garantirCompetenciaAberta(anterior.setor_id, competenciaDe(anterior.data_conclusao));
 
   const nivelMudou = novoNivel !== undefined && novoNivel !== anterior.nivel;
   if (nivelMudou && situacao === 'DEVOLVIDO') {
     throw erroDeRequisicao(
-      'Escolha uma acao: corrigir o nivel e validar, ou devolver para o servidor ajustar.',
+      'Escolha uma ação: corrigir o nível e validar, ou devolver para o servidor ajustar.',
     );
   }
 
@@ -213,10 +213,10 @@ async function aplicarDecisao(
         valorAnterior: { situacao: anterior.situacao, nivel: anterior.nivel, pontos: anterior.pontos },
         valorNovo: { situacao, nivel: nivelFinal, pontos: linha.rows[0]?.pontos },
         contexto: nivelMudou
-          ? `Nivel corrigido de ${anterior.nivel} para ${nivelFinal} na validacao`
+          ? `Nível corrigido de ${anterior.nivel} para ${nivelFinal} na validação`
           : situacao === 'VALIDADO'
-            ? 'Lancamento validado'
-            : 'Lancamento devolvido ao servidor',
+            ? 'Lançamento validado'
+            : 'Lançamento devolvido ao servidor',
       },
       cliente,
     );
@@ -227,9 +227,9 @@ async function aplicarDecisao(
   return {
     lancamento: atualizado,
     mensagem: nivelMudou
-      ? `Nivel corrigido de ${anterior.nivel} para ${novoNivel}. O lancamento passou a valer ${calcularPontos(novoNivel!, Number(anterior.quantidade), Number(anterior.percentual_papel))} ponto(s).`
+      ? `Nível corrigido de ${anterior.nivel} para ${novoNivel}. O lançamento passou a valer ${calcularPontos(novoNivel!, Number(anterior.quantidade), Number(anterior.percentual_papel))} ponto(s).`
       : situacao === 'VALIDADO'
-        ? 'Lancamento validado.'
-        : 'Lancamento devolvido ao servidor.',
+        ? 'Lançamento validado.'
+        : 'Lançamento devolvido ao servidor.',
   };
 }

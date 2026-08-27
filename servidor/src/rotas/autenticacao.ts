@@ -10,7 +10,7 @@ import { validar } from '../infra/validacao';
 export const rotasDeAutenticacao = Router();
 
 const esquemaEntrada = z.object({
-  identificacao: z.string().trim().min(1, 'Informe a matricula ou o e-mail.'),
+  identificacao: z.string().trim().min(1, 'Informe a matrícula ou o e-mail.'),
   senha: z.string().min(1, 'Informe a senha.'),
 });
 
@@ -46,12 +46,12 @@ rotasDeAutenticacao.post(
     const senhaConfere = servidor ? await conferirSenha(dados.senha, servidor.senha_hash) : false;
 
     if (!servidor || !senhaConfere) {
-      throw erroDeAutenticacao('Matricula ou senha incorreta. Confira os dados e tente de novo.');
+      throw erroDeAutenticacao('Matrícula ou senha incorreta. Confira os dados e tente de novo.');
     }
 
     if (servidor.situacao !== 'ATIVO') {
       throw erroDeAutenticacao(
-        'Este cadastro esta inativo. Procure a administracao do sistema para reativar o acesso.',
+        'Este cadastro está inativo. Procure a administração do sistema para reativar o acesso.',
       );
     }
 
@@ -81,10 +81,10 @@ rotasDeAutenticacao.post(
         entidadeId: usuario.id,
         acao: 'EXCLUSAO',
         usuario,
-        contexto: 'Saida do sistema',
+        contexto: 'Saída do sistema',
       });
     }
-    res.json({ mensagem: 'Sessao encerrada.' });
+    res.json({ mensagem: 'Sessão encerrada.' });
   }),
 );
 
@@ -92,7 +92,7 @@ rotasDeAutenticacao.get(
   '/eu',
   rota(async (req, res) => {
     if (!req.usuario) {
-      res.status(401).json({ mensagem: 'Nenhuma sessao ativa.' });
+      res.status(401).json({ mensagem: 'Nenhuma sessão ativa.' });
       return;
     }
     const completo = await consultarUm<LinhaServidor>(
@@ -124,7 +124,7 @@ rotasDeAutenticacao.post(
       [usuario.id],
     );
     if (!linha || !(await conferirSenha(dados.senha_atual, linha.senha_hash))) {
-      throw erroDeRequisicao('A senha atual nao confere. Digite de novo.');
+      throw erroDeRequisicao('A senha atual não confere. Digite de novo.');
     }
 
     const problema = validarForcaDaSenha(dados.senha_nova);
@@ -141,7 +141,7 @@ rotasDeAutenticacao.post(
       entidadeId: usuario.id,
       acao: 'ALTERACAO',
       usuario,
-      contexto: 'Troca da propria senha',
+      contexto: 'Troca da própria senha',
     });
 
     res.json({ mensagem: 'Senha alterada.' });

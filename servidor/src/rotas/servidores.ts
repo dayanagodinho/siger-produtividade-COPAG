@@ -16,9 +16,9 @@ const CAMPOS_PUBLICOS = `
   st.nome AS setor_nome, st.sigla AS setor_sigla, g.nome AS grupo_nome`;
 
 const esquemaBase = z.object({
-  matricula: textoObrigatorio('a matricula', 30),
+  matricula: textoObrigatorio('a matrícula', 30),
   nome: textoObrigatorio('o nome'),
-  email: z.string().trim().email('Informe um e-mail valido.'),
+  email: z.string().trim().email('Informe um e-mail válido.'),
   setor_id: idNumerico('o setor'),
   grupo_id: idNumerico('o grupo').nullable().optional(),
   perfil: z.enum(['SERVIDOR', 'CHEFE', 'ADMIN'], {
@@ -120,12 +120,12 @@ rotasDeServidores.get(
     const id = Number(req.params.id);
     const usuario = req.usuario!;
     const servidor = await buscarPorId(id);
-    if (!servidor) throw erroNaoEncontrado('Servidor nao encontrado.');
+    if (!servidor) throw erroNaoEncontrado('Servidor não encontrado.');
 
     const proprio = usuario.id === id;
     const doSetor = usuario.perfil === 'CHEFE' && usuario.setor_id === servidor.setor_id;
     if (!proprio && !doSetor && !ehAdmin(usuario)) {
-      throw erroNaoEncontrado('Servidor nao encontrado.');
+      throw erroNaoEncontrado('Servidor não encontrado.');
     }
     res.json({ servidor });
   }),
@@ -138,7 +138,7 @@ rotasDeServidores.put(
     const id = Number(req.params.id);
     const dados = validar(esquemaBase, req.body);
     const anterior = await buscarPorId(id);
-    if (!anterior) throw erroNaoEncontrado('Servidor nao encontrado.');
+    if (!anterior) throw erroNaoEncontrado('Servidor não encontrado.');
     await conferirGrupoDoSetor(dados.grupo_id ?? null, dados.setor_id);
 
     if (dados.situacao === 'INATIVO' && anterior.perfil === 'CHEFE') {
@@ -149,7 +149,7 @@ rotasDeServidores.put(
       );
       if (chefiaAtiva && chefiaAtiva.total > 0) {
         throw erroDeConflito(
-          'Esta pessoa e a chefe responsavel por um setor. Indique outro chefe no cadastro do setor antes de inativar.',
+          'Esta pessoa é a chefe responsável por um setor. Indique outro chefe no cadastro do setor antes de inativar.',
         );
       }
     }
@@ -193,7 +193,7 @@ rotasDeServidores.post(
     if (problema) throw erroDeRequisicao(problema);
 
     const alvo = await buscarPorId(id);
-    if (!alvo) throw erroNaoEncontrado('Servidor nao encontrado.');
+    if (!alvo) throw erroNaoEncontrado('Servidor não encontrado.');
 
     await consultarUm(
       'UPDATE servidores SET senha_hash = $1, atualizado_em = now() WHERE id = $2 RETURNING id',
@@ -204,7 +204,7 @@ rotasDeServidores.post(
       entidadeId: id,
       acao: 'ALTERACAO',
       usuario: req.usuario,
-      contexto: 'Senha redefinida pela administracao',
+      contexto: 'Senha redefinida pela administração',
     });
     res.json({ mensagem: 'Senha redefinida.' });
   }),
@@ -216,9 +216,9 @@ rotasDeServidores.delete(
   rota(async (req, res) => {
     const id = Number(req.params.id);
     const anterior = await buscarPorId(id);
-    if (!anterior) throw erroNaoEncontrado('Servidor nao encontrado.');
+    if (!anterior) throw erroNaoEncontrado('Servidor não encontrado.');
     if (id === req.usuario!.id) {
-      throw erroDeConflito('Voce nao pode excluir o proprio cadastro.');
+      throw erroDeConflito('Você não pode excluir o próprio cadastro.');
     }
 
     const lancamentos = await consultarUm<{ total: number }>(
@@ -227,7 +227,7 @@ rotasDeServidores.delete(
     );
     if (lancamentos && lancamentos.total > 0) {
       throw erroDeConflito(
-        `Esta pessoa tem ${lancamentos.total} lancamento(s) registrado(s) e o historico precisa ser preservado. Mude a situacao para Inativo em vez de excluir.`,
+        `Esta pessoa tem ${lancamentos.total} lançamento(s) registrado(s) e o histórico precisa ser preservado. Mude a situação para Inativo em vez de excluir.`,
       );
     }
 
@@ -242,7 +242,7 @@ rotasDeServidores.delete(
       usuario: req.usuario,
       valorAnterior: semSegredos(anterior as Record<string, unknown>),
     });
-    res.json({ mensagem: 'Servidor excluido.' });
+    res.json({ mensagem: 'Servidor excluído.' });
   }),
 );
 
@@ -270,7 +270,7 @@ async function conferirGrupoDoSetor(grupoId: number | null, setorId: number): Pr
     'SELECT setor_id FROM grupos WHERE id = $1 AND excluido_em IS NULL',
     [grupoId],
   );
-  if (!grupo) throw erroDeRequisicao('Grupo nao encontrado.');
+  if (!grupo) throw erroDeRequisicao('Grupo não encontrado.');
   if (grupo.setor_id !== setorId) {
     throw erroDeRequisicao('O grupo escolhido pertence a outro setor. Selecione um grupo do setor indicado.');
   }

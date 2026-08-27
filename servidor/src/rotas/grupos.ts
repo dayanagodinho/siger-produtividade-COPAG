@@ -15,7 +15,7 @@ const esquema = z.object({
   descricao: textoOpcional(500),
   meta_referencia: z.coerce
     .number()
-    .positive('A meta de referencia precisa ser maior que zero.')
+    .positive('A meta de referência precisa ser maior que zero.')
     .nullable()
     .optional(),
 });
@@ -74,7 +74,7 @@ rotasDeGrupos.put(
       'SELECT * FROM grupos WHERE id = $1 AND excluido_em IS NULL',
       [id],
     );
-    if (!anterior) throw erroNaoEncontrado('Grupo nao encontrado.');
+    if (!anterior) throw erroNaoEncontrado('Grupo não encontrado.');
 
     const meta = dados.meta_referencia ?? null;
     const metaMudou = Number(anterior.meta_referencia ?? 0) !== Number(meta ?? 0);
@@ -99,7 +99,7 @@ rotasDeGrupos.put(
       usuario: req.usuario,
       valorAnterior: anterior,
       valorNovo: atualizado,
-      contexto: metaMudou ? 'Meta de referencia alterada' : undefined,
+      contexto: metaMudou ? 'Meta de referência alterada' : undefined,
     });
     res.json({ grupo: atualizado });
   }),
@@ -111,7 +111,7 @@ rotasDeGrupos.delete(
   rota(async (req, res) => {
     const id = Number(req.params.id);
     const anterior = await consultarUm('SELECT * FROM grupos WHERE id = $1 AND excluido_em IS NULL', [id]);
-    if (!anterior) throw erroNaoEncontrado('Grupo nao encontrado.');
+    if (!anterior) throw erroNaoEncontrado('Grupo não encontrado.');
 
     const vinculados = await consultarUm<{ total: number }>(
       `SELECT count(*)::int AS total FROM servidores WHERE grupo_id = $1 AND excluido_em IS NULL`,
@@ -131,6 +131,6 @@ rotasDeGrupos.delete(
       usuario: req.usuario,
       valorAnterior: anterior,
     });
-    res.json({ mensagem: 'Grupo excluido.' });
+    res.json({ mensagem: 'Grupo excluído.' });
   }),
 );

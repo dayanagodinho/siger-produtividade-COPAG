@@ -40,7 +40,7 @@ export function criarAplicacao(): express.Express {
   app.use('/api', rotasDaApi);
 
   app.use('/api', (_req, res) => {
-    res.status(404).json({ mensagem: 'Endereco de API inexistente.' });
+    res.status(404).json({ mensagem: 'Endereço de API inexistente.' });
   });
 
   app.use(express.static(PASTA_CLIENTE));
@@ -50,7 +50,7 @@ export function criarAplicacao(): express.Express {
         res
           .status(200)
           .type('text/plain')
-          .send('Interface ainda nao compilada. Rode "npm run build" na raiz do projeto.');
+          .send('Interface ainda não compilada. Rode "npm run build" na raiz do projeto.');
       }
     });
   });
@@ -61,7 +61,7 @@ export function criarAplicacao(): express.Express {
 
 async function iniciar(): Promise<void> {
   if (configuracao.migrarAoIniciar) {
-    console.log('Verificando migracoes pendentes...');
+    console.log('Verificando migrações pendentes...');
     await aplicarMigracoes();
   }
 

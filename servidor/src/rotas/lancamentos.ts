@@ -48,7 +48,7 @@ const DE = `
 
 const esquema = z.object({
   servidor_id: idNumerico('o servidor').optional(),
-  processo: textoObrigatorio('o numero do processo', 60),
+  processo: textoObrigatorio('o número do processo', 60),
   descricao: textoOpcional(1000),
   nivel: nivelComplexidade,
   papel: z.enum(['EXECUCAO', 'REVISAO', 'HOMOLOGACAO'], {
@@ -57,7 +57,7 @@ const esquema = z.object({
   quantidade: z.coerce
     .number({ invalid_type_error: 'Informe a quantidade.' })
     .positive('A quantidade precisa ser maior que zero.')
-    .max(999, 'A quantidade maxima por lancamento e 999.')
+    .max(999, 'A quantidade máxima por lançamento é 999.')
     .default(1),
   data_conclusao: dataIso,
   periodo_inicio: dataIso.nullable().optional(),
@@ -65,7 +65,7 @@ const esquema = z.object({
   link_externo: z
     .string()
     .trim()
-    .url('Informe um endereco completo, comecando com http:// ou https://.')
+    .url('Informe um endereço completo, começando com http:// ou https://.')
     .max(500)
     .nullable()
     .optional()
@@ -182,11 +182,11 @@ rotasDeLancamentos.post(
     const servidorId = dados.servidor_id ?? usuario.id;
 
     if (servidorId !== usuario.id && usuario.perfil === 'SERVIDOR') {
-      throw erroDePermissao('Voce so pode lancar a propria producao.');
+      throw erroDePermissao('Você só pode lançar a própria produção.');
     }
     const alvo = await buscarServidorAlvo(servidorId);
     if (servidorId !== usuario.id && !ehAdmin(usuario) && alvo.setor_id !== usuario.setor_id) {
-      throw erroDePermissao('Voce so pode lancar por servidores do seu setor.');
+      throw erroDePermissao('Você só pode lançar por servidores do seu setor.');
     }
 
     conferirPeriodo(dados);
@@ -220,12 +220,12 @@ rotasDeLancamentos.post(
       usuario,
       valorNovo: lancamento,
       contexto:
-        servidorId === usuario.id ? undefined : `Lancado em nome de ${alvo.nome}`,
+        servidorId === usuario.id ? undefined : `Lançado em nome de ${alvo.nome}`,
     });
 
     res.status(201).json({
       lancamento,
-      aviso: `Lancamento registrado com ${calcularPontos(dados.nivel, dados.quantidade, percentual)} ponto(s). Aguarda validacao da chefia.`,
+      aviso: `Lançamento registrado com ${calcularPontos(dados.nivel, dados.quantidade, percentual)} ponto(s). Aguarda validação da chefia.`,
     });
   }),
 );
@@ -243,7 +243,7 @@ rotasDeLancamentos.put(
     const chefia = usuario.perfil !== 'SERVIDOR';
     if (!chefia && anterior.situacao === 'VALIDADO') {
       throw erroDePermissao(
-        'Este lancamento ja foi validado pela chefia. Peca a devolucao antes de alterar.',
+        'Este lançamento já foi validado pela chefia. Peça a devolução antes de alterar.',
       );
     }
 
@@ -289,7 +289,7 @@ rotasDeLancamentos.put(
       valorNovo: lancamento,
       contexto:
         novaSituacao === 'PENDENTE' && anterior.situacao !== 'PENDENTE'
-          ? 'Alteracao pelo servidor devolveu o lancamento para a fila de validacao'
+          ? 'Alteração pelo servidor devolveu o lançamento para a fila de validação'
           : undefined,
     });
     res.json({ lancamento });
@@ -307,7 +307,7 @@ rotasDeLancamentos.delete(
 
     if (usuario.perfil === 'SERVIDOR' && anterior.situacao === 'VALIDADO') {
       throw erroDePermissao(
-        'Este lancamento ja foi validado pela chefia e nao pode ser excluido por voce.',
+        'Este lançamento já foi validado pela chefia e não pode ser excluído por você.',
       );
     }
     await garantirCompetenciaAberta(alvo.setor_id, competenciaDe(anterior.data_conclusao));
@@ -323,7 +323,7 @@ rotasDeLancamentos.delete(
       usuario,
       valorAnterior: anterior,
     });
-    res.json({ mensagem: 'Lancamento excluido.' });
+    res.json({ mensagem: 'Lançamento excluído.' });
   }),
 );
 
@@ -344,7 +344,7 @@ export async function buscarLancamento(id: number): Promise<LancamentoCompleto> 
     `SELECT ${CAMPOS} ${DE} WHERE l.id = $1 AND l.excluido_em IS NULL`,
     [id],
   );
-  if (!lancamento) throw erroNaoEncontrado('Lancamento nao encontrado.');
+  if (!lancamento) throw erroNaoEncontrado('Lançamento não encontrado.');
   return lancamento;
 }
 
@@ -354,9 +354,9 @@ function conferirPeriodo(dados: {
   data_conclusao: string;
 }): void {
   if (dados.periodo_inicio && dados.periodo_fim && dados.periodo_fim < dados.periodo_inicio) {
-    throw erroDeRequisicao('O fim do periodo de execucao nao pode ser anterior ao inicio.');
+    throw erroDeRequisicao('O fim do período de execução não pode ser anterior ao inicio.');
   }
   if (dados.periodo_inicio && dados.periodo_inicio > dados.data_conclusao) {
-    throw erroDeRequisicao('O inicio da execucao nao pode ser posterior a data de conclusao.');
+    throw erroDeRequisicao('O inicio da execução não pode ser posterior a data de conclusão.');
   }
 }

@@ -54,13 +54,13 @@ if (require.main === module) {
     .then((executadas) => {
       console.log(
         executadas.length === 0
-          ? 'Banco ja estava atualizado. Nenhuma migracao pendente.'
-          : `${executadas.length} migracao(oes) aplicada(s).`,
+          ? 'Banco já estava atualizado. Nenhuma migração pendente.'
+          : `${executadas.length} migração(oes) aplicada(s).`,
       );
       return pool.end();
     })
     .catch((erro) => {
-      console.error('Erro ao aplicar as migracoes:', erro.message);
+      console.error('Erro ao aplicar as migrações:', erro.message);
       process.exitCode = 1;
       return pool.end();
     });

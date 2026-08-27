@@ -25,7 +25,7 @@ rotasDeAusencias.use(exigirAutenticacao);
 const esquema = z.object({
   servidor_id: idNumerico('o servidor'),
   tipo: z.enum(['FERIAS', 'LICENCA', 'AFASTAMENTO', 'OUTRO'], {
-    errorMap: () => ({ message: 'Selecione o tipo de ausencia.' }),
+    errorMap: () => ({ message: 'Selecione o tipo de ausência.' }),
   }),
   data_inicio: dataIso,
   data_fim: dataIso,
@@ -33,8 +33,8 @@ const esquema = z.object({
 });
 
 export const ROTULO_DO_TIPO: Record<string, string> = {
-  FERIAS: 'Ferias',
-  LICENCA: 'Licenca',
+  FERIAS: 'Férias',
+  LICENCA: 'Licença',
   AFASTAMENTO: 'Afastamento',
   OUTRO: 'Outro',
 };
@@ -103,7 +103,7 @@ rotasDeAusencias.post(
       acao: 'CRIACAO',
       usuario: req.usuario,
       valorNovo: ausencia,
-      contexto: `Ausencia de ${alvo.nome}; reduz os dias efetivos do periodo`,
+      contexto: `Ausência de ${alvo.nome}; reduz os dias efetivos do período`,
     });
     res.status(201).json({ ausencia });
   }),
@@ -163,7 +163,7 @@ rotasDeAusencias.delete(
       usuario: req.usuario,
       valorAnterior: anterior,
     });
-    res.json({ mensagem: 'Ausencia excluida.' });
+    res.json({ mensagem: 'Ausência excluída.' });
   }),
 );
 
@@ -179,12 +179,12 @@ async function buscarAusencia(id: number): Promise<AusenciaCompleta> {
       WHERE a.id = $1 AND a.excluido_em IS NULL`,
     [id],
   );
-  if (!ausencia) throw erroNaoEncontrado('Ausencia nao encontrada.');
+  if (!ausencia) throw erroNaoEncontrado('Ausência não encontrada.');
   return ausencia;
 }
 
 function conferirIntervalo(dados: { data_inicio: string; data_fim: string }): void {
   if (dados.data_fim < dados.data_inicio) {
-    throw erroDeRequisicao('A data final da ausencia nao pode ser anterior a data inicial.');
+    throw erroDeRequisicao('A data final da ausência não pode ser anterior a data inicial.');
   }
 }

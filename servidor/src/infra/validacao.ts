@@ -22,13 +22,13 @@ export const textoObrigatorio = (rotulo: string, maximo = 255) =>
     .string({ required_error: `Informe ${rotulo}.` })
     .trim()
     .min(1, `Informe ${rotulo}.`)
-    .max(maximo, `${rotulo} deve ter no maximo ${maximo} caracteres.`);
+    .max(maximo, `${rotulo} deve ter no máximo ${maximo} caracteres.`);
 
 export const textoOpcional = (maximo = 2000) =>
   z
     .string()
     .trim()
-    .max(maximo, `O texto deve ter no maximo ${maximo} caracteres.`)
+    .max(maximo, `O texto deve ter no máximo ${maximo} caracteres.`)
     .optional()
     .nullable()
     .transform((valor) => (valor === '' ? null : (valor ?? null)));
@@ -40,12 +40,12 @@ export const idNumerico = (rotulo: string) =>
     .positive(`Selecione ${rotulo}.`);
 
 export const nivelComplexidade = z.coerce
-  .number({ invalid_type_error: 'Selecione o nivel de complexidade.' })
-  .int('Selecione o nivel de complexidade.')
-  .min(1, 'O nivel vai de 1 a 4.')
-  .max(4, 'O nivel vai de 1 a 4.');
+  .number({ invalid_type_error: 'Selecione o nível de complexidade.' })
+  .int('Selecione o nível de complexidade.')
+  .min(1, 'O nível vai de 1 a 4.')
+  .max(4, 'O nível vai de 1 a 4.');
 
 export const competenciaValida = z
   .string()
-  .regex(/^\d{4}-\d{2}(-01)?$/, 'Informe a competencia no formato AAAA-MM.')
+  .regex(/^\d{4}-\d{2}(-01)?$/, 'Informe a competência no formato AAAA-MM.')
   .transform((valor) => (valor.length === 7 ? `${valor}-01` : valor));

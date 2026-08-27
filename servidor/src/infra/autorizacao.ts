@@ -33,7 +33,7 @@ export function exigirPerfil(...perfis: PerfilAcesso[]) {
     if (!req.usuario) throw erroDeAutenticacao();
     if (!perfis.includes(req.usuario.perfil)) {
       throw erroDePermissao(
-        `Esta area e restrita aos perfis: ${perfis.map(rotuloDoPerfil).join(', ')}.`,
+        `Esta área é restrita aos perfis: ${perfis.map(rotuloDoPerfil).join(', ')}.`,
       );
     }
     next();
@@ -59,7 +59,7 @@ export function podeAdministrarSetor(usuario: UsuarioAutenticado, setorId: numbe
 
 export function garantirSetorSobGestao(usuario: UsuarioAutenticado, setorId: number): void {
   if (!podeAdministrarSetor(usuario, setorId)) {
-    throw erroDePermissao('Voce so pode agir sobre o seu proprio setor.');
+    throw erroDePermissao('Você só pode agir sobre o seu próprio setor.');
   }
 }
 
@@ -76,7 +76,7 @@ export async function buscarServidorAlvo(servidorId: number): Promise<ServidorAl
        FROM servidores WHERE id = $1 AND excluido_em IS NULL`,
     [servidorId],
   );
-  if (!alvo) throw erroNaoEncontrado('Servidor nao encontrado.');
+  if (!alvo) throw erroNaoEncontrado('Servidor não encontrado.');
   return alvo;
 }
 
@@ -92,5 +92,5 @@ export async function garantirAcessoAoServidor(
   if (usuario.id === alvo.id) return alvo;
   if (ehAdmin(usuario)) return alvo;
   if (usuario.perfil === 'CHEFE' && usuario.setor_id === alvo.setor_id) return alvo;
-  throw erroDePermissao('Voce so tem acesso aos lancamentos do seu proprio cadastro.');
+  throw erroDePermissao('Você só tem acesso aos lançamentos do seu próprio cadastro.');
 }

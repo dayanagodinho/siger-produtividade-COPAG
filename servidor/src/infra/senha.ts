@@ -30,6 +30,6 @@ export async function conferirSenha(senha: string, hashGravado: string): Promise
 export function validarForcaDaSenha(senha: string): string | null {
   if (senha.length < 8) return 'A senha precisa ter ao menos 8 caracteres.';
   if (!/[a-zA-Z]/.test(senha)) return 'A senha precisa conter ao menos uma letra.';
-  if (!/[0-9]/.test(senha)) return 'A senha precisa conter ao menos um numero.';
+  if (!/[0-9]/.test(senha)) return 'A senha precisa conter ao menos um número.';
   return null;
 }

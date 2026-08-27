@@ -65,9 +65,9 @@ export function faixaDeAtingimento(
 }
 
 export const ROTULO_DA_FAIXA: Record<Faixa, string> = {
-  ABAIXO: 'Abaixo da referencia',
-  DENTRO: 'Dentro da referencia',
-  ACIMA: 'Acima da referencia',
+  ABAIXO: 'Abaixo da referência',
+  DENTRO: 'Dentro da referência',
+  ACIMA: 'Acima da referência',
 };
 
 // ---------------------------------------------------------------------------

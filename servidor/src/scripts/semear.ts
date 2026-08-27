@@ -11,18 +11,18 @@ import { ehDiaUtil, listarDiasDoMes } from '../dominio/datas';
  */
 
 const FERIADOS_2026: Array<[string, string]> = [
-  ['2026-01-01', 'Confraternizacao Universal'],
+  ['2026-01-01', 'Confraternização Universal'],
   ['2026-02-16', 'Carnaval'],
   ['2026-02-17', 'Carnaval'],
   ['2026-04-03', 'Sexta-feira Santa'],
   ['2026-04-21', 'Tiradentes'],
   ['2026-05-01', 'Dia do Trabalho'],
   ['2026-06-04', 'Corpus Christi'],
-  ['2026-09-07', 'Independencia do Brasil'],
+  ['2026-09-07', 'Independência do Brasil'],
   ['2026-10-12', 'Nossa Senhora Aparecida'],
   ['2026-11-02', 'Finados'],
-  ['2026-11-15', 'Proclamacao da Republica'],
-  ['2026-11-20', 'Dia Nacional de Zumbi e da Consciencia Negra'],
+  ['2026-11-15', 'Proclamação da República'],
+  ['2026-11-20', 'Dia Nacional de Zumbi e da Consciência Negra'],
   ['2026-12-25', 'Natal'],
 ];
 
@@ -38,9 +38,9 @@ interface ServidorSemente {
 
 const SERVIDORES: ServidorSemente[] = [
   { matricula: '100001', nome: 'Ana Ribeiro Alves',      email: 'ana.alves@orgao.gov.br',     perfil: 'ADMIN',    grupo: null, regime: 'INTEGRAL',   admissao: '2018-03-12' },
-  { matricula: '100002', nome: 'Carlos Menezes Prado',   email: 'carlos.prado@orgao.gov.br',  perfil: 'CHEFE',    grupo: 'Analise de contratos', regime: 'INTEGRAL',   admissao: '2015-08-01' },
-  { matricula: '100003', nome: 'Beatriz Souza Lima',     email: 'beatriz.lima@orgao.gov.br',  perfil: 'SERVIDOR', grupo: 'Analise de contratos', regime: 'INTEGRAL',   admissao: '2019-05-20' },
-  { matricula: '100004', nome: 'Diego Fontes Araujo',    email: 'diego.araujo@orgao.gov.br',  perfil: 'SERVIDOR', grupo: 'Analise de contratos', regime: 'INTEGRAL',   admissao: '2021-02-15' },
+  { matricula: '100002', nome: 'Carlos Menezes Prado',   email: 'carlos.prado@orgao.gov.br',  perfil: 'CHEFE',    grupo: 'Análise de contratos', regime: 'INTEGRAL',   admissao: '2015-08-01' },
+  { matricula: '100003', nome: 'Beatriz Souza Lima',     email: 'beatriz.lima@orgao.gov.br',  perfil: 'SERVIDOR', grupo: 'Análise de contratos', regime: 'INTEGRAL',   admissao: '2019-05-20' },
+  { matricula: '100004', nome: 'Diego Fontes Araujo',    email: 'diego.araujo@orgao.gov.br',  perfil: 'SERVIDOR', grupo: 'Análise de contratos', regime: 'INTEGRAL',   admissao: '2021-02-15' },
   { matricula: '100005', nome: 'Elaine Castro Moreira',  email: 'elaine.moreira@orgao.gov.br',perfil: 'SERVIDOR', grupo: 'Pagamentos',           regime: 'PARCIAL',    admissao: '2020-09-01' },
   { matricula: '100006', nome: 'Fabio Nunes Teixeira',   email: 'fabio.teixeira@orgao.gov.br',perfil: 'SERVIDOR', grupo: 'Pagamentos',           regime: 'PRESENCIAL', admissao: '2017-11-10' },
   { matricula: '100007', nome: 'Gabriela Pinto Rocha',   email: 'gabriela.rocha@orgao.gov.br',perfil: 'SERVIDOR', grupo: 'Pagamentos',           regime: 'INTEGRAL',   admissao: '2022-07-04' },
@@ -74,7 +74,7 @@ async function semear(): Promise<void> {
   const jaTem = await pool.query('SELECT 1 FROM servidores LIMIT 1');
   if (jaTem.rowCount) {
     console.log(
-      'O banco ja possui servidores cadastrados. Rode "npm run semear -- --recriar" para recomeçar do zero.',
+      'O banco já possui servidores cadastrados. Rode "npm run semear -- --recriar" para recomeçar do zero.',
     );
     return;
   }
@@ -89,14 +89,14 @@ async function semear(): Promise<void> {
 
   const setor = await pool.query<{ id: number }>(
     `INSERT INTO setores (nome, sigla) VALUES ($1, $2) RETURNING id`,
-    ['Divisao de Contratos e Pagamentos', 'DICOP'],
+    ['Divisão de Contratos e Pagamentos', 'DICOP'],
   );
   const setorId = setor.rows[0].id;
 
   const grupos = new Map<string, number>();
   for (const [nome, descricao, meta] of [
-    ['Analise de contratos', 'Instrucao e analise de processos de contratacao.', null],
-    ['Pagamentos', 'Liquidacao e pagamento de notas fiscais.', 0.55],
+    ['Análise de contratos', 'Instrução e análise de processos de contratação.', null],
+    ['Pagamentos', 'Liquidação e pagamento de notas fiscais.', 0.55],
   ] as Array<[string, string, number | null]>) {
     const grupo = await pool.query<{ id: number }>(
       `INSERT INTO grupos (setor_id, nome, descricao, meta_referencia, meta_definida_em)
@@ -141,11 +141,11 @@ async function semear(): Promise<void> {
   // Ausencias: ferias que zeram a apuracao de um servidor e uma licenca parcial.
   await pool.query(
     `INSERT INTO ausencias (servidor_id, tipo, data_inicio, data_fim, observacao, criado_por)
-     VALUES ($1, 'FERIAS', '2026-08-01', '2026-08-31', 'Ferias regulamentares do mes inteiro', $2),
-            ($3, 'LICENCA', '2026-08-10', '2026-08-14', 'Licenca para tratamento de saude', $2)`,
+     VALUES ($1, 'FERIAS', '2026-08-01', '2026-08-31', 'Férias regulamentares do mês inteiro', $2),
+            ($3, 'LICENCA', '2026-08-10', '2026-08-14', 'Licença para tratamento de saúde', $2)`,
     [idsPorMatricula.get('100007'), idsPorMatricula.get('100002'), idsPorMatricula.get('100005')],
   );
-  console.log('Ausencias cadastradas: 2');
+  console.log('Ausências cadastradas: 2');
 
   const pesos = new Map<string, number>();
   const linhasParametros = await pool.query<{ chave: string; valor: number }>(
@@ -171,14 +171,14 @@ async function semear(): Promise<void> {
   };
 
   const DESCRICOES = [
-    'Analise de habilitacao e minuta contratual',
-    'Instrucao de aditivo de prazo',
-    'Conferencia documental e juntada',
-    'Analise de renovacao contratual',
-    'Liquidacao de nota fiscal',
-    'Conferencia de retencoes',
-    'Regularizacao de pagamento com glosa',
-    'Contratacao direta com parecer da assessoria',
+    'Análise de habilitação e minuta contratual',
+    'Instrução de aditivo de prazo',
+    'Conferência documental e juntada',
+    'Análise de renovação contratual',
+    'Liquidação de nota fiscal',
+    'Conferência de retenções',
+    'Regularização de pagamento com glosa',
+    'Contratação direta com parecer da assessoria',
   ];
 
   interface LancamentoSemente {
@@ -226,7 +226,7 @@ async function semear(): Promise<void> {
             nivel,
             papel: 'REVISAO',
             conclusao: diaRevisao,
-            descricao: 'Revisao do processo instruido pelo colega',
+            descricao: 'Revisão do processo instruido pelo colega',
           });
           semente.push({
             servidorId: chefeId,
@@ -234,7 +234,7 @@ async function semear(): Promise<void> {
             nivel,
             papel: 'HOMOLOGACAO',
             conclusao: diaRevisao,
-            descricao: 'Homologacao do processo',
+            descricao: 'Homologação do processo',
           });
         }
       }
@@ -279,9 +279,9 @@ async function semear(): Promise<void> {
        (servidor_id, processo, descricao, nivel, papel, quantidade, data_conclusao,
         status, situacao, nivel_aplicado, percentual_papel, criado_por,
         justificativa, validado_por, validado_em, nivel_original)
-     VALUES ($1, '861899/2026', 'Conferencia de planilha de custos', 4, 'EXECUCAO', 1,
+     VALUES ($1, '861899/2026', 'Conferência de planilha de custos', 4, 'EXECUCAO', 1,
              '2026-08-13', 'CONCLUIDO', 'DEVOLVIDO', 4, 100, $1,
-             'O processo seguiu o rito padrao, sem retencao ou consulta juridica. Reclassifique como nivel 2.',
+             'O processo seguiu o rito padrão, sem retenção ou consulta jurídica. Reclassifique como nível 2.',
              $2, '2026-08-14 15:20:00-03', NULL)`,
     [idsPorMatricula.get('100004'), chefeId],
   );
@@ -291,13 +291,13 @@ async function semear(): Promise<void> {
     `INSERT INTO lancamentos
        (servidor_id, processo, descricao, nivel, papel, quantidade, data_conclusao,
         periodo_inicio, status, situacao, nivel_aplicado, percentual_papel, criado_por)
-     VALUES ($1, '861950/2026', 'Analise em curso, aguardando parecer juridico', 3, 'EXECUCAO', 1,
+     VALUES ($1, '861950/2026', 'Análise em curso, aguardando parecer jurídico', 3, 'EXECUCAO', 1,
              '2026-08-31', '2026-08-20', 'EM_ANDAMENTO', 'PENDENTE', 3, 100, $1)`,
     [idsPorMatricula.get('100003')],
   );
 
   const total = inseridos + 2;
-  console.log(`Lancamentos cadastrados: ${total} (${pendentes} aguardando validacao)`);
+  console.log(`Lançamentos cadastrados: ${total} (${pendentes} aguardando validação)`);
   console.log(
     [
       '',
@@ -306,10 +306,10 @@ async function semear(): Promise<void> {
       '  100001  Ana Ribeiro Alves      ADMIN',
       '  100002  Carlos Menezes Prado   CHEFE',
       '  100003  Beatriz Souza Lima     SERVIDOR',
-      '  100005  Elaine Castro Moreira  SERVIDOR (com licenca em agosto)',
-      '  100007  Gabriela Pinto Rocha   SERVIDOR (ferias o mes inteiro: SEM_APURACAO)',
+      '  100005  Elaine Castro Moreira  SERVIDOR (com licença em agosto)',
+      '  100007  Gabriela Pinto Rocha   SERVIDOR (férias o mês inteiro: SEM_APURACAO)',
       '',
-      `Pontos conferidos pelo nucleo de calculo: nivel 3 em revisao vale ${calcularPontos(3, 1, 40)}.`,
+      `Pontos conferidos pelo núcleo de cálculo: nível 3 em revisão vale ${calcularPontos(3, 1, 40)}.`,
     ].join('\n'),
   );
 }
