@@ -414,6 +414,143 @@ export function ColunasDoPeriodo({
 
 // ---------------------------------------------------------------------------
 
+export interface ColunaDePessoa {
+  rotulo: string;
+  valor: number | null;
+  abaixo: boolean;
+  apoio?: string;
+}
+
+/**
+ * Média de cada pessoa em colunas, com a linha da referência. Coluna vermelha
+ * é quem ainda não alcançou a meta do próprio grupo.
+ */
+export function ColunasPorPessoa({
+  colunas,
+  referencia,
+  rotuloReferencia,
+  formatar = (v) => numero(v, 2),
+}: {
+  colunas: ColunaDePessoa[];
+  referencia?: number | null;
+  rotuloReferencia?: string;
+  formatar?: (valor: number) => string;
+}) {
+  const { aoEntrar, aoSair, elemento } = useDica();
+  const largura = 720;
+  const altura = 260;
+  const margem = { topo: 26, base: 62, esquerda: 14, direita: 14 };
+  const areaAltura = altura - margem.topo - margem.base;
+  const areaLargura = largura - margem.esquerda - margem.direita;
+  const passo = areaLargura / Math.max(colunas.length, 1);
+  const larguraColuna = Math.min(52, passo * 0.6);
+
+  const maximo = Math.max(
+    ...colunas.map((c) => c.valor ?? 0),
+    referencia ?? 0,
+    0.0001,
+  );
+  const y = (valor: number) => margem.topo + areaAltura - (valor / maximo) * areaAltura;
+
+  return (
+    <>
+      <svg
+        viewBox={`0 0 ${largura} ${altura}`}
+        className="svg-grafico"
+        style={{ maxWidth: `${largura}px` }}
+        role="img"
+      >
+        {[0.5, 1].map((fracao) => (
+          <line
+            key={fracao}
+            x1={margem.esquerda}
+            x2={largura - margem.direita}
+            y1={y(maximo * fracao)}
+            y2={y(maximo * fracao)}
+            className="grade"
+          />
+        ))}
+        <line
+          x1={margem.esquerda}
+          x2={largura - margem.direita}
+          y1={margem.topo + areaAltura}
+          y2={margem.topo + areaAltura}
+          className="eixo"
+        />
+
+        {referencia ? (
+          <>
+            <line
+              x1={margem.esquerda}
+              x2={largura - margem.direita}
+              y1={y(referencia)}
+              y2={y(referencia)}
+              className="linha-referencia"
+            />
+            <text x={largura - margem.direita} y={y(referencia) - 6} className="rotulo-eixo" textAnchor="end">
+              {rotuloReferencia ?? `média do setor ${formatar(referencia)}`}
+            </text>
+          </>
+        ) : null}
+
+        {colunas.map((coluna, indice) => {
+          const centro = margem.esquerda + passo * indice + passo / 2;
+          const x = centro - larguraColuna / 2;
+          const valor = coluna.valor ?? 0;
+          const topo = y(valor);
+          const alturaColuna = margem.topo + areaAltura - topo;
+
+          return (
+            <g key={coluna.rotulo}>
+              {coluna.valor === null ? (
+                <text x={centro} y={margem.topo + areaAltura - 8} className="rotulo-ausente" textAnchor="middle">
+                  —
+                </text>
+              ) : (
+                <path
+                  d={barra(x, topo, larguraColuna, Math.max(alturaColuna, 2), 'vertical')}
+                  fill={coluna.abaixo ? 'var(--abaixo-meta)' : 'var(--verde-600)'}
+                  onMouseEnter={(evento) =>
+                    aoEntrar(
+                      evento,
+                      <>
+                        <strong>{coluna.rotulo}</strong>
+                        <div>média {formatar(valor)}</div>
+                        {coluna.apoio && <div>{coluna.apoio}</div>}
+                      </>,
+                    )
+                  }
+                  onMouseLeave={aoSair}
+                />
+              )}
+              {coluna.valor !== null && (
+                <text x={centro} y={topo - 7} className="valor-direto" textAnchor="middle">
+                  {formatar(valor)}
+                </text>
+              )}
+              <text
+                x={centro}
+                y={altura - 30}
+                className="rotulo-eixo"
+                textAnchor="middle"
+                transform={colunas.length > 6 ? `rotate(-20 ${centro} ${altura - 30})` : undefined}
+              >
+                {coluna.rotulo}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
+      <p className="legenda-linha">
+        <span className="amostra-coluna" aria-hidden="true" /> alcançou a meta
+        <span className="amostra-abaixo" aria-hidden="true" /> ainda não alcançou
+        <span className="amostra-referencia" aria-hidden="true" /> meta
+      </p>
+      {elemento}
+    </>
+  );
+}
+
 export const CORES_DOS_NIVEIS = [
   'var(--nivel-1)',
   'var(--nivel-2)',

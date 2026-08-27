@@ -13,13 +13,7 @@ import {
   SeletorCompetencia,
   Vazio,
 } from '../componentes/comuns';
-import {
-  BarraDeNiveis,
-  BarrasHorizontais,
-  Figura,
-  LegendaDeNiveis,
-  Rosca,
-} from '../componentes/graficos';
+import { ColunasPorPessoa, Figura, Rosca } from '../componentes/graficos';
 import { Cabecalho } from '../componentes/Layout';
 import { useSessao } from '../servicos/sessao';
 
@@ -210,48 +204,41 @@ export function PainelSetor() {
               </Cartao>
             </div>
 
-            <div className="grade grade-2">
-              <Cartao>
-                <Figura
-                  titulo="Atingimento por servidor"
-                  apoio="A linha tracejada é 100% da referência do grupo de cada um."
-                >
-                  <BarrasHorizontais
-                    itens={apuracao.servidores
-                      .filter((s) => s.situacao === 'APURADO' && s.atingimento !== null)
-                      .sort((a, b) => (b.atingimento ?? 0) - (a.atingimento ?? 0))
-                      .map((servidor) => ({
-                        rotulo: primeiroENome(servidor.nome),
-                        apoio: servidor.grupo_nome ?? 'sem grupo',
-                        valor: servidor.atingimento,
-                        formatado: percentual(servidor.atingimento, 0),
-                        cor:
-                          servidor.faixa === 'ABAIXO' ? 'var(--abaixo)'
-                          : servidor.faixa === 'ACIMA' ? 'var(--acima)'
-                          : 'var(--dentro)',
-                      }))}
-                    referencia={1}
-                    rotuloReferencia="100% da referência"
-                    formatar={(valor) => percentual(valor, 0)}
-                  />
-                </Figura>
-                <ul className="legenda legenda-horizontal" style={{ marginTop: '0.75rem' }}>
-                  <li><i style={{ background: 'var(--abaixo)' }} aria-hidden="true" /><span>▼ Abaixo</span></li>
-                  <li><i style={{ background: 'var(--dentro)' }} aria-hidden="true" /><span>● Dentro</span></li>
-                  <li><i style={{ background: 'var(--acima)' }} aria-hidden="true" /><span>▲ Acima</span></li>
-                </ul>
-                {apuracao.servidores.some((s) => s.situacao === 'SEM_APURACAO') && (
-                  <p className="campo-dica" style={{ marginTop: '0.5rem' }}>
-                    Fora do gráfico:{' '}
-                    {apuracao.servidores
-                      .filter((s) => s.situacao === 'SEM_APURACAO')
-                      .map((s) => primeiroENome(s.nome))
-                      .join(', ')}{' '}
-                    — sem apuração no mês.
-                  </p>
-                )}
-              </Cartao>
+            <Cartao>
+              <Figura
+                titulo="Média de cada servidor"
+                apoio="Coluna vermelha é quem ainda não alcançou a meta do próprio grupo. A linha tracejada é a média do setor."
+              >
+                <ColunasPorPessoa
+                  colunas={apuracao.servidores
+                    .filter((s) => s.situacao === 'APURADO')
+                    .sort((a, b) => (b.media ?? 0) - (a.media ?? 0))
+                    .map((servidor) => ({
+                      rotulo: primeiroENome(servidor.nome),
+                      valor: servidor.media,
+                      abaixo: servidor.faixa === 'ABAIXO',
+                      apoio: servidor.referencia
+                        ? `meta do grupo ${numero(servidor.referencia, 2)}`
+                        : 'sem meta definida',
+                    }))}
+                  referencia={apuracao.resumo.media_oficial}
+                  rotuloReferencia={`média do setor ${numero(apuracao.resumo.media_oficial, 2)}`}
+                />
+              </Figura>
+              {apuracao.servidores.some((s) => s.situacao === 'SEM_APURACAO') && (
+                <p className="campo-dica" style={{ marginTop: '0.5rem' }}>
+                  Fora do gráfico:{' '}
+                  {apuracao.servidores
+                    .filter((s) => s.situacao === 'SEM_APURACAO')
+                    .map((s) => primeiroENome(s.nome))
+                    .join(', ')}{' '}
+                  — sem apuração no mês.
+                </p>
+              )}
+            </Cartao>
 
+
+            <div className="grade grade-2">
               <Cartao>
                 <Figura
                   titulo="Composição dos pontos do setor"
@@ -264,41 +251,6 @@ export function PainelSetor() {
                   {numero(apuracao.resumo.total_pontos, 1)} ponto(s).
                 </p>
               </Cartao>
-            </div>
-
-            <div className="grade grade-2">
-              <Cartao>
-                <Figura
-                  titulo="Complexidade declarada por servidor"
-                  apoio="Barras quase todas escuras indicam nível inflado; quase todas claras, o contrário."
-                >
-                  <div className="tabela-envolucro">
-                    <table>
-                      <tbody>
-                        {apuracao.servidores
-                          .filter((s) => Object.values(s.distribuicao_niveis).some((v) => v > 0))
-                          .map((servidor) => (
-                            <tr key={servidor.servidor_id}>
-                              <td className="nome-servidor">
-                                <span className="celula-pessoa">
-                                  <Avatar nome={servidor.nome} />
-                                  {primeiroENome(servidor.nome)}
-                                </span>
-                              </td>
-                              <td style={{ width: '100%' }}>
-                                <BarraDeNiveis niveis={servidor.distribuicao_niveis} compacta />
-                              </td>
-                            </tr>
-                          ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </Figura>
-                <div style={{ marginTop: '0.75rem' }}>
-                  <LegendaDeNiveis rotulos={{ 1: 'Simples', 2: 'Intermediário', 3: 'Complexo', 4: 'Excepcional' }} />
-                </div>
-              </Cartao>
-
               <Cartao
                 titulo="Referência de cada grupo"
                 descricao="É ela que define o atingimento de quem está no grupo."

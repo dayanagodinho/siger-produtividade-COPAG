@@ -40,6 +40,8 @@
   --dentro-fundo: #e9f5ec;
   --acima: #1f5fa8;
   --acima-fundo: #eaf1f9;
+  --info: #1f5fa8;
+  --info-fundo: #eef3fa;
   --alerta: #9a2c2c;
   --alerta-fundo: #fbeeee;
 
@@ -389,7 +391,7 @@ input[type='checkbox'] { width: auto; }
 .aviso-erro { background: var(--alerta-fundo); border-color: #eccfcf; color: #7d2424; }
 .aviso-atencao { background: var(--abaixo-fundo); border-color: #eddcc3; color: #7d4409; }
 .aviso-sucesso { background: var(--dentro-fundo); border-color: #bfe0c8; color: var(--verde-800); }
-.aviso-informativo { background: var(--destaque-fraco); border-color: #bfd9c6; color: var(--verde-900); }
+.aviso-informativo { background: var(--info-fundo); border-color: #d3e0ef; color: var(--info); }
 
 .vazio { padding: 2rem 1rem; text-align: center; color: var(--tinta-media); }
 .vazio strong { display: block; color: var(--tinta); margin-bottom: 0.35rem; }
@@ -473,7 +475,7 @@ input[type='checkbox'] { width: auto; }
 .figura figcaption span { font-size: 0.85rem; color: var(--tinta-media); }
 
 .grafico { position: relative; }
-.svg-grafico { width: 100%; height: auto; display: block; overflow: visible; }
+.svg-grafico { width: 100%; height: auto; display: block; overflow: visible; margin-inline: auto; }
 
 .grade { stroke: var(--borda); stroke-width: 1; }
 .eixo { stroke: var(--borda-forte); stroke-width: 1; }
@@ -636,4 +638,62 @@ input[type='checkbox'] { width: auto; }
   color: var(--tinta-fraca);
   font-size: 0.8rem;
   padding: 1rem 0 0.25rem;
+}
+
+/* ------------------------------------------------ Formulário compacto */
+
+.modal { font-size: 0.9rem; }
+.modal .campo { margin-bottom: 0.7rem; gap: 0.25rem; }
+.modal .campo label { font-size: 0.82rem; }
+.modal .campo-dica { font-size: 0.76rem; line-height: 1.35; }
+.modal input,
+.modal select,
+.modal textarea { font-size: 0.86rem; padding: 0.45rem 0.6rem; }
+.modal textarea { min-height: 54px; }
+.modal .aviso { padding: 0.5rem 0.7rem; font-size: 0.82rem; line-height: 1.4; margin-bottom: 0.7rem; }
+.modal .linha-campos { gap: 0 0.7rem; }
+.modal-titulo { margin-bottom: 0.85rem; }
+.modal-titulo h2 { font-size: 1.05rem; }
+.modal-rodape { margin-top: 0.9rem; }
+.modal details.detalhe-tabela summary { font-size: 0.82rem; padding: 0.25rem 0; }
+
+/* Processo estreito, com a pontuação ao lado na mesma linha. */
+.linha-lancamento {
+  display: grid;
+  grid-template-columns: minmax(8rem, 0.9fr) minmax(9rem, 1fr) minmax(8rem, 0.9fr);
+  gap: 0 0.7rem;
+}
+@media (max-width: 620px) {
+  .linha-lancamento { grid-template-columns: 1fr; }
+}
+
+/* A conta dos pontos cabe numa linha só. */
+.linha-pontos {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0.45rem 0.7rem;
+  border-radius: 8px;
+  background: var(--dentro-fundo);
+  border: 1px solid #cfe6d6;
+  color: var(--verde-800);
+  font-size: 0.82rem;
+  margin-bottom: 0.7rem;
+}
+.linha-pontos strong { font-size: 0.95rem; }
+.linha-pontos span { color: var(--tinta-media); }
+
+/* O nome da atividade é longo: encurta no seletor para não estourar o quadro. */
+.seletor-atividade { font-size: 0.84rem; }
+
+/* Vermelho reservado a quem ainda não alcançou a meta, nos gráficos. */
+:root { --abaixo-meta: #b02a2a; }
+.amostra-abaixo {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: var(--abaixo-meta);
+  display: inline-block;
+  margin-left: 0.75rem;
 }

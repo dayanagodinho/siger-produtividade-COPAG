@@ -59,12 +59,19 @@ interface Atividade {
   nome: string;
   descricao: string | null;
   entrega: string | null;
+  grupo_id: number;
+  grupo_nome: string;
   nivel_sugerido: number | null;
   nivel_rotulo: string | null;
   detalhamentos: Array<{ numero: string | null; texto: string }>;
 }
 
 type Pesos = Record<string, number>;
+
+/** Nomes de atividade são longos: encurta para não estourar o seletor. */
+function encurtar(texto: string, limite: number): string {
+  return texto.length <= limite ? texto : `${texto.slice(0, limite - 1).trimEnd()}…`;
+}
 
 const FORMULARIO_VAZIO = {
   atividade_id: '',
@@ -384,6 +391,16 @@ function FormularioLancamento({
 
   const atividadeEscolhida = atividades.find((a) => String(a.id) === formulario.atividade_id);
 
+  /* Quem tem grupo vê só o dele; quem administra vê todos, então as
+     atividades saem separadas por grupo no seletor. */
+  const porGrupo = Object.entries(
+    atividades.reduce<Record<string, Atividade[]>>((mapa, atividade) => {
+      const chave = atividade.grupo_nome ?? 'Sem grupo';
+      (mapa[chave] ??= []).push(atividade);
+      return mapa;
+    }, {}),
+  ).sort(([a], [b]) => a.localeCompare(b, 'pt-BR'));
+
   /* A atividade define o que foi feito. O peso é indicado pelo servidor, então
      o nível só vem preenchido quando o setor já fixou um para a atividade. */
   function escolherAtividade(id: string) {
@@ -460,15 +477,20 @@ function FormularioLancamento({
             dica="A lista é a do seu grupo. É a atividade que recebe a pontuação."
           >
             <select
+              className="seletor-atividade"
               value={formulario.atividade_id}
               onChange={(evento) => escolherAtividade(evento.target.value)}
             >
               <option value="">Selecione a atividade...</option>
-              {atividades.map((atividade) => (
-                <option key={atividade.id} value={atividade.id}>
-                  {atividade.numero ? `${atividade.numero}. ` : ''}
-                  {atividade.nome}
-                </option>
+              {porGrupo.map(([grupo, doGrupo]) => (
+                <optgroup key={grupo} label={grupo}>
+                  {doGrupo.map((atividade) => (
+                    <option key={atividade.id} value={atividade.id} title={atividade.nome}>
+                      {atividade.numero ? `${atividade.numero}. ` : ''}
+                      {encurtar(atividade.nome, 74)}
+                    </option>
+                  ))}
+                </optgroup>
               ))}
             </select>
           </Campo>
@@ -500,37 +522,16 @@ function FormularioLancamento({
           </details>
         )}
 
-        <Campo
-          rotulo="Número do processo (se houver)"
-          dica="Com o número, o sistema conta a entrega no total do setor e avisa se alguém já lançou o mesmo processo."
-        >
-          <input
-            value={formulario.processo}
-            onChange={(evento) => alterar('processo', evento.target.value)}
-            placeholder="Ex.: 856481/2026"
-          />
-        </Campo>
+        <div className="linha-lancamento">
+          <Campo rotulo="Nº do processo" dica="Se houver.">
+            <input
+              value={formulario.processo}
+              onChange={(evento) => alterar('processo', evento.target.value)}
+              placeholder="856481/2026"
+            />
+          </Campo>
 
-        {existentes.length > 0 && (
-          <Aviso tipo="atencao">
-            {existentes.map((existente) => (
-              <div key={existente.id}>
-                Processo {formulario.processo.trim()} já lançado por {existente.servidor_nome} como{' '}
-                {ROTULO_DO_PAPEL[existente.papel]} em {formatarData(existente.data_conclusao)}.
-              </div>
-            ))}
-            <div style={{ marginTop: '0.35rem' }}>
-              Se o seu lançamento é de outro papel — revisão ou homologação — pode salvar
-              normalmente.
-            </div>
-          </Aviso>
-        )}
-
-        <div className="linha-campos">
-          <Campo
-            rotulo="Pontuação: nível de complexidade"
-            dica="Você indica o peso; a chefia confere na validação."
-          >
+          <Campo rotulo="Pontuação: nível" dica="Você indica o peso.">
             <select
               value={formulario.nivel}
               onChange={(evento) => alterar('nivel', Number(evento.target.value))}
@@ -545,7 +546,7 @@ function FormularioLancamento({
             </select>
           </Campo>
 
-          <Campo rotulo="Papel no processo">
+          <Campo rotulo="Papel">
             <select
               value={formulario.papel}
               onChange={(evento) => alterar('papel', evento.target.value)}
@@ -557,8 +558,7 @@ function FormularioLancamento({
           </Campo>
         </div>
 
-        {/* O critério fica visível na hora de escolher o nível: pontuação
-            autodeclarada sem critério à vista vira chute. */}
+        {/* Critério do nível em azul: é informação de apoio, não resultado. */}
         {criterio && (
           <Aviso tipo="informativo">
             <strong>
@@ -568,16 +568,17 @@ function FormularioLancamento({
           </Aviso>
         )}
 
-        {/* A conta aparece enquanto a pessoa escolhe, e não só depois de salvar. */}
-        <Aviso tipo="sucesso">
-          <strong>Este lançamento vale {numero(pontos, 2)} ponto(s).</strong> Nível{' '}
-          {formulario.nivel} × {formulario.quantidade || 0}{' '}
-          {Number(formulario.quantidade) === 1 ? 'vez' : 'vezes'} ×{' '}
-          {numero(percentualDoPapel, 0)}% de {ROTULO_DO_PAPEL[formulario.papel].toLowerCase()}.
-        </Aviso>
+        {/* A conta aparece enquanto a pessoa escolhe, numa linha só. */}
+        <p className="linha-pontos">
+          <strong>{numero(pontos, 2)} ponto(s)</strong>
+          <span>
+            = nível {formulario.nivel} × {formulario.quantidade || 0} ×{' '}
+            {numero(percentualDoPapel, 0)}% ({ROTULO_DO_PAPEL[formulario.papel].toLowerCase()})
+          </span>
+        </p>
 
-        <div className="linha-campos">
-          <Campo rotulo="Início (se souber)">
+        <div className="linha-lancamento">
+          <Campo rotulo="Início" dica="Se souber.">
             <input
               type="date"
               value={formulario.periodo_inicio}
@@ -586,10 +587,8 @@ function FormularioLancamento({
           </Campo>
 
           <Campo
-            rotulo={
-              formulario.status === 'EM_ANDAMENTO' ? 'Previsão de conclusão' : 'Data de conclusão'
-            }
-            dica="É esta data que define em que mês o ponto entra."
+            rotulo={formulario.status === 'EM_ANDAMENTO' ? 'Previsão de conclusão' : 'Conclusão'}
+            dica="Define o mês do ponto."
           >
             <input
               type="date"
@@ -598,17 +597,17 @@ function FormularioLancamento({
               required
             />
           </Campo>
-        </div>
 
-        <Campo rotulo="Situação">
-          <select
-            value={formulario.status}
-            onChange={(evento) => alterar('status', evento.target.value)}
-          >
-            <option value="CONCLUIDO">Concluído</option>
-            <option value="EM_ANDAMENTO">Em andamento</option>
-          </select>
-        </Campo>
+          <Campo rotulo="Situação">
+            <select
+              value={formulario.status}
+              onChange={(evento) => alterar('status', evento.target.value)}
+            >
+              <option value="CONCLUIDO">Concluído</option>
+              <option value="EM_ANDAMENTO">Em andamento</option>
+            </select>
+          </Campo>
+        </div>
 
         <Campo rotulo="Observação">
           <textarea
