@@ -212,6 +212,23 @@ Variáveis necessárias:
 | `NODE_ENV` | `production` (ativa cookie seguro e SSL no banco) |
 | `MIGRAR_AO_INICIAR` | `true` por padrão; use `false` para migrar à parte |
 
-O primeiro acesso precisa de um administrador. Rode `npm run semear` no ambiente
-para criar a base de exemplo, ou insira o primeiro registro em `servidores` com
-uma senha gerada por `gerarHashDeSenha`.
+### Primeiro administrador
+
+Na primeira subida, com o banco ainda vazio, o sistema cria sozinho o setor e o
+administrador a partir destas variáveis:
+
+| Variável | Padrão |
+|---|---|
+| `ADMIN_EMAIL` | obrigatória |
+| `ADMIN_SENHA` | obrigatória, mínimo 8 caracteres com letras e números |
+| `ADMIN_NOME` | `Administrador do sistema` |
+| `ADMIN_MATRICULA` | `000001` |
+| `SETOR_NOME` | `Setor inicial` |
+| `SETOR_SIGLA` | `GERAL` |
+
+Com o banco já povoado nada acontece: a rotina não sobrescreve cadastro nem
+senha de ninguém. O mesmo passo existe como comando avulso em
+`npm run criar-admin`.
+
+O passo a passo completo do Railway, com os cliques na ordem, está em
+[DEPLOY.md](DEPLOY.md).

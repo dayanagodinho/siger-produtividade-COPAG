@@ -9,6 +9,7 @@ import { carregarUsuario } from './infra/autorizacao';
 import { tratadorDeErros } from './infra/erros';
 import { rotasDaApi } from './rotas';
 import { aplicarMigracoes } from './scripts/migrar';
+import { criarPrimeiroAdministrador } from './scripts/primeiro-acesso';
 
 const PASTA_CLIENTE = path.resolve(__dirname, '..', '..', 'cliente', 'dist');
 
@@ -64,6 +65,11 @@ async function iniciar(): Promise<void> {
     console.log('Verificando migrações pendentes...');
     await aplicarMigracoes();
   }
+
+  // Na primeira subida, cria o administrador a partir das variaveis de
+  // ambiente. Com o banco ja povoado, nao faz nada.
+  const primeiroAcesso = await criarPrimeiroAdministrador();
+  if (primeiroAcesso) console.log(primeiroAcesso);
 
   const app = criarAplicacao();
   app.listen(configuracao.porta, () => {

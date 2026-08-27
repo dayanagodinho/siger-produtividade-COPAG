@@ -12,6 +12,7 @@
     "start": "npm run start --workspace=servidor",
     "migrar": "npm run migrar --workspace=servidor",
     "semear": "npm run semear --workspace=servidor",
+    "criar-admin": "npm run criar-admin --workspace=servidor",
     "teste": "npm run teste --workspace=servidor",
     "verificar-tipos": "npm run verificar-tipos --workspace=servidor && npm run verificar-tipos --workspace=cliente"
   }
