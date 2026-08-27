@@ -13,7 +13,7 @@ import { Cabecalho } from '../componentes/Layout';
 const ABAS = [
   { chave: 'setores', rotulo: 'Setores' },
   { chave: 'grupos', rotulo: 'Grupos' },
-  { chave: 'tarefas', rotulo: 'Tarefas dos grupos' },
+  { chave: 'atividades', rotulo: 'Atividades dos grupos' },
   { chave: 'servidores', rotulo: 'Servidores' },
   { chave: 'complexidade', rotulo: 'Tabela de complexidade' },
   { chave: 'feriados', rotulo: 'Feriados' },
@@ -32,7 +32,7 @@ export function Administracao() {
         <Abas abas={ABAS} ativa={aba} aoMudar={setAba} />
         {aba === 'setores' && <AbaSetores />}
         {aba === 'grupos' && <AbaGrupos />}
-        {aba === 'tarefas' && <AbaTarefas />}
+        {aba === 'atividades' && <AbaAtividades />}
         {aba === 'servidores' && <AbaServidores />}
         {aba === 'complexidade' && <AbaComplexidade />}
         {aba === 'feriados' && <AbaFeriados />}
@@ -366,39 +366,48 @@ function AbaGrupos() {
   );
 }
 
-// -------------------------------------------------------------------- Tarefas
+// ----------------------------------------------------------------- Atividades
 
-interface Tarefa {
+interface Atividade {
   id: number;
   grupo_id: number;
   grupo_nome: string;
+  numero: string | null;
   nome: string;
   descricao: string | null;
-  nivel_sugerido: number;
+  entrega: string | null;
+  nivel_sugerido: number | null;
   nivel_rotulo: string | null;
   ativa: boolean;
   lancamentos: number;
+  detalhamentos: Array<{ numero: string | null; texto: string }>;
 }
 
-function AbaTarefas() {
-  const { dados, carregando, erro, setErro, carregar } = useRecurso<{ tarefas: Tarefa[] }>(
-    '/tarefas?todos=true&incluir_inativas=true',
+function AbaAtividades() {
+  const { dados, carregando, erro, setErro, carregar } = useRecurso<{ atividades: Atividade[] }>(
+    '/atividades?todos=true&incluir_inativas=true',
   );
   const { dados: grupos } = useRecurso<{ grupos: Grupo[] }>('/grupos');
-  const [editando, setEditando] = useState<Tarefa | null>(null);
+  const [editando, setEditando] = useState<Atividade | null>(null);
   const [criando, setCriando] = useState(false);
+  const [filtroGrupo, setFiltroGrupo] = useState('');
+  const [aberta, setAberta] = useState<number | null>(null);
   const [sucesso, setSucesso] = useState<string | null>(null);
 
-  async function excluir(tarefa: Tarefa) {
-    if (!window.confirm(`Excluir a tarefa ${tarefa.nome}?`)) return;
+  async function excluir(atividade: Atividade) {
+    if (!window.confirm(`Excluir a atividade ${atividade.nome}?`)) return;
     try {
-      await api.excluir(`/tarefas/${tarefa.id}`);
-      setSucesso('Tarefa excluída.');
+      await api.excluir(`/atividades/${atividade.id}`);
+      setSucesso('Atividade excluída.');
       carregar();
     } catch (falha) {
       setErro(mensagemDeErro(falha));
     }
   }
+
+  const lista = (dados?.atividades ?? []).filter(
+    (atividade) => !filtroGrupo || String(atividade.grupo_id) === filtroGrupo,
+  );
 
   const campos = (): CampoDoFormulario[] => [
     {
@@ -411,15 +420,17 @@ function AbaTarefas() {
         rotulo: `${g.nome} (${g.setor_nome})`,
       })),
     },
-    { chave: 'nome', rotulo: 'Nome da tarefa', tipo: 'texto', obrigatorio: true },
-    { chave: 'descricao', rotulo: 'Quando usar esta tarefa', tipo: 'area' },
+    { chave: 'numero', rotulo: 'Número na lista do grupo', tipo: 'texto' },
+    { chave: 'nome', rotulo: 'Atividade', tipo: 'area', obrigatorio: true },
+    { chave: 'entrega', rotulo: 'Entrega esperada', tipo: 'area' },
+    { chave: 'descricao', rotulo: 'Quando usar esta atividade', tipo: 'area' },
     {
       chave: 'nivel_sugerido',
-      rotulo: 'Nível sugerido',
+      rotulo: 'Nível fixo (opcional)',
       tipo: 'selecao',
-      obrigatorio: true,
-      dica: 'Vem preenchido no lançamento. O servidor pode ajustar e a chefia valida.',
+      dica: 'Em branco, o servidor indica o peso a cada lançamento. Preenchido, o nível já chega sugerido.',
       opcoes: [
+        { valor: '', rotulo: 'Indicado pelo servidor' },
         { valor: '1', rotulo: 'N1 — Simples' },
         { valor: '2', rotulo: 'N2 — Intermediário' },
         { valor: '3', rotulo: 'N3 — Complexo' },
@@ -439,87 +450,140 @@ function AbaTarefas() {
 
   return (
     <Cartao
-      titulo="Tarefas dos grupos"
-      descricao="O catálogo que aparece na tela de lançamento. Ele traz o nível já sugerido, o que reduz a variação de critério entre as pessoas do mesmo grupo."
+      titulo="Atividades dos grupos"
+      descricao="A lista que aparece na tela de lançamento. A pontuação é por atividade; o detalhamento descreve o que cai dentro dela e não pontua."
       acoes={
         <button type="button" className="botao botao-principal" onClick={() => setCriando(true)}>
-          Nova tarefa
+          Nova atividade
         </button>
       }
     >
       {erro && <Aviso tipo="erro">{erro}</Aviso>}
       {sucesso && <Aviso tipo="sucesso">{sucesso}</Aviso>}
+
+      <div className="filtros">
+        <Campo rotulo="Grupo">
+          <select value={filtroGrupo} onChange={(evento) => setFiltroGrupo(evento.target.value)}>
+            <option value="">Todos os grupos</option>
+            {(grupos?.grupos ?? []).map((grupo) => (
+              <option key={grupo.id} value={grupo.id}>
+                {grupo.nome}
+              </option>
+            ))}
+          </select>
+        </Campo>
+      </div>
+
       {carregando ? (
         <Carregando />
-      ) : !dados?.tarefas.length ? (
-        <Vazio titulo="Nenhuma tarefa cadastrada">
-          Cadastre as tarefas típicas de cada grupo para que o servidor escolha em vez de digitar.
+      ) : !lista.length ? (
+        <Vazio titulo="Nenhuma atividade cadastrada">
+          Cadastre as atividades de cada grupo para que o servidor escolha em vez de digitar.
         </Vazio>
       ) : (
-        <div className="tabela-envolucro">
-          <table>
-            <thead>
-              <tr>
-                <th>Nível</th>
-                <th>Tarefa</th>
-                <th>Grupo</th>
-                <th className="numerico">Lançamentos</th>
-                <th>Situação</th>
-                <th />
-              </tr>
-            </thead>
-            <tbody>
-              {dados.tarefas.map((tarefa) => (
-                <tr key={tarefa.id}>
-                  <td className="nao-quebra">
-                    <strong>N{tarefa.nivel_sugerido}</strong>
-                    <div className="campo-dica">{tarefa.nivel_rotulo}</div>
-                  </td>
-                  <td>
-                    {tarefa.nome}
-                    <div className="discreto">{tarefa.descricao ?? '—'}</div>
-                  </td>
-                  <td className="discreto">{tarefa.grupo_nome}</td>
-                  <td className="numerico">{tarefa.lancamentos}</td>
-                  <td>
-                    <span className={`marca ${tarefa.ativa ? 'marca-validado' : 'marca-neutra'}`}>
-                      {tarefa.ativa ? 'Em uso' : 'Fora do catálogo'}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="acoes acoes-tabela">
-                      <button
-                        type="button"
-                        className="botao botao-discreto botao-pequeno"
-                        onClick={() => setEditando(tarefa)}
-                      >
-                        Editar
-                      </button>
-                      <button
-                        type="button"
-                        className="botao botao-discreto botao-pequeno botao-risco"
-                        onClick={() => void excluir(tarefa)}
-                      >
-                        Excluir
-                      </button>
-                    </div>
-                  </td>
+        <>
+          <p className="campo-dica" style={{ marginBottom: '0.75rem' }}>
+            {lista.length} atividade(s) ·{' '}
+            {lista.reduce((soma, a) => soma + a.detalhamentos.length, 0)} detalhamento(s)
+          </p>
+          <div className="tabela-envolucro">
+            <table>
+              <thead>
+                <tr>
+                  <th style={{ width: '3.5rem' }}>Nº</th>
+                  <th>Atividade</th>
+                  <th>Grupo</th>
+                  <th>Nível</th>
+                  <th className="numerico">Lançamentos</th>
+                  <th />
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {lista.map((atividade) => (
+                  <tr key={atividade.id}>
+                    <td className="numerico">{atividade.numero ?? '—'}</td>
+                    <td>
+                      {atividade.nome}
+                      {atividade.entrega && (
+                        <div className="campo-dica">Entrega: {atividade.entrega}</div>
+                      )}
+                      {atividade.detalhamentos.length > 0 && (
+                        <button
+                          type="button"
+                          className="botao botao-discreto botao-pequeno"
+                          onClick={() =>
+                            setAberta(aberta === atividade.id ? null : atividade.id)
+                          }
+                        >
+                          {aberta === atividade.id ? 'Ocultar' : 'Ver'} os{' '}
+                          {atividade.detalhamentos.length} detalhamentos
+                        </button>
+                      )}
+                      {aberta === atividade.id && (
+                        <ul className="lista-detalhamento">
+                          {atividade.detalhamentos.map((detalhe, indice) => (
+                            <li key={`${detalhe.numero ?? indice}`}>
+                              {detalhe.numero && <span className="numero">{detalhe.numero}</span>}
+                              {detalhe.texto}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      {!atividade.ativa && (
+                        <div>
+                          <span className="marca marca-neutra">Fora da lista</span>
+                        </div>
+                      )}
+                    </td>
+                    <td className="discreto">{atividade.grupo_nome}</td>
+                    <td className="nao-quebra">
+                      {atividade.nivel_sugerido ? (
+                        <>
+                          <strong>N{atividade.nivel_sugerido}</strong>
+                          <div className="campo-dica">{atividade.nivel_rotulo}</div>
+                        </>
+                      ) : (
+                        <span className="campo-dica">indicado pelo servidor</span>
+                      )}
+                    </td>
+                    <td className="numerico">{atividade.lancamentos}</td>
+                    <td>
+                      <div className="acoes acoes-tabela">
+                        <button
+                          type="button"
+                          className="botao botao-discreto botao-pequeno"
+                          onClick={() => setEditando(atividade)}
+                        >
+                          Editar
+                        </button>
+                        <button
+                          type="button"
+                          className="botao botao-discreto botao-pequeno botao-risco"
+                          onClick={() => void excluir(atividade)}
+                        >
+                          Excluir
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       {(criando || editando) && (
         <FormularioSimples
-          titulo={editando ? 'Editar tarefa' : 'Nova tarefa'}
+          titulo={editando ? 'Editar atividade' : 'Nova atividade'}
           campos={campos()}
           valores={{
             grupo_id: String(editando?.grupo_id ?? grupos?.grupos[0]?.id ?? ''),
+            numero: editando?.numero ?? '',
             nome: editando?.nome ?? '',
+            entrega: editando?.entrega ?? '',
             descricao: editando?.descricao ?? '',
-            nivel_sugerido: String(editando?.nivel_sugerido ?? 2),
+            nivel_sugerido: editando?.nivel_sugerido ? String(editando.nivel_sugerido) : '',
             ativa: editando?.ativa === false ? 'nao' : 'sim',
           }}
           aoFechar={() => {
@@ -529,16 +593,18 @@ function AbaTarefas() {
           aoSalvar={async (valores) => {
             const corpo = {
               grupo_id: Number(valores.grupo_id),
+              numero: valores.numero || null,
               nome: valores.nome,
+              entrega: valores.entrega || null,
               descricao: valores.descricao || null,
-              nivel_sugerido: Number(valores.nivel_sugerido),
+              nivel_sugerido: valores.nivel_sugerido ? Number(valores.nivel_sugerido) : null,
               ativa: valores.ativa === 'sim',
             };
-            if (editando) await api.atualizar(`/tarefas/${editando.id}`, corpo);
-            else await api.enviar('/tarefas', corpo);
+            if (editando) await api.atualizar(`/atividades/${editando.id}`, corpo);
+            else await api.enviar('/atividades', corpo);
             setCriando(false);
             setEditando(null);
-            setSucesso('Tarefa salva.');
+            setSucesso('Atividade salva.');
             carregar();
           }}
         />

@@ -85,8 +85,9 @@ rotasDeExportacao.get(
       `SELECT l.processo, l.descricao, l.nivel, l.papel, l.quantidade, l.percentual_papel,
               l.pontos, l.data_conclusao, l.status, l.situacao, l.nivel_original,
               l.justificativa, s.nome AS servidor_nome, s.matricula, g.nome AS grupo_nome,
-              v.nome AS validado_por_nome
+              v.nome AS validado_por_nome, a.numero AS atividade_numero, a.nome AS atividade_nome
          FROM lancamentos l
+         LEFT JOIN atividades a ON a.id = l.atividade_id
          JOIN servidores s ON s.id = l.servidor_id
          LEFT JOIN grupos g ON g.id = s.grupo_id
          LEFT JOIN servidores v ON v.id = l.validado_por

@@ -39,6 +39,8 @@ interface ItemDaFila {
   servidor_matricula: string;
   grupo_nome: string | null;
   link_externo: string | null;
+  atividade_nome: string | null;
+  atividade_numero: string | null;
 }
 
 export function FilaValidacao() {
@@ -238,8 +240,11 @@ export function FilaValidacao() {
                         <strong className="nao-quebra">
                           {item.processo ?? <span className="discreto">sem processo</span>}
                         </strong>
-                        <div className="discreto resumo" title={item.descricao ?? ''}>
-                          {item.descricao || '—'}
+                        <div
+                          className="discreto resumo"
+                          title={item.atividade_nome ?? item.descricao ?? ''}
+                        >
+                          {item.atividade_nome ?? item.descricao ?? '—'}
                         </div>
                         {item.link_externo && (
                           <a href={item.link_externo} target="_blank" rel="noreferrer">

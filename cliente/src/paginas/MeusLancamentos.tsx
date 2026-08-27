@@ -41,8 +41,9 @@ interface Lancamento {
   justificativa: string | null;
   servidor_nome: string;
   validado_por_nome: string | null;
-  tarefa_id: number | null;
-  tarefa_nome: string | null;
+  atividade_id: number | null;
+  atividade_nome: string | null;
+  atividade_numero: string | null;
 }
 
 interface Nivel {
@@ -52,18 +53,21 @@ interface Nivel {
   ativo: boolean;
 }
 
-interface Tarefa {
+interface Atividade {
   id: number;
+  numero: string | null;
   nome: string;
   descricao: string | null;
-  nivel_sugerido: number;
+  entrega: string | null;
+  nivel_sugerido: number | null;
   nivel_rotulo: string | null;
+  detalhamentos: Array<{ numero: string | null; texto: string }>;
 }
 
 type Pesos = Record<string, number>;
 
 const FORMULARIO_VAZIO = {
-  tarefa_id: '',
+  atividade_id: '',
   processo: '',
   descricao: '',
   nivel: 2,
@@ -82,7 +86,7 @@ export function MeusLancamentos() {
   const [busca, setBusca] = useState('');
   const [lancamentos, setLancamentos] = useState<Lancamento[]>([]);
   const [niveis, setNiveis] = useState<Nivel[]>([]);
-  const [tarefas, setTarefas] = useState<Tarefa[]>([]);
+  const [atividades, setAtividades] = useState<Atividade[]>([]);
   const [pesos, setPesos] = useState<Pesos>({ EXECUCAO: 100, REVISAO: 40, HOMOLOGACAO: 20 });
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
@@ -104,9 +108,9 @@ export function MeusLancamentos() {
   useEffect(() => {
     api.buscar<{ niveis: Nivel[] }>('/complexidade').then((r) => setNiveis(r.niveis));
     api
-      .buscar<{ tarefas: Tarefa[] }>('/tarefas')
-      .then((r) => setTarefas(r.tarefas))
-      .catch(() => setTarefas([]));
+      .buscar<{ atividades: Atividade[] }>('/atividades')
+      .then((r) => setAtividades(r.atividades))
+      .catch(() => setAtividades([]));
     api
       .buscar<{ parametros: Array<{ chave: string; valor: number }> }>('/parametros')
       .then((r) => {
@@ -122,7 +126,7 @@ export function MeusLancamentos() {
   useEffect(carregar, [carregar]);
 
   async function excluir(lancamento: Lancamento) {
-    const identificacao = lancamento.processo ?? lancamento.tarefa_nome ?? 'selecionado';
+    const identificacao = lancamento.processo ?? lancamento.atividade_nome ?? 'selecionado';
     if (!window.confirm(`Excluir o lançamento ${identificacao}?`)) return;
     setErro(null);
     try {
@@ -225,7 +229,7 @@ export function MeusLancamentos() {
                         </td>
                         <td className="discreto">
                           <div className="resumo" title={lancamento.descricao ?? ''}>
-                            {lancamento.tarefa_nome ?? lancamento.descricao ?? '—'}
+                            {lancamento.atividade_nome ?? lancamento.descricao ?? '—'}
                           </div>
                           {lancamento.justificativa && (
                             <div style={{ marginTop: '0.35rem', color: 'var(--alerta)' }}>
@@ -292,7 +296,7 @@ export function MeusLancamentos() {
       {formularioAberto && (
         <FormularioLancamento
           niveis={niveis}
-          tarefas={tarefas}
+          atividades={atividades}
           pesos={pesos}
           lancamento={editando}
           aoFechar={() => setFormularioAberto(false)}
@@ -318,14 +322,14 @@ interface Existente {
 
 function FormularioLancamento({
   niveis,
-  tarefas,
+  atividades,
   pesos,
   lancamento,
   aoFechar,
   aoSalvar,
 }: {
   niveis: Nivel[];
-  tarefas: Tarefa[];
+  atividades: Atividade[];
   pesos: Pesos;
   lancamento: Lancamento | null;
   aoFechar: () => void;
@@ -334,7 +338,7 @@ function FormularioLancamento({
   const [formulario, setFormulario] = useState(
     lancamento
       ? {
-          tarefa_id: lancamento.tarefa_id ? String(lancamento.tarefa_id) : '',
+          atividade_id: lancamento.atividade_id ? String(lancamento.atividade_id) : '',
           processo: lancamento.processo ?? '',
           descricao: lancamento.descricao ?? '',
           nivel: lancamento.nivel,
@@ -378,15 +382,16 @@ function FormularioLancamento({
     setFormulario((atual) => ({ ...atual, [campo]: valor }));
   }
 
-  /* Escolher a tarefa preenche o nível sugerido pelo catálogo e a descrição.
-     O servidor ainda pode ajustar: o catálogo sugere, a chefia valida. */
-  function escolherTarefa(id: string) {
-    const tarefa = tarefas.find((t) => String(t.id) === id);
+  const atividadeEscolhida = atividades.find((a) => String(a.id) === formulario.atividade_id);
+
+  /* A atividade define o que foi feito. O peso é indicado pelo servidor, então
+     o nível só vem preenchido quando o setor já fixou um para a atividade. */
+  function escolherAtividade(id: string) {
+    const atividade = atividades.find((a) => String(a.id) === id);
     setFormulario((atual) => ({
       ...atual,
-      tarefa_id: id,
-      nivel: tarefa ? tarefa.nivel_sugerido : atual.nivel,
-      descricao: tarefa && !atual.descricao ? tarefa.nome : atual.descricao,
+      atividade_id: id,
+      nivel: atividade?.nivel_sugerido ?? atual.nivel,
     }));
   }
 
@@ -406,7 +411,7 @@ function FormularioLancamento({
     setEnviando(true);
     const corpo = {
       ...formulario,
-      tarefa_id: formulario.tarefa_id ? Number(formulario.tarefa_id) : null,
+      atividade_id: formulario.atividade_id ? Number(formulario.atividade_id) : null,
       periodo_inicio: formulario.periodo_inicio || null,
       periodo_fim: formulario.periodo_fim || null,
       link_externo: formulario.link_externo || null,
@@ -449,23 +454,50 @@ function FormularioLancamento({
       <form id="formulario-lancamento" onSubmit={submeter}>
         {erro && <Aviso tipo="erro">{erro}</Aviso>}
 
-        {tarefas.length > 0 && (
+        {atividades.length > 0 && (
           <Campo
-            rotulo="Tarefa do seu grupo"
-            dica="Escolher a tarefa já preenche o nível sugerido pelo catálogo do grupo. Você pode ajustar."
+            rotulo="Atividade"
+            dica="A lista é a do seu grupo. É a atividade que recebe a pontuação."
           >
             <select
-              value={formulario.tarefa_id}
-              onChange={(evento) => escolherTarefa(evento.target.value)}
+              value={formulario.atividade_id}
+              onChange={(evento) => escolherAtividade(evento.target.value)}
             >
-              <option value="">Outra atividade, fora do catálogo</option>
-              {tarefas.map((tarefa) => (
-                <option key={tarefa.id} value={tarefa.id}>
-                  N{tarefa.nivel_sugerido} · {tarefa.nome}
+              <option value="">Selecione a atividade...</option>
+              {atividades.map((atividade) => (
+                <option key={atividade.id} value={atividade.id}>
+                  {atividade.numero ? `${atividade.numero}. ` : ''}
+                  {atividade.nome}
                 </option>
               ))}
             </select>
           </Campo>
+        )}
+
+        {atividadeEscolhida && (atividadeEscolhida.entrega || atividadeEscolhida.detalhamentos.length > 0) && (
+          <details className="detalhe-tabela">
+            <summary>
+              O que entra nesta atividade
+              {atividadeEscolhida.detalhamentos.length > 0
+                ? ` (${atividadeEscolhida.detalhamentos.length} itens)`
+                : ''}
+            </summary>
+            {atividadeEscolhida.entrega && (
+              <p className="campo-dica" style={{ marginTop: '0.5rem' }}>
+                <strong>Entrega esperada:</strong> {atividadeEscolhida.entrega}
+              </p>
+            )}
+            {atividadeEscolhida.detalhamentos.length > 0 && (
+              <ul className="lista-detalhamento">
+                {atividadeEscolhida.detalhamentos.map((detalhe, indice) => (
+                  <li key={`${detalhe.numero ?? indice}`}>
+                    {detalhe.numero && <span className="numero">{detalhe.numero}</span>}
+                    {detalhe.texto}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </details>
         )}
 
         <Campo
@@ -495,7 +527,10 @@ function FormularioLancamento({
         )}
 
         <div className="linha-campos">
-          <Campo rotulo="Pontuação: nível de complexidade">
+          <Campo
+            rotulo="Pontuação: nível de complexidade"
+            dica="Você indica o peso; a chefia confere na validação."
+          >
             <select
               value={formulario.nivel}
               onChange={(evento) => alterar('nivel', Number(evento.target.value))}

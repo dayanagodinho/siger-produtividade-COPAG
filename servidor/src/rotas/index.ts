@@ -12,7 +12,7 @@ import { rotasDeLancamentos } from './lancamentos';
 import { rotasDeParametros } from './parametros';
 import { rotasDeServidores } from './servidores';
 import { rotasDeSetores } from './setores';
-import { rotasDeTarefas } from './tarefas';
+import { rotasDeAtividades } from './atividades';
 import { rotasDeValidacao } from './validacao';
 
 export const rotasDaApi = Router();
@@ -25,7 +25,7 @@ rotasDaApi.use('/autenticacao', rotasDeAutenticacao);
 rotasDaApi.use('/setores', rotasDeSetores);
 rotasDaApi.use('/grupos', rotasDeGrupos);
 rotasDaApi.use('/servidores', rotasDeServidores);
-rotasDaApi.use('/tarefas', rotasDeTarefas);
+rotasDaApi.use('/atividades', rotasDeAtividades);
 rotasDaApi.use('/lancamentos', rotasDeLancamentos);
 rotasDaApi.use('/ausencias', rotasDeAusencias);
 rotasDaApi.use('/validacao', rotasDeValidacao);

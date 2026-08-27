@@ -144,6 +144,9 @@ export function Layout() {
 
       <main className="area-principal">
         <Outlet />
+        <p className="rodape-area">
+          COPAG · Coordenação de Gestão do Pagamento de Pessoal
+        </p>
       </main>
     </div>
   );

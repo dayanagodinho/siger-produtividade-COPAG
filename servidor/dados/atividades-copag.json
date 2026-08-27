@@ -1,0 +1,1465 @@
+{
+  "origem": "Programa de resultados - Lista de atividades (COPAG)",
+  "setor": {
+    "nome": "Coordenação de Gestão do Pagamento de Pessoal",
+    "sigla": "COPAG"
+  },
+  "grupos": [
+    {
+      "nome": "Pagamento dos Servidores Efetivos",
+      "descricao": "Folha dos servidores efetivos da Casa.",
+      "atividades": [
+        {
+          "numero": "1",
+          "nome": "Realizar cálculo retroativo",
+          "entrega": "",
+          "detalhamentos": []
+        },
+        {
+          "numero": "2",
+          "nome": "Gerar relatórios de conferência da folha",
+          "entrega": "",
+          "detalhamentos": []
+        },
+        {
+          "numero": "3",
+          "nome": "Gerar DCAP judicial e encaminhar para o financeiro",
+          "entrega": "",
+          "detalhamentos": []
+        },
+        {
+          "numero": "4",
+          "nome": "Gerar DCAP e encaminhar para o financeiro",
+          "entrega": "",
+          "detalhamentos": []
+        },
+        {
+          "numero": "5",
+          "nome": "Realizar lançamento dos dados encaminhados pelo pró-saúde, funpresp, uso de telefonia, CEFOR, ADESP, progressão, frequência",
+          "entrega": "",
+          "detalhamentos": []
+        },
+        {
+          "numero": "6",
+          "nome": "Elaborar planilha de impacto orçamentário para posse de novos servidores",
+          "entrega": "",
+          "detalhamentos": []
+        },
+        {
+          "numero": "7",
+          "nome": "Disponibilizar planilha de simulação de remuneração para os servidores",
+          "entrega": "",
+          "detalhamentos": []
+        },
+        {
+          "numero": "8",
+          "nome": "Calcular, revisar e manter o cadastro de pensões alimentícias",
+          "entrega": "",
+          "detalhamentos": []
+        },
+        {
+          "numero": "9",
+          "nome": "Lançar, acompanhar e controlar os descontos em folha das penhoras judiciais",
+          "entrega": "",
+          "detalhamentos": []
+        },
+        {
+          "numero": "10",
+          "nome": "Expedir declarações",
+          "entrega": "",
+          "detalhamentos": []
+        },
+        {
+          "numero": "11",
+          "nome": "Elaborar cálculos referentes às exonerações, vacância, cessões, afastamentos sem remuneração",
+          "entrega": "",
+          "detalhamentos": []
+        },
+        {
+          "numero": "12",
+          "nome": "Adotar providências imediatas para a restituição de débitos vinculados à folha de pagamento de pessoal ou ressarcimento ao erário de servidores que vieram de outros órgãos",
+          "entrega": "",
+          "detalhamentos": []
+        },
+        {
+          "numero": "13",
+          "nome": "Comunicar aos órgãos para os quais os servidores se encontram cedidos o valor da remuneração bruta considerada para o teto constitucional",
+          "entrega": "",
+          "detalhamentos": []
+        },
+        {
+          "numero": "14",
+          "nome": "Receber,analisar e lançar declarações acerca da gratificação natalina de servidores que vieram de outros órgãos",
+          "entrega": "",
+          "detalhamentos": []
+        },
+        {
+          "numero": "15",
+          "nome": "Emitir documentos complementares e necessários às declarações e certidões relativas à comprovação do tempo de contribuição",
+          "entrega": "",
+          "detalhamentos": []
+        },
+        {
+          "numero": "16",
+          "nome": "Enviar ofício solicitando ressarcimento aos órgãos em que os servidores encontram-se cedidos sem ônus para a Câmara",
+          "entrega": "",
+          "detalhamentos": []
+        },
+        {
+          "numero": "17",
+          "nome": "Receber, verificar e realizar o lançamento dos comprovantes de recolhimento da CPSSS dos servidores afastados sem remuneração",
+          "entrega": "",
+          "detalhamentos": []
+        },
+        {
+          "numero": "18",
+          "nome": "Consolidar e encaminhar o pagamento da patronal dos servidores afastados sem remuneração e que optam por continuar com o recolhimento",
+          "entrega": "",
+          "detalhamentos": []
+        },
+        {
+          "numero": "19",
+          "nome": "Calcular pagamento retroativo referente à aprovação do abono de permanência",
+          "entrega": "",
+          "detalhamentos": []
+        },
+        {
+          "numero": "20",
+          "nome": "Realizar controle de débito das penhoras judiciais e dos servidores que estão ressarcindo o erário do órgão anterior à sua posse na Câmara",
+          "entrega": "",
+          "detalhamentos": []
+        },
+        {
+          "numero": "21",
+          "nome": "Manutenção de códigos de programação em SQL e VBA",
+          "entrega": "",
+          "detalhamentos": []
+        },
+        {
+          "numero": "22",
+          "nome": "Lançamento de valores relativos a restituições ao erário da Câmara por parte dos servidores efetivos, provenientes de perdas de patrimônio físico",
+          "entrega": "",
+          "detalhamentos": []
+        }
+      ]
+    },
+    {
+      "nome": "Pagamento de Inativos, Pensionistas e Benefícios Externos",
+      "descricao": "Folha de inativos, pensionistas e benefícios externos.",
+      "atividades": [
+        {
+          "numero": "1",
+          "nome": "Gerir a folha de pagamento normal e complementar de servidores inativos, pensionistas civis e beneficiários externos",
+          "entrega": "Folha aberta para lançamentos em contracheque e ajustes em ficha financeira",
+          "detalhamentos": [
+            {
+              "numero": "1.1",
+              "texto": "Lançamentos de folha normal e complementar"
+            },
+            {
+              "numero": "1.2",
+              "texto": "Fechamento de folha normal e complementar"
+            },
+            {
+              "numero": "1.3",
+              "texto": "Gerar relatórios de conferência da folha"
+            },
+            {
+              "numero": "1.3.1",
+              "texto": "Inconsistências de Folha em Preparação"
+            },
+            {
+              "numero": "1.3.2",
+              "texto": "Inconsistências de Contratos de Consignação"
+            },
+            {
+              "numero": "1.3.3",
+              "texto": "Beneficiários com Recebedores Inconsistentes"
+            },
+            {
+              "numero": "1.3.4",
+              "texto": "Valor Líquido Negativo"
+            },
+            {
+              "numero": "1.3.5",
+              "texto": "Lançamentos Manuais Não Pagos"
+            },
+            {
+              "numero": "1.3.6",
+              "texto": "relatórios Querys de conferência"
+            },
+            {
+              "numero": "1.4",
+              "texto": "Realizar conferência dos valores dos relatórios emitidos pelo SIGESP-CD e proceder com as correções necessárias"
+            },
+            {
+              "numero": "1.5",
+              "texto": "Gerar DCAPs programados para o mês de depósitos judiciais e encaminhar para o financeiro"
+            },
+            {
+              "numero": "1.6",
+              "texto": "Realizar cálculos retroativos necessários e conferência de valores"
+            },
+            {
+              "numero": "1.7",
+              "texto": "Importação de arquivos do pró-saúde"
+            },
+            {
+              "numero": "1.8",
+              "texto": "Importação de arquivos de consignações"
+            },
+            {
+              "numero": "1.9",
+              "texto": "Gestão da folha de beneficários externos (Grupo 12)"
+            },
+            {
+              "numero": "1.9.1",
+              "texto": "Criar Cadastro de beneficiários externos no Sigesp-CD, com dados pessoais e bancários"
+            },
+            {
+              "numero": "1.9.2",
+              "texto": "Instruir processos de valores pendentes com escritura pública ou ou alvará judicial, além de despachos"
+            }
+          ]
+        },
+        {
+          "numero": "2",
+          "nome": "Organizar e manter atualizada a área de trabalho compartilhada e as planilhas de controle interno dos registros relativos ao pagamento de proventos e pensões",
+          "entrega": "",
+          "detalhamentos": [
+            {
+              "numero": "2.1",
+              "texto": "Depósitos Judiciais"
+            },
+            {
+              "numero": "2.2",
+              "texto": "Acertos de Óbito"
+            },
+            {
+              "numero": "2.3",
+              "texto": "Concessão de Aposentadorias"
+            },
+            {
+              "numero": "2.4",
+              "texto": "Concessões de Pensões"
+            },
+            {
+              "numero": "2.5",
+              "texto": "Recadastramento anual de aposentados e pensionistas"
+            }
+          ]
+        },
+        {
+          "numero": "3",
+          "nome": "Proceder com a inserção e cancelamento em folha de pensões alimentícias",
+          "entrega": "Despacho, DCAP's e lançamentos em sistema",
+          "detalhamentos": [
+            {
+              "numero": "3.1",
+              "texto": "Inserção e cancelamento de pensões alimentícias"
+            },
+            {
+              "numero": "3.2",
+              "texto": "Alteração de fórmulas"
+            },
+            {
+              "numero": "3.3",
+              "texto": "Escaneamento e guarda no SIGESPCD do ofício judicial"
+            },
+            {
+              "numero": "3.4",
+              "texto": "Controle de cadastro de beneficiário"
+            },
+            {
+              "numero": "3.5",
+              "texto": "Prestar informações aos interessados"
+            }
+          ]
+        },
+        {
+          "numero": "4",
+          "nome": "Implementar, acompanhar, controlar os descontos em folha das penhoras judiciais",
+          "entrega": "Despacho, DCAP's e lançamentos em sistema",
+          "detalhamentos": [
+            {
+              "numero": "4.1",
+              "texto": "Programar as fórmulas dos descontos no SIGESP-CD"
+            },
+            {
+              "numero": "4.2",
+              "texto": "Registrar em planilha de controle interno"
+            },
+            {
+              "numero": "4.3",
+              "texto": "Conferência de DCAP's devolvidos"
+            },
+            {
+              "numero": "4.4",
+              "texto": "Envio de DCAPs"
+            },
+            {
+              "numero": "4.5",
+              "texto": "Escaneamento e guarda no SIGESPCD do ofício judicial"
+            },
+            {
+              "numero": "4.6",
+              "texto": "Informar à Advocacia Geral do andamento das solicitações"
+            },
+            {
+              "numero": "4.7",
+              "texto": "Prestar informações aos interessados"
+            },
+            {
+              "numero": "",
+              "texto": "Produto Final:"
+            }
+          ]
+        },
+        {
+          "numero": "5",
+          "nome": "Elaborar os cálculos referentes às concessão de aposentadorias e de pensões",
+          "entrega": "Despacho, memória de cálculo e lançamentos em sistema",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "Cálculo pela média de benefício de aposentadoria e instrução do processo com as memórias de cálculo"
+            },
+            {
+              "numero": "",
+              "texto": "Cálculo do Benefício Especial da aposentadoria e instrução do processo com as memórias de cálculo"
+            },
+            {
+              "numero": "",
+              "texto": "Cálculo do benefício de pensões civis e instrução do processo com as memórias de cálculo"
+            }
+          ]
+        },
+        {
+          "numero": "6",
+          "nome": "Elaborar cálculos de simulação de aposentadorias pela média e do benefício especial",
+          "entrega": "Despacho, memória de cálculo e lançamentos em sistema",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "Cálculo da simulação do benefício"
+            },
+            {
+              "numero": "",
+              "texto": "Instrução do processo com as memórias dos cálculos"
+            }
+          ]
+        },
+        {
+          "numero": "7",
+          "nome": "Implementar em folha as aposentadorias e pensões concedidas",
+          "entrega": "Despacho, memória de cálculo e lançamentos em sistema",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "Implantar no SIGESP-CD as aposentadorias e pensões civis concedidas"
+            },
+            {
+              "numero": "",
+              "texto": "Realizar os acertos retroativos a data do início do pagamento de pensão civil"
+            },
+            {
+              "numero": "",
+              "texto": "Realizar os acertos do mês da aposentadoria"
+            },
+            {
+              "numero": "",
+              "texto": "Realizar os ajustes em folha das fórmulas de pensão alimentícia em decorrência da aposentadoria"
+            },
+            {
+              "numero": "",
+              "texto": "Proceder com a conferência de horas extras e noturnas realizadas no mês da aposentadoria"
+            },
+            {
+              "numero": "",
+              "texto": "Descontos de jornada"
+            }
+          ]
+        },
+        {
+          "numero": "8",
+          "nome": "Gerir os descontos do teto previsto no inciso Xl do art. 37 e art. 24 da EC 103/2019 da Constituição Federal (Abate-Teto)",
+          "entrega": "Despacho, memória de cálculo e lançamentos em sistema",
+          "detalhamentos": []
+        },
+        {
+          "numero": "9",
+          "nome": "Liberação, suspensão ou bloqueio da margem",
+          "entrega": "",
+          "detalhamentos": []
+        },
+        {
+          "numero": "10",
+          "nome": "Atendedimento de aposestados e pensionistas presencialmente, por eDOC e por meio de ligação telefônica ou e-mail",
+          "entrega": "",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "Solicitação de informações gerais - Telefone"
+            },
+            {
+              "numero": "",
+              "texto": "Solicitação de informações gerais - E-mail"
+            },
+            {
+              "numero": "",
+              "texto": "Problemas com pagamento"
+            },
+            {
+              "numero": "",
+              "texto": "Solicitação de contracheque e comprovante de rendimentos"
+            }
+          ]
+        },
+        {
+          "numero": "11",
+          "nome": "Atendimento de demandas judiciais diversas (excluem-se penhoras de salário e pensão alimentícia)",
+          "entrega": "Despacho, DCAP's, memória de cálculo e lançamentos em sistema",
+          "detalhamentos": []
+        },
+        {
+          "numero": "12",
+          "nome": "Prestar informações e fazer cumprir novas determinações normativas relacionadas à sua área de atuação",
+          "entrega": "",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "Administração interna"
+            },
+            {
+              "numero": "",
+              "texto": "TCU"
+            },
+            {
+              "numero": "",
+              "texto": "Advocacia Geral"
+            },
+            {
+              "numero": "",
+              "texto": "Outros órgãos"
+            }
+          ]
+        },
+        {
+          "numero": "13",
+          "nome": "Acertos de Óbito",
+          "entrega": "Despacho, DCAP's, memória de cálculo e lançamentos em sistema",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "Suspensão do pagamento na comunicação do óbito"
+            },
+            {
+              "numero": "",
+              "texto": "Cálculo dos acertos de óbito"
+            },
+            {
+              "numero": "",
+              "texto": "Registro no SIGESP-CD das rúbricas 580 e 2930"
+            },
+            {
+              "numero": "",
+              "texto": "Ofício de comunicação dos valores pendentes"
+            },
+            {
+              "numero": "",
+              "texto": "Pagamento de saldos positivos a usuários externos"
+            },
+            {
+              "numero": "",
+              "texto": "Acertos na folha de pensão civil"
+            },
+            {
+              "numero": "",
+              "texto": "Comunicação aos bancos de valores pagos indevidamente para ressarcimento ao erário"
+            },
+            {
+              "numero": "",
+              "texto": "Proceder com o registro da reversão bancária no SIGESP-CD"
+            },
+            {
+              "numero": "",
+              "texto": "Elaborar o DCAP da reversão bancária"
+            },
+            {
+              "numero": "",
+              "texto": "Inclusão de dívida no SICOD"
+            }
+          ]
+        },
+        {
+          "numero": "14",
+          "nome": "Auxílio Funeral de aposentados",
+          "entrega": "Despacho, DCAP's e memória de cálculo",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "Cálculo do benefício"
+            },
+            {
+              "numero": "",
+              "texto": "Elaborar e enviar o DCAP ao financeiro"
+            }
+          ]
+        },
+        {
+          "numero": "15",
+          "nome": "Geração mensalmente DCAPs judiciais",
+          "entrega": "Inclusão de DCAP's",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "Geração, inserção no eDOC e envio de DCAP's programados para descontos em folha a cada mês"
+            },
+            {
+              "numero": "",
+              "texto": "Conferência e controle de descontos"
+            },
+            {
+              "numero": "",
+              "texto": "Atualização de dados em planilha de controle interno"
+            }
+          ]
+        },
+        {
+          "numero": "16",
+          "nome": "Indenização de Férias",
+          "entrega": "Despacho, memória de cálculo e lançamentos em sistema",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "Cálculo dos valores devidos"
+            },
+            {
+              "numero": "",
+              "texto": "Despacho DEFIN/DGP"
+            },
+            {
+              "numero": "",
+              "texto": "Lançamento e Pagamento em folha"
+            }
+          ]
+        },
+        {
+          "numero": "17",
+          "nome": "Indenização de Licença-Prêmio",
+          "entrega": "Despacho, memória de cálculo e lançamentos em sistema",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "Cálculo de valores devidos"
+            },
+            {
+              "numero": "",
+              "texto": "Despacho DEFIN/DGP"
+            },
+            {
+              "numero": "",
+              "texto": "Lançamento e Pagamento em folha"
+            }
+          ]
+        },
+        {
+          "numero": "18",
+          "nome": "Reuniões",
+          "entrega": "Ata e/ou encaminhamentos",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "de equipe"
+            },
+            {
+              "numero": "",
+              "texto": "com outras unidades"
+            }
+          ]
+        },
+        {
+          "numero": "19",
+          "nome": "Correções e alterações nas planilha de cálculo de de controle",
+          "entrega": "Entrega de nova versão com os erros corrigidos",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "Correção de eventuais erros"
+            },
+            {
+              "numero": "",
+              "texto": "Melhorias operacionais nas planilhas de dados"
+            },
+            {
+              "numero": "",
+              "texto": "Atualizações monetárias"
+            },
+            {
+              "numero": "",
+              "texto": "Relatórios de conferência de Querys"
+            }
+          ]
+        },
+        {
+          "numero": "20",
+          "nome": "Verificação de eventuais divergências encontradas no SIGESPCD em cálculos de valores retroativos",
+          "entrega": "Confirmar erro, reportar e corrigir",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "Acertos de óbito"
+            },
+            {
+              "numero": "",
+              "texto": "Acertos de concessão de pensões"
+            },
+            {
+              "numero": "",
+              "texto": "Acertos de aposentadoria"
+            },
+            {
+              "numero": "",
+              "texto": "Acertos de pensão alimentícia"
+            }
+          ]
+        },
+        {
+          "numero": "21",
+          "nome": "Solicitar autorização para pagamento de retroativo referente a exercícios anteriores",
+          "entrega": "",
+          "detalhamentos": []
+        },
+        {
+          "numero": "22",
+          "nome": "Gestão de Equipe",
+          "entrega": "",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "Controle e distribuição de processos"
+            },
+            {
+              "numero": "",
+              "texto": "Gestão da caixa de e-mail"
+            }
+          ]
+        },
+        {
+          "numero": "23",
+          "nome": "Recadastramento",
+          "entrega": "",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "Bloqueio de contas"
+            },
+            {
+              "numero": "",
+              "texto": "Retirada de fita"
+            },
+            {
+              "numero": "",
+              "texto": "Pagamento por relação bancária"
+            },
+            {
+              "numero": "",
+              "texto": "Controle de recadastramento"
+            }
+          ]
+        },
+        {
+          "numero": "23",
+          "nome": "Expedir Declarações",
+          "entrega": "",
+          "detalhamentos": []
+        }
+      ]
+    },
+    {
+      "nome": "Pagamento dos Parlamentares",
+      "descricao": "Folha de parlamentares ativos, aposentados e pensionistas.",
+      "atividades": [
+        {
+          "numero": "1",
+          "nome": "Gerir a folha de pagamento Parlamentares Ativos, Aposentados e Pensionistas de Parlamentares",
+          "entrega": "",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "Gerar relatórios de conferência da folha"
+            },
+            {
+              "numero": "",
+              "texto": "Conferência da Planilha de Análise"
+            },
+            {
+              "numero": "",
+              "texto": "Conferência de totalização por rubrica"
+            },
+            {
+              "numero": "",
+              "texto": "Lançar,Conferir e acompanhar as consignações em folha de pagamento"
+            },
+            {
+              "numero": "",
+              "texto": "Realizar, analisar e lançar cálculos retroativos em folha"
+            },
+            {
+              "numero": "",
+              "texto": "Realizar conferências de rubricas duplicadas"
+            },
+            {
+              "numero": "",
+              "texto": "Realizar conferências SIGESP:"
+            },
+            {
+              "numero": "",
+              "texto": "Inconsistências de Folha em Preparação"
+            },
+            {
+              "numero": "",
+              "texto": "Inconsistências de Contratos de Consignação"
+            },
+            {
+              "numero": "",
+              "texto": "Beneficiários com Recebedores Inconsistentes"
+            },
+            {
+              "numero": "",
+              "texto": "Valor Líquido Negativo"
+            },
+            {
+              "numero": "",
+              "texto": "Lançamentos Manuais Não Pagos"
+            },
+            {
+              "numero": "",
+              "texto": "Tratar as críticas referentes a líquidos negativos e outras inconsistências antes do fechamento da folha."
+            },
+            {
+              "numero": "",
+              "texto": "Rodar as queries de conferência de cada grupo e tratar as críticas para evitar inconsistências no fechamento da folha."
+            },
+            {
+              "numero": "",
+              "texto": "Fechar a folha de pagamento."
+            },
+            {
+              "numero": "",
+              "texto": "Encaminhar o relatório de Consignações da COHAB com valores descontados e não descontados em folha"
+            },
+            {
+              "numero": "",
+              "texto": "Gerar DCAPs e encaminhar para o financeiro"
+            }
+          ]
+        },
+        {
+          "numero": "2",
+          "nome": "II - realizar os cálculos e promover o devido pagamento das remunerações",
+          "entrega": "",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "Realizar lançamento dos dados encaminhados pelo pró-saúde"
+            },
+            {
+              "numero": "",
+              "texto": "Realizar lançamento dos dados encaminhados pela COHAB (descontos de água, luz e gás das moradias funcionais)"
+            },
+            {
+              "numero": "",
+              "texto": "Realizar lançamento dos dados encaminhados referente à cobranças adminsitrativas"
+            },
+            {
+              "numero": "",
+              "texto": "Informar à COHAB e Pró-Saúde sobre os motivos de descontos não terem sido processados"
+            }
+          ]
+        },
+        {
+          "numero": "3",
+          "nome": "III - organizar e manter atualizado o controle dos registros relativos ao pagamento de pessoal",
+          "entrega": "",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "Atualizar as queries de verificação"
+            },
+            {
+              "numero": "",
+              "texto": "Atualizar o controle de atividades na ferramenta Trello a cada situação que possa impactar na folha de pagamento e exija acompanhamento."
+            }
+          ]
+        },
+        {
+          "numero": "4",
+          "nome": "IV - apurar eventuais impactos orçamentários concernentes a despesas relativas à sua área de atuação",
+          "entrega": "",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "Solicitar autorização para pagamento de retroativo referente a exercícios anteriores"
+            }
+          ]
+        },
+        {
+          "numero": "5",
+          "nome": "V - proceder e manter o cadastro de pensões alimentícias",
+          "entrega": "",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "Receber os processos referentes ao pagamento de pensões alimentícias"
+            },
+            {
+              "numero": "",
+              "texto": "Lançar na folha de pagamento os descontos conforme determinação judicial"
+            },
+            {
+              "numero": "",
+              "texto": "Cadastrar a conta bancária do responsável pelo recebimento"
+            },
+            {
+              "numero": "",
+              "texto": "Cadastrar o e-mail do beneficiário para envio dos contracheques mensais"
+            },
+            {
+              "numero": "",
+              "texto": "Informar ao parlamentar sobre a implantação do desconto"
+            }
+          ]
+        },
+        {
+          "numero": "6",
+          "nome": "VI - Lançar, acompanhar e controlar os descontos em folha das penhoras judiciais",
+          "entrega": "",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "Receber os processos referentes ao pagamento de penhoras judiciais"
+            },
+            {
+              "numero": "",
+              "texto": "Lançar na folha de pagamento os descontos conforme determinação judicial"
+            },
+            {
+              "numero": "",
+              "texto": "Cadastrar a conta bancária do responsável pelo recebimento"
+            },
+            {
+              "numero": "",
+              "texto": "Cadastrar os dados do desconto na mala direta para geração dos DCAPS"
+            },
+            {
+              "numero": "",
+              "texto": "Informar ao parlamentar sobre a implantação do desconto"
+            },
+            {
+              "numero": "",
+              "texto": "Gerar os DCAPS mensalmente, anexar aos processos eDoc e enviar ao financeiro"
+            },
+            {
+              "numero": "",
+              "texto": "Criar planilha sobre os descontos judiciais para cada parlamentar, com previsão de início, fim e valores debitados. Salvar cópia do processo eDoc para eventuais consultas."
+            },
+            {
+              "numero": "",
+              "texto": "Salvar os ofícios judiciais no sistema"
+            }
+          ]
+        },
+        {
+          "numero": "7",
+          "nome": "VII - manter atualizada a margem consignável",
+          "entrega": "",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "Após cada lançamento nas folhas de pagamento, disparar o cálculo da margem consignável."
+            }
+          ]
+        },
+        {
+          "numero": "8",
+          "nome": "VIII - expedir declarações",
+          "entrega": "",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "Expedir declarações e ofícios em atendimento às solicitações apresentadas pelos parlamentares ou outros órgãos."
+            }
+          ]
+        },
+        {
+          "numero": "9",
+          "nome": "IX - elaborar cálculos referentes às exonerações, vacância, cessões, afastamentos sem remuneração e óbitos",
+          "entrega": "",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "Verificar ingressos e afastamentos de deputados tutilares e suplentes e seus impactos na folha de pagamento"
+            },
+            {
+              "numero": "",
+              "texto": "Verficar os afastamentos para licença sem remuneração ou exercício de cargos em outros órgãos e seus impactos na folha de pagamento"
+            },
+            {
+              "numero": "",
+              "texto": "Fazer o lançamento em folha das ajudas de custos referentes ao início e final do mandato após avaliação do atendimento dos critérios."
+            },
+            {
+              "numero": "",
+              "texto": "Suspender os descontos de contratos de empréstimo e informar a secretaria para notificação dos bancos."
+            },
+            {
+              "numero": "",
+              "texto": "Acompanhar os registros de óbitos e calcular os respectivos acertos na folha de pagamento."
+            }
+          ]
+        },
+        {
+          "numero": "10",
+          "nome": "X - adotar providências imediatas para a restituição de débitos vinculados à folha de pagamento de pessoal ou ressarcimento ao erário de servidores que vieram de outros órgãos",
+          "entrega": "",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "Receber as notificações de débitos dos servidores oriundos de outros órgãos, lançar os descontos na folha de pagamento e gerar os DCAPS dos repasses."
+            },
+            {
+              "numero": "",
+              "texto": "Se for o caso, verificar com o servidor sobre a conveniência de parcelamento dos débitos."
+            }
+          ]
+        },
+        {
+          "numero": "11",
+          "nome": "XI - gerir os descontos do teto previsto no inciso Xl do art. 37 da Constituição Federal",
+          "entrega": "",
+          "detalhamentos": []
+        },
+        {
+          "numero": "12",
+          "nome": "XII - acompanhar e controlar os descontos das contribuições previdenciárias",
+          "entrega": "",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "Manter os controles de descontos e repasses de regimes próprios de previdência atualizados sempre que qualquer alteração for notificada."
+            }
+          ]
+        },
+        {
+          "numero": "13",
+          "nome": "XIII - emitir documentos complementares e necessários às declarações e certidões relativas à comprovação do tempo de contribuição",
+          "entrega": "",
+          "detalhamentos": []
+        },
+        {
+          "numero": "14",
+          "nome": "XIV - executar as tarefas relacionadas à apuração e ao fornecimento de informações de dados relativos à contribuição previdenciária de interesse de órgãos internos ou externos",
+          "entrega": "",
+          "detalhamentos": []
+        },
+        {
+          "numero": "15",
+          "nome": "XV - executar procedimentos relacionados à compensação financeira entre regimes previdenciários em sua área de atuação",
+          "entrega": "",
+          "detalhamentos": []
+        },
+        {
+          "numero": "16",
+          "nome": "XVI - prestar informações relacionadas à sua área de atuação.",
+          "entrega": "",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "Responder os questionamentos apresentados por telefone, e-mail ou whatsapp referentes aos diversos assuntos que impactam na folha de pagamento."
+            }
+          ]
+        },
+        {
+          "numero": "17",
+          "nome": "XVII -Realizar cobrança Administrativas de Parlamentares que saem do mandato",
+          "entrega": "",
+          "detalhamentos": []
+        },
+        {
+          "numero": "18",
+          "nome": "XVIII -Gerar DCAPs das RAs encaminhadas pelo financeiro",
+          "entrega": "",
+          "detalhamentos": []
+        },
+        {
+          "numero": "19",
+          "nome": "Registrar o desconto em folha referente ao ressarcimento ao erário",
+          "entrega": "",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "Gerar os relatórios de desconto e anexar ao processo para despachar aos órgãos competentes na Casa."
+            }
+          ]
+        },
+        {
+          "numero": "20",
+          "nome": "XX - Solicitar autorização para pagamento de retroativo referente a exercícios anteriores",
+          "entrega": "",
+          "detalhamentos": []
+        },
+        {
+          "numero": "21",
+          "nome": "Fazer a folha de pagamento complementar do auxílio moradia",
+          "entrega": "",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "Receber o arquivo do auxílio-moradia dos parlamentares para pagamento na próxima folha."
+            }
+          ]
+        },
+        {
+          "numero": "22",
+          "nome": "Acompanhar os processos eDoc",
+          "entrega": "",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "Receber os processos e verificar os procedimentos necessários ao atendimento de cada um deles no prazo necessário."
+            }
+          ]
+        },
+        {
+          "numero": "23",
+          "nome": "Acompanhar e processar na folha de pagamento o processo de recadastramento dos aposentados e pensionistas",
+          "entrega": "",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "Após o encerramento do recadastramento pela Corsep,tomar as providências referentes ao pagamento."
+            },
+            {
+              "numero": "",
+              "texto": "Bloquear o pagamento dos beneficiários que não se recadastraram."
+            },
+            {
+              "numero": "",
+              "texto": "Receber notificações de recadastramentos fora do prazo e encaminhar os pagamentos via relação bancária."
+            },
+            {
+              "numero": "",
+              "texto": "Desbloquear pagamentos e calcular folhas após recadastramento fora do prazo."
+            }
+          ]
+        },
+        {
+          "numero": "24",
+          "nome": "Proceder o acerto de óbito de aposentados e pensionistas falecidos.",
+          "entrega": "",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "Após o registro do óbito no sistema, calcular a folha do beneficiário e verificar se houve crédito ou débito remanescente"
+            },
+            {
+              "numero": "",
+              "texto": "Salvar a planilha de acerto de óbito no sistema"
+            },
+            {
+              "numero": "",
+              "texto": "Criar checklist no trello para acompanhamento da situação."
+            },
+            {
+              "numero": "",
+              "texto": "Caso haja crédito a ser recebido pela família, aguardar manifestação dos interessados. Caso haja débito, encaminhar para cobrança administrativa."
+            },
+            {
+              "numero": "",
+              "texto": "Verificar a possibilidade/necessidade de bloqueio do pagamento caso o falecimento ocorra após o fechamento da folha para minimizar eventuais débitos."
+            },
+            {
+              "numero": "",
+              "texto": "Calcular a folha para pagamento a eventuais pensionistas em caso de falecimento de aposentado."
+            }
+          ]
+        },
+        {
+          "numero": "25",
+          "nome": "Lançamento de Isenção de Imposto de Renda",
+          "entrega": "",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "Calcular a folha de pagamento para verificar o processamento de isenção de imposto de renda."
+            }
+          ]
+        },
+        {
+          "numero": "26",
+          "nome": "Fazer o cálculo da folha dos parlamentares após o processamento da frequencia do mês anterior",
+          "entrega": "",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "Após o lançamento da frequencia no sistema, calcular a folha para o desconto das faltas dos parlamentares ou reembolso de descontos de faltas justificadas."
+            }
+          ]
+        },
+        {
+          "numero": "27",
+          "nome": "Acompanhar os e-mails, especialmente no que se refere às movimentações parlamentares",
+          "entrega": "",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "Verificar no e-mails a existência de movimentações parlamentares que possam impactar na folha de pagamento, tais como afastamento/retorno de titulares, posse ou saída de suplentes"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nome": "Pagamento dos Comissionados",
+      "descricao": "Folha de servidores comissionados e secretários parlamentares.",
+      "atividades": [
+        {
+          "numero": "1",
+          "nome": "I - gerir a folha de pagamento de servidores comissionados (Secretários parlamentares e Cargos de natureza especial)",
+          "entrega": "",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "conferir e executar eventos de gestão que iniciam ou que repercutem no processo da folha de pagamento de comissionados"
+            },
+            {
+              "numero": "",
+              "texto": "ajustar os contracheques negativos com mudança de grupo para controle e monitoramento dos servidores que mudam de sp para cne e vice e versa."
+            },
+            {
+              "numero": "",
+              "texto": "monitorar as implicações de pagamaento decorrentes do início e fim do auxílio-doença do servidor"
+            },
+            {
+              "numero": "",
+              "texto": "monitorar servidores fora da folha exonerados na folha e com contas inconsistentes"
+            },
+            {
+              "numero": "",
+              "texto": "monitorar as rubricas duplicadas, novas e com mais de 5 anos"
+            },
+            {
+              "numero": "",
+              "texto": "conferir e corrigir valores de gratificação natalina de exonerados e de licença gestante"
+            },
+            {
+              "numero": "",
+              "texto": "conferir e corrigir valores de indenização de férias para servidores exonerados no mês"
+            },
+            {
+              "numero": "",
+              "texto": "gerir os valores de remuneração (inclusive faltas) do mês anterior e atual"
+            },
+            {
+              "numero": "",
+              "texto": "confere aux alimentação mes anterior e atual"
+            },
+            {
+              "numero": "",
+              "texto": "conferir e corrigir valores do auxílio pré-escolar do mês anterior e atual"
+            },
+            {
+              "numero": "",
+              "texto": "conferir e corrigir os valores do auxílio-transporte do mês anterior e atual"
+            },
+            {
+              "numero": "",
+              "texto": "gerir o pagamento do salário-familia do mês anterior e atual"
+            },
+            {
+              "numero": "",
+              "texto": "gerir o pagamento de adicional de férias do mês anterior e atual, corrigindo iclusive o período aquisitivo das férias, se necessário."
+            },
+            {
+              "numero": "",
+              "texto": "gerir o usufruto de férias"
+            },
+            {
+              "numero": "",
+              "texto": "verificar e corrigir início e fim de RPPS e RGPS (regimes de previdência)"
+            },
+            {
+              "numero": "",
+              "texto": "verificar e corrigir situaçãoes de servidores que mudaram de RPPS e RGPS, além das rubricas de débito"
+            },
+            {
+              "numero": "",
+              "texto": "conferir e ajustar INSS de qualquer mês"
+            },
+            {
+              "numero": "",
+              "texto": "conferir as rubricas 470 e 580"
+            },
+            {
+              "numero": "",
+              "texto": "gerir o pagamento de servidores ativos com débitos com a Câmara"
+            },
+            {
+              "numero": "",
+              "texto": "conferir o imposto de renda normal e o da gratificação natalina do mês atual"
+            },
+            {
+              "numero": "",
+              "texto": "gerir a remuneração do servidor cedido com ou sem ônus para a origem"
+            },
+            {
+              "numero": "",
+              "texto": "controlar e monitorar a base externa para efeito de teto constitucional do servidor requisitado"
+            },
+            {
+              "numero": "",
+              "texto": "monitar a previdência do servidor que optou pela remuneração do cargo em comissão"
+            },
+            {
+              "numero": "",
+              "texto": "monitar o pagameto de servidor ativo sem vínculo e sem desconto de inss"
+            },
+            {
+              "numero": "",
+              "texto": "conferir o teto constitucional dos servidores do mês anterior e atual"
+            },
+            {
+              "numero": "",
+              "texto": "conferir e corrigir os descontos das consignações novas"
+            },
+            {
+              "numero": "",
+              "texto": "conferir e corrigir os desocntos das consignações de servidores exonerados"
+            },
+            {
+              "numero": "",
+              "texto": "monitorar e corrigir os descontos das consignações que não constam no mês atual"
+            },
+            {
+              "numero": "",
+              "texto": "conferir CPF, fórmulas e inclusão de auxílio pré-escolar na implementação da pensão alimentícia"
+            },
+            {
+              "numero": "",
+              "texto": "conferir o pagamento de sessões noturnas"
+            },
+            {
+              "numero": "",
+              "texto": "conferir o pagamento dos valores referente à frequência mensal e horas extras"
+            },
+            {
+              "numero": "",
+              "texto": "importar dados do auxílio-saúde (planos de saúde dos servidores comissionados)"
+            },
+            {
+              "numero": "",
+              "texto": "conferir rubricas 2930, que informa saldo insuficiente de servidor"
+            },
+            {
+              "numero": "",
+              "texto": "conferir situação de exonerados pós-fechamento com débitos para bloqueio de pagamento"
+            },
+            {
+              "numero": "",
+              "texto": "regularizar créditos pendentes"
+            },
+            {
+              "numero": "",
+              "texto": "monitorar os servidores empossados pós-fechamento da folha, com indenização de férias no contracheque, para exclusão da indenização e bloqueio do pagamento."
+            }
+          ]
+        },
+        {
+          "numero": "2",
+          "nome": "II - realizar os cálculos e promover o devido pagamento dos subsídios, remunerações, proventos, pensões e benefícios",
+          "entrega": "",
+          "detalhamentos": []
+        },
+        {
+          "numero": "3",
+          "nome": "III - organizar e manter atualizado o controle dos registros relativos ao pagamento de pessoal",
+          "entrega": "",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "elaborar e controlar planilha de débitos (com número de processo correlato) de servidores exonerados para emissão de GRU e criação de processos de cobrança"
+            }
+          ]
+        },
+        {
+          "numero": "4",
+          "nome": "IV - apurar eventuais impactos orçamentários concernentes a despesas relativas à sua área de atuação",
+          "entrega": "",
+          "detalhamentos": []
+        },
+        {
+          "numero": "5",
+          "nome": "V - proceder e manter o cadastro de pensões alimentícias",
+          "entrega": "",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "receber processos judiciais, cadastrar beneficiários e recebedores, cadastrar contas bancárias,incluir documento judicial no histórico funcional, incluir fórmulas de pagamento, elaborar despacho."
+            }
+          ]
+        },
+        {
+          "numero": "6",
+          "nome": "VI - realizar a averbação das consignações em folha",
+          "entrega": "",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "transferir e monitorar as consignações nas mudanças de grupos SP-CNE e vice-versa"
+            }
+          ]
+        },
+        {
+          "numero": "7",
+          "nome": "VII - acompanhar e controlar os descontos em folha das penhoras judiciais",
+          "entrega": "",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "receber processos judiciais, incluir documento judicial no histórico funcional, incluir fórmulas de pagamento com as rubricas de descontos dos depósitos judiciais, elaborar despacho, criar processo e acompanhar os descontos."
+            }
+          ]
+        },
+        {
+          "numero": "8",
+          "nome": "VIII - manter atualizada a margem consignável",
+          "entrega": "",
+          "detalhamentos": []
+        },
+        {
+          "numero": "9",
+          "nome": "IX - preparar declarações de rendimentos",
+          "entrega": "",
+          "detalhamentos": []
+        },
+        {
+          "numero": "10",
+          "nome": "X - expedir declarações",
+          "entrega": "",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "emitir de declaração de teto INSS DESCONTO"
+            },
+            {
+              "numero": "",
+              "texto": "emitir a RRC - relação das remunerações contribuiçoes previdenciárias referente DTC - anexo V in128-2022"
+            },
+            {
+              "numero": "",
+              "texto": "emitir declaração de situação previdenciária"
+            },
+            {
+              "numero": "",
+              "texto": "emitir análises previdenciárias para a Coordenação de Secretariado Parlamentar"
+            },
+            {
+              "numero": "",
+              "texto": "emitir diversar outras declarações funcionais."
+            }
+          ]
+        },
+        {
+          "numero": "11",
+          "nome": "XI - elaborar cálculos referentes às exonerações, indenizações à gestante e demais obrigações trabalhistas previstas em lei",
+          "entrega": "",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "elaborar planilhas de cálculos de indenização por exoneração em estado gestacional e controlar o desembolso financeiro conforme exames e atestados apresentados"
+            }
+          ]
+        },
+        {
+          "numero": "12",
+          "nome": "XII - adotar providências imediatas para a restituição de débitos vinculados à folha de pagamento de pessoal",
+          "entrega": "",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "emissão de GRU de cobrança"
+            },
+            {
+              "numero": "",
+              "texto": "apurar débitos e realizar processo de cobrança de débito de servidores exonerados"
+            }
+          ]
+        },
+        {
+          "numero": "13",
+          "nome": "XIII - gerir os descontos do teto previsto no inciso Xl do art. 37 da Constituição Federal",
+          "entrega": "",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "gerir o monitoramento dos contracheques de cedidos nos meses de março e setembro para controle do teto constitucional e duplicidade de benefícios"
+            }
+          ]
+        },
+        {
+          "numero": "14",
+          "nome": "XIV - acompanhar e controlar os descontos das contribuições previdenciárias",
+          "entrega": "",
+          "detalhamentos": []
+        },
+        {
+          "numero": "15",
+          "nome": "XV - emitir documentos complementares e necessários às declarações e certidões relativas à comprovação do tempo de contribuição",
+          "entrega": "",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "analisar a situação previdenciária do servidor e informar períodos de contribuição e respectivos valores relativos aos diversos regimes previdenciários"
+            }
+          ]
+        },
+        {
+          "numero": "16",
+          "nome": "XVI - executar as tarefas relacionadas à apuração e ao fornecimento de informações de dados relativos à contribuição previdenciária de interesse de órgãos internos ou externos",
+          "entrega": "",
+          "detalhamentos": []
+        },
+        {
+          "numero": "17",
+          "nome": "XVII - executar procedimentos relacionados à compensação financeira entre regimes previdenciários em sua área de atuação",
+          "entrega": "",
+          "detalhamentos": []
+        },
+        {
+          "numero": "18",
+          "nome": "XVIII - realizar o acompanhamento e controle do envio de eventos, guias e documentos de sua área de atuação ao Sistema de Escrituração Digital das Obrigações Fiscais, Previdenciárias e Trabalhistas (e-Social), bem como promover os devidos ajustes, quando necessário",
+          "entrega": "",
+          "detalhamentos": []
+        },
+        {
+          "numero": "19",
+          "nome": "XIX - prestar informações relacionadas à sua área de atuação seja por telefone, seja presencialmente.",
+          "entrega": "",
+          "detalhamentos": [
+            {
+              "numero": "",
+              "texto": "fornecer informações e documentos solicitados por órgãos internos e externos."
+            }
+          ]
+        },
+        {
+          "numero": "20",
+          "nome": "XX - atuar como parte nos processos administrativos disciplinares, bem como fornecer informações e iniciar processos de cobrança quando determinado pela Diretoria Geral.",
+          "entrega": "",
+          "detalhamentos": []
+        }
+      ]
+    }
+  ]
+}
