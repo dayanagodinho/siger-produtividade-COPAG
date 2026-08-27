@@ -65,9 +65,9 @@ export const ROTULO_DO_PAPEL: Record<string, string> = {
 };
 
 export const ROTULO_DA_SITUACAO: Record<string, string> = {
-  PENDENTE: 'Aguardando validação',
-  VALIDADO: 'Validado',
-  DEVOLVIDO: 'Devolvido',
+  PENDENTE: 'Contando, a conferir',
+  VALIDADO: 'Conferido',
+  DEVOLVIDO: 'Devolvido · fora da média',
 };
 
 export const ROTULO_DO_STATUS: Record<string, string> = {

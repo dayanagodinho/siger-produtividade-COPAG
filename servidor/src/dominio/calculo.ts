@@ -89,7 +89,10 @@ export interface ApuracaoServidor {
   situacao: SituacaoApuracao;
   pontos_total: number;
   pontos_base: number;
+  /** Parte do total que a chefia ainda não conferiu. Já está contada. */
   pontos_pendentes: number;
+  /** Pontos que saíram da média porque a chefia devolveu o lançamento. */
+  pontos_devolvidos: number;
   dias_uteis: number;
   dias_ausencia: number;
   dias_efetivos: number;
@@ -98,16 +101,21 @@ export interface ApuracaoServidor {
   lancamentos_validados: number;
   lancamentos_pendentes: number;
   lancamentos_em_andamento: number;
-}
-
-/** Regra 2.2: so lancamento CONCLUIDO e VALIDADO entra na media oficial. */
-export function pontuaNaMedia(lancamento: LancamentoParaApuracao): boolean {
-  return lancamento.status === 'CONCLUIDO' && lancamento.situacao === 'VALIDADO';
+  lancamentos_devolvidos: number;
 }
 
 /**
- * Regra 5.1 e 4: media = pontos validados e concluidos / dias efetivos.
- * Com dias efetivos igual a zero o servidor fica SEM_APURACAO e nunca zerado.
+ * O ponto conta desde o lancamento. So deixa de contar quando a chefia
+ * devolve, dizendo expressamente que aquilo nao entra. Lancamento em
+ * andamento tambem nao conta: ainda nao houve entrega.
+ */
+export function pontuaNaMedia(lancamento: LancamentoParaApuracao): boolean {
+  return lancamento.status === 'CONCLUIDO' && lancamento.situacao !== 'DEVOLVIDO';
+}
+
+/**
+ * Media = pontos que contam no mes / dias efetivos. Com dias efetivos igual
+ * a zero o servidor fica SEM_APURACAO e nunca zerado.
  */
 export function apurarServidor(
   servidorId: number,
@@ -121,22 +129,31 @@ export function apurarServidor(
   let pontosTotal = 0;
   let pontosBase = 0;
   let pontosPendentes = 0;
+  let pontosDevolvidos = 0;
   let validados = 0;
   let pendentes = 0;
   let emAndamento = 0;
+  let devolvidos = 0;
 
   for (const lancamento of meus) {
     if (lancamento.status === 'EM_ANDAMENTO') {
       emAndamento += 1;
       continue;
     }
-    if (pontuaNaMedia(lancamento)) {
+    if (lancamento.situacao === 'DEVOLVIDO') {
+      devolvidos += 1;
+      pontosDevolvidos += lancamento.pontos;
+      continue;
+    }
+
+    pontosTotal += lancamento.pontos;
+    // Regra 5.4: homologacao conta para o individuo, mas fica fora da base
+    // que forma a referencia do grupo.
+    if (lancamento.papel !== 'HOMOLOGACAO') pontosBase += lancamento.pontos;
+
+    if (lancamento.situacao === 'VALIDADO') {
       validados += 1;
-      pontosTotal += lancamento.pontos;
-      // Regra 5.4: homologacao conta para o individuo, mas fica fora da base
-      // que forma a referencia do grupo.
-      if (lancamento.papel !== 'HOMOLOGACAO') pontosBase += lancamento.pontos;
-    } else if (lancamento.situacao === 'PENDENTE') {
+    } else {
       pendentes += 1;
       pontosPendentes += lancamento.pontos;
     }
@@ -150,6 +167,7 @@ export function apurarServidor(
     pontos_total: arredondar(pontosTotal),
     pontos_base: arredondar(pontosBase),
     pontos_pendentes: arredondar(pontosPendentes),
+    pontos_devolvidos: arredondar(pontosDevolvidos),
     dias_uteis: diasUteis,
     dias_ausencia: diasAusencia,
     dias_efetivos: diasEfetivos,
@@ -158,6 +176,7 @@ export function apurarServidor(
     lancamentos_validados: validados,
     lancamentos_pendentes: pendentes,
     lancamentos_em_andamento: emAndamento,
+    lancamentos_devolvidos: devolvidos,
   };
 }
 

@@ -79,7 +79,7 @@ rotasDeFechamentos.get(
       pronto_para_fechar: pendentes === 0,
       alerta:
         pendentes > 0
-          ? `Há ${pendentes} lançamento(s) aguardando validação. Eles não entram na média e ficam congelados assim. Valide a fila antes de fechar ou confirme o fechamento assim mesmo.`
+          ? `Há ${pendentes} lançamento(s) que a chefia ainda não conferiu. Eles contam na média e serão congelados assim. Confira a fila antes de fechar, ou confirme o fechamento assim mesmo.`
           : null,
     });
   }),
@@ -136,7 +136,7 @@ rotasDeFechamentos.post(
     const pendentes = apuracao.servidores.reduce((soma, s) => soma + s.lancamentos_pendentes, 0);
     if (pendentes > 0 && !dados.confirmar_pendentes) {
       throw erroDeConflito(
-        `Há ${pendentes} lançamento(s) na fila de validação. Eles não entram na média e ficarao congelados fora da apuração. Valide a fila ou confirme o fechamento assim mesmo.`,
+        `Há ${pendentes} lançamento(s) que a chefia ainda não conferiu. Eles contam na média e o fechamento vai congelá-los assim. Confira a fila ou confirme o fechamento assim mesmo.`,
         { pendentes_de_validacao: pendentes },
       );
     }

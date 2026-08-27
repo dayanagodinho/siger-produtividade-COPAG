@@ -37,7 +37,7 @@ test('mediana usa o valor central e nao a media', () => {
   assert.equal(mediana([]), null);
 });
 
-test('somente lancamento concluido e validado entra na media', () => {
+test('o ponto conta desde o lancamento; so a devolucao tira da media', () => {
   const lancamentos = [
     lancamento({ pontos: 4 }),
     lancamento({ processo: 'A/1', situacao: 'PENDENTE', pontos: 10 }),
@@ -45,10 +45,24 @@ test('somente lancamento concluido e validado entra na media', () => {
     lancamento({ processo: 'C/1', situacao: 'DEVOLVIDO', pontos: 10 }),
   ];
   const apuracao = apurarServidor(1, lancamentos, 20, 0);
-  assert.equal(apuracao.pontos_total, 4);
+  // 4 validados + 10 pendentes entram; o devolvido e o em andamento ficam fora.
+  assert.equal(apuracao.pontos_total, 14);
   assert.equal(apuracao.pontos_pendentes, 10);
+  assert.equal(apuracao.pontos_devolvidos, 10);
   assert.equal(apuracao.lancamentos_em_andamento, 1);
-  assert.equal(apuracao.media, 0.2);
+  assert.equal(apuracao.lancamentos_devolvidos, 1);
+  assert.equal(apuracao.media, 0.7);
+});
+
+test('devolver um lancamento derruba a media; validar nao muda nada', () => {
+  const antes = apurarServidor(1, [lancamento({ situacao: 'PENDENTE', pontos: 6 })], 10, 0);
+  const validado = apurarServidor(1, [lancamento({ situacao: 'VALIDADO', pontos: 6 })], 10, 0);
+  const devolvido = apurarServidor(1, [lancamento({ situacao: 'DEVOLVIDO', pontos: 6 })], 10, 0);
+
+  assert.equal(antes.media, 0.6);
+  assert.equal(validado.media, 0.6);
+  assert.equal(devolvido.media, 0);
+  assert.equal(devolvido.pontos_devolvidos, 6);
 });
 
 test('homologacao conta para o individuo mas fica fora da base do grupo', () => {

@@ -33,6 +33,7 @@ export interface ServidorApurado {
   pontos_total: number;
   pontos_base: number;
   pontos_pendentes: number;
+  pontos_devolvidos: number;
   dias_uteis: number;
   dias_ausencia: number;
   dias_efetivos: number;
@@ -161,7 +162,7 @@ export async function apurarCompetencia(
     // Composicao dos pontos validados por papel, para o grafico do painel.
     const pontosPorPapel: Record<string, number> = { EXECUCAO: 0, REVISAO: 0, HOMOLOGACAO: 0 };
     for (const lancamento of meus) {
-      if (lancamento.status === 'CONCLUIDO' && lancamento.situacao === 'VALIDADO') {
+      if (lancamento.status === 'CONCLUIDO' && lancamento.situacao !== 'DEVOLVIDO') {
         pontosPorPapel[lancamento.papel] += lancamento.pontos;
       }
     }
@@ -179,6 +180,7 @@ export async function apurarCompetencia(
       pontos_total: base.pontos_total,
       pontos_base: base.pontos_base,
       pontos_pendentes: base.pontos_pendentes,
+      pontos_devolvidos: base.pontos_devolvidos,
       dias_uteis: base.dias_uteis,
       dias_ausencia: base.dias_ausencia,
       dias_efetivos: base.dias_efetivos,
@@ -191,7 +193,7 @@ export async function apurarCompetencia(
       lancamentos_validados: base.lancamentos_validados,
       lancamentos_pendentes: base.lancamentos_pendentes,
       lancamentos_em_andamento: base.lancamentos_em_andamento,
-      lancamentos_devolvidos: meus.filter((l) => l.situacao === 'DEVOLVIDO').length,
+      lancamentos_devolvidos: base.lancamentos_devolvidos,
       distribuicao_niveis: distribuirNiveis(meus.filter((l) => l.status === 'CONCLUIDO')),
       pontos_por_papel: pontosPorPapel,
       lancamentos_avaliados: avaliados.length,
@@ -253,6 +255,7 @@ export async function apurarCompetencia(
         pontos_total: a.pontos_total,
         pontos_base: a.pontos_base,
         pontos_pendentes: a.pontos_pendentes,
+        pontos_devolvidos: a.pontos_devolvidos,
         dias_uteis: a.dias_uteis,
         dias_ausencia: a.dias_ausencia,
         dias_efetivos: a.dias_efetivos,
@@ -261,6 +264,7 @@ export async function apurarCompetencia(
         lancamentos_validados: a.lancamentos_validados,
         lancamentos_pendentes: a.lancamentos_pendentes,
         lancamentos_em_andamento: a.lancamentos_em_andamento,
+        lancamentos_devolvidos: a.lancamentos_devolvidos,
       })),
       lancamentos,
     ),

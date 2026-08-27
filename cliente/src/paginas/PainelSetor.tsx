@@ -26,6 +26,7 @@ interface ServidorApurado {
   pontos_total: number;
   pontos_base: number;
   pontos_pendentes: number;
+  pontos_devolvidos: number;
   dias_efetivos: number;
   dias_ausencia: number;
   media: number | null;
@@ -323,7 +324,7 @@ export function PainelSetor() {
                             {numero(servidor.pontos_total, 1)}
                             {servidor.lancamentos_pendentes > 0 && (
                               <div className="campo-dica">
-                                +{numero(servidor.pontos_pendentes, 1)} na fila
+                                {numero(servidor.pontos_pendentes, 1)} a conferir
                               </div>
                             )}
                           </td>

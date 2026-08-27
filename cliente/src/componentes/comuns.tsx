@@ -140,9 +140,9 @@ export function MarcaSituacao({ situacao }: { situacao: string }) {
     : situacao === 'PENDENTE' ? 'marca-pendente'
     : 'marca-neutra';
   const texto =
-    situacao === 'VALIDADO' ? 'Validado'
-    : situacao === 'DEVOLVIDO' ? 'Devolvido'
-    : situacao === 'PENDENTE' ? 'Aguardando validação'
+    situacao === 'VALIDADO' ? 'Conferido'
+    : situacao === 'DEVOLVIDO' ? 'Devolvido · fora da média'
+    : situacao === 'PENDENTE' ? 'Contando, a conferir'
     : situacao;
   return <span className={`marca ${classe}`}>{texto}</span>;
 }

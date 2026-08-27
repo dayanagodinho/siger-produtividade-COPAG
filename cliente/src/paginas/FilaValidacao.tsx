@@ -124,26 +124,26 @@ export function FilaValidacao() {
         <div className="grade grade-3">
           <Cartao>
             <Medida
-              rotulo="Aguardando validação"
+              rotulo="Ainda não conferidos"
               valor={contagem.pendentes}
-              apoio="Fora da média até serem validados"
+              apoio="Já contam na média; devolva o que não deve contar"
             />
           </Cartao>
           <Cartao>
-            <Medida rotulo="Validados" valor={contagem.validados} apoio="Entram na apuração" />
+            <Medida rotulo="Conferidos" valor={contagem.validados} apoio="Você já confirmou" />
           </Cartao>
           <Cartao>
             <Medida
               rotulo="Devolvidos"
               valor={contagem.devolvidos}
-              apoio="Aguardando ajuste do servidor"
+              apoio="Fora da média até o servidor ajustar"
             />
           </Cartao>
         </div>
 
         <Cartao
           titulo="Lançamentos"
-          descricao="A pontuação é autodeclarada; a validação é o controle contra inflação de nível."
+          descricao="A pontuação é autodeclarada e conta desde o lançamento. Devolver é o que tira da média."
           acoes={
             selecionados.size > 0 ? (
               <>
@@ -170,7 +170,7 @@ export function FilaValidacao() {
             <SeletorCompetencia valor={competencia} aoMudar={setCompetencia} />
             <Campo rotulo="Situação">
               <select value={situacao} onChange={(evento) => setSituacao(evento.target.value)}>
-                <option value="PENDENTE">Aguardando validação</option>
+                <option value="PENDENTE">Ainda não conferidos</option>
                 <option value="VALIDADO">Validados</option>
                 <option value="DEVOLVIDO">Devolvidos</option>
                 <option value="TODAS">Todas</option>

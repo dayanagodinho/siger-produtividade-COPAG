@@ -228,7 +228,7 @@ rotasDeLancamentos.post(
 
     res.status(201).json({
       lancamento,
-      aviso: `Lançamento registrado com ${calcularPontos(dados.nivel, dados.quantidade, percentual)} ponto(s). Aguarda validação da chefia.`,
+      aviso: `Lançamento registrado: ${calcularPontos(dados.nivel, dados.quantidade, percentual)} ponto(s) já contam na sua média. A chefia confere e só deixa de contar se devolver.`,
     });
   }),
 );

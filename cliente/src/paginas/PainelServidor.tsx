@@ -29,6 +29,7 @@ interface Painel {
   pontos_total: number;
   pontos_base: number;
   pontos_pendentes: number;
+  pontos_devolvidos: number;
   dias_uteis: number;
   dias_ausencia: number;
   dias_efetivos: number;
@@ -164,8 +165,8 @@ export function PainelServidor() {
             lista.push({
               chave: 'fila',
               quantidade: fila.contagem.pendentes,
-              texto: 'lançamentos aguardando sua validação',
-              detalhe: 'Enquanto não forem validados, ficam fora da média do setor.',
+              texto: 'lançamentos ainda não conferidos por você',
+              detalhe: 'Eles já contam na média. Devolva os que não devem contar.',
               destino: '/validacao',
               acao: 'Abrir a fila',
               urgente: true,
@@ -202,7 +203,7 @@ export function PainelServidor() {
           chave: 'devolvidos',
           quantidade: painel.lancamentos_devolvidos,
           texto: 'lançamentos seus foram devolvidos',
-          detalhe: 'Ajuste conforme a justificativa da chefia e envie de novo.',
+          detalhe: 'Saíram da sua média. Ajuste conforme a justificativa e envie de novo.',
           destino: '/lancamentos',
           acao: 'Ver meus lançamentos',
           urgente: true,
@@ -338,7 +339,7 @@ export function PainelServidor() {
               <Cartao>
                 <Figura
                   titulo="De onde vieram seus pontos"
-                  apoio={`${painel.lancamentos_validados} lançamento(s) validado(s) em ${competenciaLegivel(competencia)}`}
+                  apoio={`${painel.lancamentos_validados + painel.lancamentos_pendentes} lançamento(s) contando em ${competenciaLegivel(competencia)}`}
                 >
                   <Rosca fatias={composicao} totalRotulo="pontos" />
                 </Figura>
@@ -355,7 +356,7 @@ export function PainelServidor() {
               <Cartao>
                 <Figura
                   titulo={`Você e o grupo ${resposta.grupo.nome}`}
-                  apoio="As médias dos colegas aparecem sem nome: a comparação é com o nível do grupo, não com pessoas."
+                  apoio="Médias de quem está no mesmo grupo que você, no mês. A linha tracejada é a referência do grupo."
                 >
                   <BarrasHorizontais
                     itens={resposta.grupo.medias.map((linha) => ({
@@ -486,9 +487,9 @@ export function PainelServidor() {
                     apoio={`${numero(painel.pontos_total, 1)} pontos ÷ ${painel.dias_efetivos} dias efetivos`}
                   />
                   <Medida
-                    rotulo="Aguardando validação"
+                    rotulo="Ainda não conferidos"
                     valor={painel.lancamentos_pendentes}
-                    apoio={`${numero(painel.pontos_pendentes, 1)} ponto(s) fora da média até a chefia validar`}
+                    apoio={`${numero(painel.pontos_pendentes, 1)} ponto(s) já contando, à espera da chefia`}
                   />
                   <Medida
                     rotulo="Em andamento"
@@ -498,8 +499,9 @@ export function PainelServidor() {
                 </div>
                 {painel.lancamentos_devolvidos > 0 && (
                   <Aviso tipo="atencao">
-                    {painel.lancamentos_devolvidos} lançamento(s) devolvido(s) pela chefia. Ajuste e
-                    envie de novo para voltarem à fila.
+                    {painel.lancamentos_devolvidos} lançamento(s) devolvido(s) pela chefia, valendo{' '}
+                    {numero(painel.pontos_devolvidos, 1)} ponto(s) que saíram da sua média. Ajuste
+                    conforme a justificativa e envie de novo.
                   </Aviso>
                 )}
                 {painel.dias_ausencia > 0 && (
