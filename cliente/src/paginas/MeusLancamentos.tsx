@@ -385,6 +385,10 @@ function FormularioLancamento({
     }));
   }
 
+  const temDetalhe = Boolean(
+    formulario.periodo_fim || formulario.link_externo || Number(formulario.quantidade) !== 1,
+  );
+
   const percentualDoPapel = pesos[formulario.papel] ?? 100;
   const pontos =
     Math.round(
@@ -459,7 +463,7 @@ function FormularioLancamento({
           </Campo>
         )}
 
-        <Campo rotulo="Número do processo">
+        <Campo rotulo="Número do processo" dica="É por ele que o sistema conta as entregas do setor e avisa sobre lançamento repetido.">
           <input
             value={formulario.processo}
             onChange={(evento) => alterar('processo', evento.target.value)}
@@ -483,16 +487,8 @@ function FormularioLancamento({
           </Aviso>
         )}
 
-        <Campo rotulo="Descrição do que foi feito">
-          <textarea
-            value={formulario.descricao}
-            onChange={(evento) => alterar('descricao', evento.target.value)}
-            placeholder="Resuma a atividade realizada no processo."
-          />
-        </Campo>
-
         <div className="linha-campos">
-          <Campo rotulo="Nível de complexidade">
+          <Campo rotulo="Pontuação: nível de complexidade">
             <select
               value={formulario.nivel}
               onChange={(evento) => alterar('nivel', Number(evento.target.value))}
@@ -519,7 +515,8 @@ function FormularioLancamento({
           </Campo>
         </div>
 
-        {/* O criterio precisa ficar visivel na hora de escolher o nivel. */}
+        {/* O critério fica visível na hora de escolher o nível: pontuação
+            autodeclarada sem critério à vista vira chute. */}
         {criterio && (
           <Aviso tipo="informativo">
             <strong>
@@ -529,8 +526,7 @@ function FormularioLancamento({
           </Aviso>
         )}
 
-        {/* A conta aparece enquanto a pessoa escolhe, para a pontuação não ser
-            uma caixa-preta descoberta só depois. */}
+        {/* A conta aparece enquanto a pessoa escolhe, e não só depois de salvar. */}
         <Aviso tipo="sucesso">
           <strong>Este lançamento vale {numero(pontos, 2)} ponto(s).</strong> Nível{' '}
           {formulario.nivel} × {formulario.quantidade || 0}{' '}
@@ -539,22 +535,19 @@ function FormularioLancamento({
         </Aviso>
 
         <div className="linha-campos">
-          <Campo
-            rotulo="Quantas vezes"
-            dica="Quantas vezes você fez esta mesma tarefa neste processo. Deixe 1 se foi uma vez só."
-          >
+          <Campo rotulo="Início (se souber)">
             <input
-              type="number"
-              min={1}
-              step="1"
-              value={formulario.quantidade}
-              onChange={(evento) => alterar('quantidade', Number(evento.target.value))}
+              type="date"
+              value={formulario.periodo_inicio}
+              onChange={(evento) => alterar('periodo_inicio', evento.target.value)}
             />
           </Campo>
 
           <Campo
-            rotulo="Data de conclusão"
-            dica="O ponto entra no mês desta data, mesmo que a execução tenha começado antes."
+            rotulo={
+              formulario.status === 'EM_ANDAMENTO' ? 'Previsão de conclusão' : 'Data de conclusão'
+            }
+            dica="É esta data que define em que mês o ponto entra."
           >
             <input
               type="date"
@@ -565,34 +558,51 @@ function FormularioLancamento({
           </Campo>
         </div>
 
-        <div className="linha-campos">
-          <Campo rotulo="Início da execução (opcional)">
-            <input
-              type="date"
-              value={formulario.periodo_inicio}
-              onChange={(evento) => alterar('periodo_inicio', evento.target.value)}
-            />
-          </Campo>
-          <Campo rotulo="Fim da execução (opcional)">
-            <input
-              type="date"
-              value={formulario.periodo_fim}
-              onChange={(evento) => alterar('periodo_fim', evento.target.value)}
-            />
-          </Campo>
-        </div>
+        <Campo rotulo="Situação">
+          <select
+            value={formulario.status}
+            onChange={(evento) => alterar('status', evento.target.value)}
+          >
+            <option value="CONCLUIDO">Concluído</option>
+            <option value="EM_ANDAMENTO">Em andamento</option>
+          </select>
+        </Campo>
 
-        <div className="linha-campos">
-          <Campo rotulo="Situação">
-            <select
-              value={formulario.status}
-              onChange={(evento) => alterar('status', evento.target.value)}
+        <Campo rotulo="Observação">
+          <textarea
+            value={formulario.descricao}
+            onChange={(evento) => alterar('descricao', evento.target.value)}
+            placeholder="Algo que a chefia precise saber para validar. Opcional."
+          />
+        </Campo>
+
+        <details className="detalhe-tabela" open={temDetalhe}>
+          <summary>Mais campos, se precisar</summary>
+
+          <div className="linha-campos">
+            <Campo
+              rotulo="Quantas vezes"
+              dica="Quantas vezes você fez esta mesma tarefa neste processo. Deixe 1 se foi uma vez só."
             >
-              <option value="CONCLUIDO">Concluído</option>
-              <option value="EM_ANDAMENTO">Em andamento</option>
-            </select>
-          </Campo>
-          <Campo rotulo="Link externo (opcional)">
+              <input
+                type="number"
+                min={1}
+                step="1"
+                value={formulario.quantidade}
+                onChange={(evento) => alterar('quantidade', Number(evento.target.value))}
+              />
+            </Campo>
+
+            <Campo rotulo="Fim da execução">
+              <input
+                type="date"
+                value={formulario.periodo_fim}
+                onChange={(evento) => alterar('periodo_fim', evento.target.value)}
+              />
+            </Campo>
+          </div>
+
+          <Campo rotulo="Link externo">
             <input
               type="url"
               value={formulario.link_externo}
@@ -600,7 +610,7 @@ function FormularioLancamento({
               placeholder="https://"
             />
           </Campo>
-        </div>
+        </details>
 
         {formulario.status === 'EM_ANDAMENTO' && (
           <Aviso tipo="informativo">
