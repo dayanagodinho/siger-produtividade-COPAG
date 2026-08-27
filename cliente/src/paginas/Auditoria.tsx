@@ -31,6 +31,20 @@ const ENTIDADES = [
   { valor: 'sessao', rotulo: 'Entradas e saídas' },
 ];
 
+/** A tabela mostra o nome que a pessoa reconhece, não a chave interna. */
+const NOME_DA_ENTIDADE: Record<string, string> = {
+  lancamento: 'Lançamento',
+  ausencia: 'Ausência',
+  servidor: 'Servidor',
+  setor: 'Setor',
+  grupo: 'Grupo',
+  parametro: 'Parâmetro',
+  nivel_complexidade: 'Nível de complexidade',
+  feriado: 'Feriado',
+  fechamento: 'Fechamento',
+  sessao: 'Acesso',
+};
+
 export function Auditoria() {
   const [entidade, setEntidade] = useState('');
   const [de, setDe] = useState('');
@@ -109,8 +123,8 @@ export function Auditoria() {
                       <td>{registro.usuario_nome ?? 'Sistema'}</td>
                       <td>{registro.acao_rotulo}</td>
                       <td className="discreto">
-                        {registro.entidade}
-                        {registro.entidade_id ? ` #${registro.entidade_id}` : ''}
+                        {NOME_DA_ENTIDADE[registro.entidade] ?? registro.entidade}
+                        {registro.entidade_id ? ` nº ${registro.entidade_id}` : ''}
                       </td>
                       <td className="discreto">{registro.contexto ?? '—'}</td>
                       <td>

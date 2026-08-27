@@ -13,7 +13,7 @@ export const rotasDeAuditoria = Router();
 rotasDeAuditoria.use(exigirAutenticacao);
 
 const ROTULO_DA_ACAO: Record<string, string> = {
-  CRIACAO: 'Criacao',
+  CRIACAO: 'Criação',
   ALTERACAO: 'Alteração',
   EXCLUSAO: 'Exclusão',
 };
