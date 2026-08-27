@@ -53,6 +53,8 @@ async function limpar(): Promise<void> {
     TRUNCATE fechamento_servidores, fechamento_grupos, fechamentos,
              lancamentos, ausencias, auditoria, sessoes RESTART IDENTITY CASCADE
   `);
+  await pool.query('DELETE FROM tarefas');
+  await pool.query('ALTER SEQUENCE tarefas_id_seq RESTART WITH 1');
   await pool.query('UPDATE setores SET chefe_servidor_id = NULL');
   await pool.query('DELETE FROM servidores');
   await pool.query('DELETE FROM grupos');
@@ -108,6 +110,41 @@ async function semear(): Promise<void> {
   }
   console.log(`Grupos cadastrados: ${grupos.size}`);
 
+  // Catalogo de tarefas por grupo: e dele que sai o nivel sugerido no lancamento.
+  const TAREFAS: Record<string, Array<[string, number, string]>> = {
+    'Análise de contratos': [
+      ['Conferência documental e juntada', 1, 'Recebimento, conferência e juntada de documentos ao processo.'],
+      ['Instrução de aditivo de prazo', 2, 'Instrução de prorrogação contratual sem alteração de valor.'],
+      ['Análise de renovação contratual', 2, 'Verificação de vantajosidade e regularidade para renovar.'],
+      ['Análise de habilitação e minuta', 3, 'Exame de habilitação e elaboração ou revisão da minuta.'],
+      ['Contratação direta com parecer', 4, 'Dispensa ou inexigibilidade que exige consulta à assessoria jurídica.'],
+    ],
+    Pagamentos: [
+      ['Liquidação de nota fiscal', 1, 'Ateste e liquidação de nota fiscal sem intercorrência.'],
+      ['Conferência de retenções', 2, 'Conferência de retenções tributárias e previdenciárias.'],
+      ['Conferência de planilha de custos', 2, 'Verificação da planilha de formação de preços do contrato.'],
+      ['Regularização de pagamento com glosa', 3, 'Apuração de glosa e recomposição do valor a pagar.'],
+      ['Ajuste de empenho e reprocessamento', 3, 'Correção de empenho e reprocessamento do pagamento.'],
+    ],
+  };
+
+  const tarefasPorGrupo = new Map<string, Array<{ id: number; nome: string; nivel: number }>>();
+  let totalTarefas = 0;
+  for (const [nomeGrupo, lista] of Object.entries(TAREFAS)) {
+    const doGrupo: Array<{ id: number; nome: string; nivel: number }> = [];
+    for (const [nome, nivel, descricao] of lista) {
+      const inserida = await pool.query<{ id: number }>(
+        `INSERT INTO tarefas (grupo_id, nome, descricao, nivel_sugerido)
+         VALUES ($1, $2, $3, $4) RETURNING id`,
+        [grupos.get(nomeGrupo), nome, descricao, nivel],
+      );
+      doGrupo.push({ id: inserida.rows[0].id, nome, nivel });
+      totalTarefas += 1;
+    }
+    tarefasPorGrupo.set(nomeGrupo, doGrupo);
+  }
+  console.log(`Tarefas cadastradas: ${totalTarefas}`);
+
   const senhaHash = await gerarHashDeSenha(SENHA_PADRAO);
   const idsPorMatricula = new Map<string, number>();
 
@@ -161,25 +198,16 @@ async function semear(): Promise<void> {
   // Volume mensal por servidor. Os niveis giram em ciclo para render uma
   // distribuicao plausivel entre 1 e 4, sem sorteio: o seed precisa ser
   // reproduzivel para conferir os numeros a mao.
-  const PRODUCAO: Record<string, { porMes: number; niveis: number[]; prefixo: number }> = {
-    '100002': { porMes: 4, niveis: [2, 3, 2], prefixo: 860 },
-    '100003': { porMes: 11, niveis: [3, 2, 4, 2, 3, 1], prefixo: 861 },
-    '100004': { porMes: 9, niveis: [2, 3, 2, 1, 3], prefixo: 862 },
-    '100005': { porMes: 10, niveis: [1, 2, 1, 2, 3], prefixo: 863 },
-    '100006': { porMes: 12, niveis: [2, 1, 3, 1, 2], prefixo: 864 },
-    '100007': { porMes: 10, niveis: [2, 1, 2, 3], prefixo: 865 },
+  const PRODUCAO: Record<string, { porMes: number; ordem: number[]; prefixo: number }> = {
+    '100002': { porMes: 4, ordem: [1, 3, 1], prefixo: 860 },
+    '100003': { porMes: 11, ordem: [3, 1, 4, 1, 3, 0], prefixo: 861 },
+    '100004': { porMes: 9, ordem: [1, 3, 2, 0, 3], prefixo: 862 },
+    '100005': { porMes: 10, ordem: [0, 1, 0, 2, 3], prefixo: 863 },
+    '100006': { porMes: 12, ordem: [1, 0, 3, 0, 2], prefixo: 864 },
+    '100007': { porMes: 10, ordem: [1, 0, 2, 4], prefixo: 865 },
   };
 
-  const DESCRICOES = [
-    'Análise de habilitação e minuta contratual',
-    'Instrução de aditivo de prazo',
-    'Conferência documental e juntada',
-    'Análise de renovação contratual',
-    'Liquidação de nota fiscal',
-    'Conferência de retenções',
-    'Regularização de pagamento com glosa',
-    'Contratação direta com parecer da assessoria',
-  ];
+  const grupoDoServidor = new Map(SERVIDORES.map((s) => [s.matricula, s.grupo]));
 
   interface LancamentoSemente {
     servidorId: number;
@@ -188,6 +216,7 @@ async function semear(): Promise<void> {
     papel: 'EXECUCAO' | 'REVISAO' | 'HOMOLOGACAO';
     conclusao: string;
     descricao: string;
+    tarefaId: number | null;
   }
 
   const semente: LancamentoSemente[] = [];
@@ -200,10 +229,13 @@ async function semear(): Promise<void> {
       // Gabriela esta de ferias em agosto: nao produz nada na competencia.
       if (matricula === '100007' && competencia === '2026-08-01') continue;
       const servidorId = idsPorMatricula.get(matricula)!;
+      const catalogo = tarefasPorGrupo.get(grupoDoServidor.get(matricula) ?? '') ?? [];
+
       for (let indice = 0; indice < plano.porMes; indice += 1) {
         // Espalha os lancamentos ao longo dos dias uteis do mes.
         const dia = uteis[Math.floor((indice * uteis.length) / plano.porMes)];
-        const nivel = plano.niveis[indice % plano.niveis.length];
+        const tarefa = catalogo[plano.ordem[indice % plano.ordem.length] % catalogo.length];
+        const nivel = tarefa.nivel;
         const processo = `${plano.prefixo}${String(mes * 100 + indice).padStart(3, '0')}/2026`;
         semente.push({
           servidorId,
@@ -211,7 +243,8 @@ async function semear(): Promise<void> {
           nivel,
           papel: 'EXECUCAO',
           conclusao: dia,
-          descricao: DESCRICOES[(indice + mes) % DESCRICOES.length],
+          descricao: tarefa.nome,
+          tarefaId: tarefa.id,
         });
 
         // Um em cada quatro processos passa por revisao de um colega e por
@@ -226,7 +259,8 @@ async function semear(): Promise<void> {
             nivel,
             papel: 'REVISAO',
             conclusao: diaRevisao,
-            descricao: 'Revisão do processo instruido pelo colega',
+            descricao: `Revisão de: ${tarefa.nome}`,
+            tarefaId: null,
           });
           semente.push({
             servidorId: chefeId,
@@ -234,7 +268,8 @@ async function semear(): Promise<void> {
             nivel,
             papel: 'HOMOLOGACAO',
             conclusao: diaRevisao,
-            descricao: 'Homologação do processo',
+            descricao: `Homologação de: ${tarefa.nome}`,
+            tarefaId: null,
           });
         }
       }
@@ -254,8 +289,8 @@ async function semear(): Promise<void> {
       `INSERT INTO lancamentos
          (servidor_id, processo, descricao, nivel, papel, quantidade, data_conclusao,
           status, situacao, nivel_aplicado, percentual_papel, criado_por,
-          validado_por, validado_em)
-       VALUES ($1, $2, $3, $4, $5, 1, $6, 'CONCLUIDO', $7, $4, $8, $1, $9, $10)
+          validado_por, validado_em, tarefa_id)
+       VALUES ($1, $2, $3, $4, $5, 1, $6, 'CONCLUIDO', $7, $4, $8, $1, $9, $10, $11)
        ON CONFLICT DO NOTHING`,
       [
         item.servidorId,
@@ -268,6 +303,7 @@ async function semear(): Promise<void> {
         percentual,
         jaValidado ? chefeId : null,
         jaValidado ? `${item.conclusao} 17:00:00-03` : null,
+        item.tarefaId,
       ],
     );
     inseridos += resultado.rowCount ?? 0;

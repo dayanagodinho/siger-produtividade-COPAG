@@ -9,8 +9,9 @@ import {
   garantirSetorSobGestao,
 } from '../infra/autorizacao';
 import { competenciaValida, validar } from '../infra/validacao';
-import { competenciaAtual, rotularCompetencia } from '../dominio/datas';
+import { competenciaAtual, rotularCompetencia, type DataIso } from '../dominio/datas';
 import { apurarCompetencia } from '../dominio/apuracao';
+import { lerConsolidadoVigente } from '../dominio/fechamento';
 import { ROTULO_DA_FAIXA } from '../dominio/calculo';
 
 export const rotasDeIndicadores = Router();
@@ -49,6 +50,84 @@ rotasDeIndicadores.get(
       painel: montarPainel(meu, apuracao.grupos),
       limites: apuracao.limites,
     });
+  }),
+);
+
+/**
+ * Serie mensal de um servidor: media do mes e referencia do grupo aplicada.
+ * Alimenta o grafico de evolucao no painel. Mes fechado vem do consolidado
+ * congelado; mes aberto e apurado na hora.
+ */
+async function montarSerie(
+  setorId: number,
+  servidorId: number,
+  ate: DataIso,
+  meses: number,
+): Promise<Array<{
+  competencia: string;
+  competencia_rotulo: string;
+  media: number | null;
+  referencia: number | null;
+  situacao: string;
+  fechado: boolean;
+  sem_registro: boolean;
+}>> {
+  const [ano, mes] = ate.split('-').map(Number);
+  const serie = [];
+
+  for (let recuo = meses - 1; recuo >= 0; recuo -= 1) {
+    const referencia = new Date(Date.UTC(ano, mes - 1 - recuo, 1));
+    const competencia = `${referencia.getUTCFullYear()}-${String(
+      referencia.getUTCMonth() + 1,
+    ).padStart(2, '0')}-01`;
+
+    const consolidado = await lerConsolidadoVigente(setorId, competencia);
+    const congelado = consolidado?.servidores?.find((s) => s.servidor_id === servidorId);
+
+    if (congelado) {
+      serie.push({
+        competencia,
+        competencia_rotulo: rotularCompetencia(competencia),
+        media: congelado.media === null ? null : Number(congelado.media),
+        referencia: congelado.referencia === null ? null : Number(congelado.referencia),
+        situacao: congelado.situacao,
+        fechado: true,
+        sem_registro: Number(congelado.pontos_total) === 0 && Number(congelado.pontos_pendentes) === 0,
+      });
+      continue;
+    }
+
+    const apuracao = await apurarCompetencia(setorId, competencia);
+    const linha = apuracao.servidores.find((s) => s.servidor_id === servidorId);
+    // Mes em que a pessoa nao lancou nada e mes zerado sao coisas diferentes na
+    // leitura do grafico: um nao tem registro, o outro tem media zero.
+    const semRegistro =
+      !linha ||
+      (linha.lancamentos_validados === 0 &&
+        linha.lancamentos_pendentes === 0 &&
+        linha.lancamentos_em_andamento === 0);
+
+    serie.push({
+      competencia,
+      competencia_rotulo: rotularCompetencia(competencia),
+      media: linha?.media ?? null,
+      referencia: linha?.referencia ?? null,
+      situacao: linha?.situacao ?? 'SEM_APURACAO',
+      fechado: false,
+      sem_registro: semRegistro,
+    });
+  }
+
+  return serie;
+}
+
+rotasDeIndicadores.get(
+  '/minha-serie',
+  rota(async (req, res) => {
+    const usuario = req.usuario!;
+    const competencia = competenciaDaConsulta(req.query.competencia);
+    const meses = Math.min(12, Math.max(3, Number(req.query.meses ?? 6)));
+    res.json({ serie: await montarSerie(usuario.setor_id, usuario.id, competencia, meses) });
   }),
 );
 

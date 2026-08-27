@@ -41,6 +41,8 @@ interface Lancamento {
   justificativa: string | null;
   servidor_nome: string;
   validado_por_nome: string | null;
+  tarefa_id: number | null;
+  tarefa_nome: string | null;
 }
 
 interface Nivel {
@@ -50,7 +52,18 @@ interface Nivel {
   ativo: boolean;
 }
 
+interface Tarefa {
+  id: number;
+  nome: string;
+  descricao: string | null;
+  nivel_sugerido: number;
+  nivel_rotulo: string | null;
+}
+
+type Pesos = Record<string, number>;
+
 const FORMULARIO_VAZIO = {
+  tarefa_id: '',
   processo: '',
   descricao: '',
   nivel: 2,
@@ -69,6 +82,8 @@ export function MeusLancamentos() {
   const [busca, setBusca] = useState('');
   const [lancamentos, setLancamentos] = useState<Lancamento[]>([]);
   const [niveis, setNiveis] = useState<Nivel[]>([]);
+  const [tarefas, setTarefas] = useState<Tarefa[]>([]);
+  const [pesos, setPesos] = useState<Pesos>({ EXECUCAO: 100, REVISAO: 40, HOMOLOGACAO: 20 });
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
   const [sucesso, setSucesso] = useState<string | null>(null);
@@ -88,6 +103,20 @@ export function MeusLancamentos() {
 
   useEffect(() => {
     api.buscar<{ niveis: Nivel[] }>('/complexidade').then((r) => setNiveis(r.niveis));
+    api
+      .buscar<{ tarefas: Tarefa[] }>('/tarefas')
+      .then((r) => setTarefas(r.tarefas))
+      .catch(() => setTarefas([]));
+    api
+      .buscar<{ parametros: Array<{ chave: string; valor: number }> }>('/parametros')
+      .then((r) => {
+        const mapa: Pesos = {};
+        for (const item of r.parametros) {
+          if (item.chave.startsWith('PESO_')) mapa[item.chave.slice(5)] = Number(item.valor);
+        }
+        setPesos((atual) => ({ ...atual, ...mapa }));
+      })
+      .catch(() => undefined);
   }, []);
 
   useEffect(carregar, [carregar]);
@@ -191,7 +220,7 @@ export function MeusLancamentos() {
                         </td>
                         <td className="discreto">
                           <div className="resumo" title={lancamento.descricao ?? ''}>
-                            {lancamento.descricao || '—'}
+                            {lancamento.tarefa_nome ?? lancamento.descricao ?? '—'}
                           </div>
                           {lancamento.justificativa && (
                             <div style={{ marginTop: '0.35rem', color: 'var(--alerta)' }}>
@@ -200,10 +229,10 @@ export function MeusLancamentos() {
                           )}
                         </td>
                         <td>
-                          {lancamento.nivel}
+                          N{lancamento.nivel}
                           {lancamento.nivel_original !== null && (
                             <div className="campo-dica">
-                              corrigido de {lancamento.nivel_original} por{' '}
+                              corrigido de N{lancamento.nivel_original} por{' '}
                               {lancamento.nivel_alterado_por_nome}
                             </div>
                           )}
@@ -258,6 +287,8 @@ export function MeusLancamentos() {
       {formularioAberto && (
         <FormularioLancamento
           niveis={niveis}
+          tarefas={tarefas}
+          pesos={pesos}
           lancamento={editando}
           aoFechar={() => setFormularioAberto(false)}
           aoSalvar={(mensagem) => {
@@ -282,11 +313,15 @@ interface Existente {
 
 function FormularioLancamento({
   niveis,
+  tarefas,
+  pesos,
   lancamento,
   aoFechar,
   aoSalvar,
 }: {
   niveis: Nivel[];
+  tarefas: Tarefa[];
+  pesos: Pesos;
   lancamento: Lancamento | null;
   aoFechar: () => void;
   aoSalvar: (mensagem: string) => void;
@@ -294,6 +329,7 @@ function FormularioLancamento({
   const [formulario, setFormulario] = useState(
     lancamento
       ? {
+          tarefa_id: lancamento.tarefa_id ? String(lancamento.tarefa_id) : '',
           processo: lancamento.processo,
           descricao: lancamento.descricao ?? '',
           nivel: lancamento.nivel,
@@ -337,12 +373,31 @@ function FormularioLancamento({
     setFormulario((atual) => ({ ...atual, [campo]: valor }));
   }
 
+  /* Escolher a tarefa preenche o nível sugerido pelo catálogo e a descrição.
+     O servidor ainda pode ajustar: o catálogo sugere, a chefia valida. */
+  function escolherTarefa(id: string) {
+    const tarefa = tarefas.find((t) => String(t.id) === id);
+    setFormulario((atual) => ({
+      ...atual,
+      tarefa_id: id,
+      nivel: tarefa ? tarefa.nivel_sugerido : atual.nivel,
+      descricao: tarefa && !atual.descricao ? tarefa.nome : atual.descricao,
+    }));
+  }
+
+  const percentualDoPapel = pesos[formulario.papel] ?? 100;
+  const pontos =
+    Math.round(
+      Number(formulario.nivel) * Number(formulario.quantidade || 0) * percentualDoPapel,
+    ) / 100;
+
   async function submeter(evento: React.FormEvent) {
     evento.preventDefault();
     setErro(null);
     setEnviando(true);
     const corpo = {
       ...formulario,
+      tarefa_id: formulario.tarefa_id ? Number(formulario.tarefa_id) : null,
       periodo_inicio: formulario.periodo_inicio || null,
       periodo_fim: formulario.periodo_fim || null,
       link_externo: formulario.link_externo || null,
@@ -384,6 +439,25 @@ function FormularioLancamento({
     >
       <form id="formulario-lancamento" onSubmit={submeter}>
         {erro && <Aviso tipo="erro">{erro}</Aviso>}
+
+        {tarefas.length > 0 && (
+          <Campo
+            rotulo="Tarefa do seu grupo"
+            dica="Escolher a tarefa já preenche o nível sugerido pelo catálogo do grupo. Você pode ajustar."
+          >
+            <select
+              value={formulario.tarefa_id}
+              onChange={(evento) => escolherTarefa(evento.target.value)}
+            >
+              <option value="">Outra atividade, fora do catálogo</option>
+              {tarefas.map((tarefa) => (
+                <option key={tarefa.id} value={tarefa.id}>
+                  N{tarefa.nivel_sugerido} · {tarefa.nome}
+                </option>
+              ))}
+            </select>
+          </Campo>
+        )}
 
         <Campo rotulo="Número do processo">
           <input
@@ -427,7 +501,7 @@ function FormularioLancamento({
                 .filter((nivel) => nivel.ativo)
                 .map((nivel) => (
                   <option key={nivel.nivel} value={nivel.nivel}>
-                    {nivel.nivel} — {nivel.rotulo}
+                    N{nivel.nivel} — {nivel.rotulo}
                   </option>
                 ))}
             </select>
@@ -449,14 +523,26 @@ function FormularioLancamento({
         {criterio && (
           <Aviso tipo="informativo">
             <strong>
-              Nível {criterio.nivel} — {criterio.rotulo}:
+              N{criterio.nivel} — {criterio.rotulo}:
             </strong>{' '}
             {criterio.criterio}
           </Aviso>
         )}
 
+        {/* A conta aparece enquanto a pessoa escolhe, para a pontuação não ser
+            uma caixa-preta descoberta só depois. */}
+        <Aviso tipo="sucesso">
+          <strong>Este lançamento vale {numero(pontos, 2)} ponto(s).</strong> Nível{' '}
+          {formulario.nivel} × {formulario.quantidade || 0}{' '}
+          {Number(formulario.quantidade) === 1 ? 'vez' : 'vezes'} ×{' '}
+          {numero(percentualDoPapel, 0)}% de {ROTULO_DO_PAPEL[formulario.papel].toLowerCase()}.
+        </Aviso>
+
         <div className="linha-campos">
-          <Campo rotulo="Quantidade">
+          <Campo
+            rotulo="Quantas vezes"
+            dica="Quantas vezes você fez esta mesma tarefa neste processo. Deixe 1 se foi uma vez só."
+          >
             <input
               type="number"
               min={1}

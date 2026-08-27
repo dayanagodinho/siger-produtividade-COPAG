@@ -240,9 +240,9 @@ export function FilaValidacao() {
                         )}
                       </td>
                       <td className="nao-quebra">
-                        {item.nivel} — {item.nivel_rotulo}
+                        N{item.nivel} — {item.nivel_rotulo}
                         {item.nivel_original !== null && (
-                          <div className="campo-dica">declarado como {item.nivel_original}</div>
+                          <div className="campo-dica">declarado como N{item.nivel_original}</div>
                         )}
                       </td>
                       <td>{ROTULO_DO_PAPEL[item.papel]}</td>
@@ -373,7 +373,7 @@ function FormularioDevolucao({
     >
       {erro && <Aviso tipo="erro">{erro}</Aviso>}
       <p className="discreto">
-        Lançado por {item.servidor_nome} como {ROTULO_DO_PAPEL[item.papel]}, nível {item.nivel}.
+        Lançado por {item.servidor_nome} como {ROTULO_DO_PAPEL[item.papel]}, nível N{item.nivel}.
       </p>
       <Campo
         rotulo="Justificativa"
@@ -433,14 +433,14 @@ function FormularioCorrecao({
     >
       {erro && <Aviso tipo="erro">{erro}</Aviso>}
       <p className="discreto">
-        Declarado por {item.servidor_nome} como nível {item.nivel}. A correção fica registrada com
+        Declarado por {item.servidor_nome} como nível N{item.nivel}. A correção fica registrada com
         seu nome e aparece para o servidor.
       </p>
       <Campo rotulo="Novo nível">
         <select value={nivel} onChange={(evento) => setNivel(Number(evento.target.value))}>
           {[1, 2, 3, 4].map((valor) => (
             <option key={valor} value={valor}>
-              {valor}
+              N{valor}
             </option>
           ))}
         </select>

@@ -130,9 +130,26 @@ export function MarcaSituacao({ situacao }: { situacao: string }) {
   return <span className={`marca ${classe}`}>{texto}</span>;
 }
 
+/* Âmbar e verde não se separam sob daltonismo: cada faixa carrega um símbolo
+   além da cor e do texto. */
+export const SIMBOLO_DA_FAIXA: Record<string, string> = {
+  ABAIXO: '▼',
+  DENTRO: '●',
+  ACIMA: '▲',
+};
+
 export function RotuloFaixa({ faixa, texto }: { faixa: string | null; texto?: string | null }) {
   const classe = faixa ? `faixa-${faixa}` : 'faixa-NENHUMA';
-  return <span className={`rotulo-faixa ${classe}`}>{texto ?? 'Sem referência'}</span>;
+  return (
+    <span className={`rotulo-faixa ${classe}`}>
+      {faixa && (
+        <i className="simbolo-faixa" aria-hidden="true">
+          {SIMBOLO_DA_FAIXA[faixa]}
+        </i>
+      )}
+      {texto ?? 'Sem referência'}
+    </span>
+  );
 }
 
 /**
@@ -160,7 +177,14 @@ export function IndicadorAtingimento({
     <div className={`atingimento ${faixa ? `faixa-${faixa}` : 'faixa-NENHUMA'}`}>
       <span className="medida-rotulo">Atingimento no mês</span>
       <span className="atingimento-numero">{percentual(atingimento, 0)}</span>
-      <span className="atingimento-faixa">{faixaRotulo ?? 'Sem referência definida'}</span>
+      <span className="atingimento-faixa">
+        {faixa && (
+          <i className="simbolo-faixa" aria-hidden="true">
+            {SIMBOLO_DA_FAIXA[faixa]}
+          </i>
+        )}
+        {faixaRotulo ?? 'Sem referência definida'}
+      </span>
       <span className="atingimento-referencia">
         Sua média: <strong>{numero(media, 2)}</strong> ponto(s) por dia efetivo · Referência do
         grupo: <strong>{numero(referencia, 2)}</strong>

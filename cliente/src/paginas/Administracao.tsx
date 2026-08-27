@@ -13,6 +13,7 @@ import { Cabecalho } from '../componentes/Layout';
 const ABAS = [
   { chave: 'setores', rotulo: 'Setores' },
   { chave: 'grupos', rotulo: 'Grupos' },
+  { chave: 'tarefas', rotulo: 'Tarefas dos grupos' },
   { chave: 'servidores', rotulo: 'Servidores' },
   { chave: 'complexidade', rotulo: 'Tabela de complexidade' },
   { chave: 'feriados', rotulo: 'Feriados' },
@@ -31,6 +32,7 @@ export function Administracao() {
         <Abas abas={ABAS} ativa={aba} aoMudar={setAba} />
         {aba === 'setores' && <AbaSetores />}
         {aba === 'grupos' && <AbaGrupos />}
+        {aba === 'tarefas' && <AbaTarefas />}
         {aba === 'servidores' && <AbaServidores />}
         {aba === 'complexidade' && <AbaComplexidade />}
         {aba === 'feriados' && <AbaFeriados />}
@@ -364,6 +366,187 @@ function AbaGrupos() {
   );
 }
 
+// -------------------------------------------------------------------- Tarefas
+
+interface Tarefa {
+  id: number;
+  grupo_id: number;
+  grupo_nome: string;
+  nome: string;
+  descricao: string | null;
+  nivel_sugerido: number;
+  nivel_rotulo: string | null;
+  ativa: boolean;
+  lancamentos: number;
+}
+
+function AbaTarefas() {
+  const { dados, carregando, erro, setErro, carregar } = useRecurso<{ tarefas: Tarefa[] }>(
+    '/tarefas?todos=true&incluir_inativas=true',
+  );
+  const { dados: grupos } = useRecurso<{ grupos: Grupo[] }>('/grupos');
+  const [editando, setEditando] = useState<Tarefa | null>(null);
+  const [criando, setCriando] = useState(false);
+  const [sucesso, setSucesso] = useState<string | null>(null);
+
+  async function excluir(tarefa: Tarefa) {
+    if (!window.confirm(`Excluir a tarefa ${tarefa.nome}?`)) return;
+    try {
+      await api.excluir(`/tarefas/${tarefa.id}`);
+      setSucesso('Tarefa excluída.');
+      carregar();
+    } catch (falha) {
+      setErro(mensagemDeErro(falha));
+    }
+  }
+
+  const campos = (): CampoDoFormulario[] => [
+    {
+      chave: 'grupo_id',
+      rotulo: 'Grupo',
+      tipo: 'selecao',
+      obrigatorio: true,
+      opcoes: (grupos?.grupos ?? []).map((g) => ({
+        valor: String(g.id),
+        rotulo: `${g.nome} (${g.setor_nome})`,
+      })),
+    },
+    { chave: 'nome', rotulo: 'Nome da tarefa', tipo: 'texto', obrigatorio: true },
+    { chave: 'descricao', rotulo: 'Quando usar esta tarefa', tipo: 'area' },
+    {
+      chave: 'nivel_sugerido',
+      rotulo: 'Nível sugerido',
+      tipo: 'selecao',
+      obrigatorio: true,
+      dica: 'Vem preenchido no lançamento. O servidor pode ajustar e a chefia valida.',
+      opcoes: [
+        { valor: '1', rotulo: 'N1 — Simples' },
+        { valor: '2', rotulo: 'N2 — Intermediário' },
+        { valor: '3', rotulo: 'N3 — Complexo' },
+        { valor: '4', rotulo: 'N4 — Excepcional' },
+      ],
+    },
+    {
+      chave: 'ativa',
+      rotulo: 'Disponível para lançamento',
+      tipo: 'selecao',
+      opcoes: [
+        { valor: 'sim', rotulo: 'Sim' },
+        { valor: 'nao', rotulo: 'Não' },
+      ],
+    },
+  ];
+
+  return (
+    <Cartao
+      titulo="Tarefas dos grupos"
+      descricao="O catálogo que aparece na tela de lançamento. Ele traz o nível já sugerido, o que reduz a variação de critério entre as pessoas do mesmo grupo."
+      acoes={
+        <button type="button" className="botao botao-principal" onClick={() => setCriando(true)}>
+          Nova tarefa
+        </button>
+      }
+    >
+      {erro && <Aviso tipo="erro">{erro}</Aviso>}
+      {sucesso && <Aviso tipo="sucesso">{sucesso}</Aviso>}
+      {carregando ? (
+        <Carregando />
+      ) : !dados?.tarefas.length ? (
+        <Vazio titulo="Nenhuma tarefa cadastrada">
+          Cadastre as tarefas típicas de cada grupo para que o servidor escolha em vez de digitar.
+        </Vazio>
+      ) : (
+        <div className="tabela-envolucro">
+          <table>
+            <thead>
+              <tr>
+                <th>Nível</th>
+                <th>Tarefa</th>
+                <th>Grupo</th>
+                <th className="numerico">Lançamentos</th>
+                <th>Situação</th>
+                <th />
+              </tr>
+            </thead>
+            <tbody>
+              {dados.tarefas.map((tarefa) => (
+                <tr key={tarefa.id}>
+                  <td className="nao-quebra">
+                    <strong>N{tarefa.nivel_sugerido}</strong>
+                    <div className="campo-dica">{tarefa.nivel_rotulo}</div>
+                  </td>
+                  <td>
+                    {tarefa.nome}
+                    <div className="discreto">{tarefa.descricao ?? '—'}</div>
+                  </td>
+                  <td className="discreto">{tarefa.grupo_nome}</td>
+                  <td className="numerico">{tarefa.lancamentos}</td>
+                  <td>
+                    <span className={`marca ${tarefa.ativa ? 'marca-validado' : 'marca-neutra'}`}>
+                      {tarefa.ativa ? 'Em uso' : 'Fora do catálogo'}
+                    </span>
+                  </td>
+                  <td>
+                    <div className="acoes acoes-tabela">
+                      <button
+                        type="button"
+                        className="botao botao-discreto botao-pequeno"
+                        onClick={() => setEditando(tarefa)}
+                      >
+                        Editar
+                      </button>
+                      <button
+                        type="button"
+                        className="botao botao-discreto botao-pequeno botao-risco"
+                        onClick={() => void excluir(tarefa)}
+                      >
+                        Excluir
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {(criando || editando) && (
+        <FormularioSimples
+          titulo={editando ? 'Editar tarefa' : 'Nova tarefa'}
+          campos={campos()}
+          valores={{
+            grupo_id: String(editando?.grupo_id ?? grupos?.grupos[0]?.id ?? ''),
+            nome: editando?.nome ?? '',
+            descricao: editando?.descricao ?? '',
+            nivel_sugerido: String(editando?.nivel_sugerido ?? 2),
+            ativa: editando?.ativa === false ? 'nao' : 'sim',
+          }}
+          aoFechar={() => {
+            setCriando(false);
+            setEditando(null);
+          }}
+          aoSalvar={async (valores) => {
+            const corpo = {
+              grupo_id: Number(valores.grupo_id),
+              nome: valores.nome,
+              descricao: valores.descricao || null,
+              nivel_sugerido: Number(valores.nivel_sugerido),
+              ativa: valores.ativa === 'sim',
+            };
+            if (editando) await api.atualizar(`/tarefas/${editando.id}`, corpo);
+            else await api.enviar('/tarefas', corpo);
+            setCriando(false);
+            setEditando(null);
+            setSucesso('Tarefa salva.');
+            carregar();
+          }}
+        />
+      )}
+    </Cartao>
+  );
+}
+
 // --------------------------------------------------------------- Servidores
 
 interface ServidorCadastro {
@@ -651,7 +834,7 @@ function AbaComplexidade() {
               {dados?.niveis.map((nivel) => (
                 <tr key={nivel.nivel}>
                   <td>
-                    <strong>{nivel.nivel}</strong>
+                    <strong>N{nivel.nivel}</strong>
                   </td>
                   <td>{nivel.rotulo}</td>
                   <td className="discreto">{nivel.criterio}</td>
@@ -678,7 +861,7 @@ function AbaComplexidade() {
 
       {editando && (
         <FormularioSimples
-          titulo={`Editar o nível ${editando.nivel}`}
+          titulo={`Editar o nível N${editando.nivel}`}
           campos={[
             { chave: 'rotulo', rotulo: 'Rótulo', tipo: 'texto', obrigatorio: true },
             { chave: 'criterio', rotulo: 'Critério', tipo: 'area', obrigatorio: true },

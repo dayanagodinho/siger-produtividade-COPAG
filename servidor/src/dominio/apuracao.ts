@@ -47,6 +47,7 @@ export interface ServidorApurado {
   lancamentos_em_andamento: number;
   lancamentos_devolvidos: number;
   distribuicao_niveis: Record<number, number>;
+  pontos_por_papel: Record<string, number>;
   lancamentos_avaliados: number;
   lancamentos_corrigidos: number;
   taxa_correcao: number | null;
@@ -157,6 +158,17 @@ export async function apurarCompetencia(
     const avaliados = meus.filter((l) => l.situacao !== 'PENDENTE');
     const corrigidos = meus.filter((l) => l.nivel_original !== null);
 
+    // Composicao dos pontos validados por papel, para o grafico do painel.
+    const pontosPorPapel: Record<string, number> = { EXECUCAO: 0, REVISAO: 0, HOMOLOGACAO: 0 };
+    for (const lancamento of meus) {
+      if (lancamento.status === 'CONCLUIDO' && lancamento.situacao === 'VALIDADO') {
+        pontosPorPapel[lancamento.papel] += lancamento.pontos;
+      }
+    }
+    for (const papel of Object.keys(pontosPorPapel)) {
+      pontosPorPapel[papel] = Math.round(pontosPorPapel[papel] * 10000) / 10000;
+    }
+
     return {
       servidor_id: servidor.id,
       nome: servidor.nome,
@@ -181,6 +193,7 @@ export async function apurarCompetencia(
       lancamentos_em_andamento: base.lancamentos_em_andamento,
       lancamentos_devolvidos: meus.filter((l) => l.situacao === 'DEVOLVIDO').length,
       distribuicao_niveis: distribuirNiveis(meus.filter((l) => l.status === 'CONCLUIDO')),
+      pontos_por_papel: pontosPorPapel,
       lancamentos_avaliados: avaliados.length,
       lancamentos_corrigidos: corrigidos.length,
       taxa_correcao: taxaDeCorrecao(avaliados.length, corrigidos.length),

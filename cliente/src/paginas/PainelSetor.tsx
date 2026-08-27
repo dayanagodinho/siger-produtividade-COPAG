@@ -6,13 +6,19 @@ import {
   Campo,
   Carregando,
   Cartao,
-  DistribuicaoNiveis,
   Medida,
   Modal,
   RotuloFaixa,
   SeletorCompetencia,
   Vazio,
 } from '../componentes/comuns';
+import {
+  BarraDeNiveis,
+  BarrasHorizontais,
+  Figura,
+  LegendaDeNiveis,
+  Rosca,
+} from '../componentes/graficos';
 import { Cabecalho } from '../componentes/Layout';
 import { useSessao } from '../servicos/sessao';
 
@@ -35,6 +41,7 @@ interface ServidorApurado {
   referencia_rotulo: string;
   lancamentos_pendentes: number;
   distribuicao_niveis: Record<string, number>;
+  pontos_por_papel: Record<string, number>;
   taxa_correcao: number | null;
   lancamentos_avaliados: number;
 }
@@ -202,54 +209,131 @@ export function PainelSetor() {
               </Cartao>
             </div>
 
-            <Cartao
-              titulo="Referência de cada grupo"
-              descricao="A referência define o atingimento de quem está no grupo."
-            >
-              <div className="tabela-envolucro">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Grupo</th>
-                      <th className="numerico">Referência</th>
-                      <th>Origem</th>
-                      <th className="numerico">Servidores considerados</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {apuracao.grupos.map((grupo) => (
-                      <tr key={grupo.grupo_id}>
-                        <td>{grupo.nome}</td>
-                        <td className="numerico">{numero(grupo.referencia, 2)}</td>
-                        <td>
-                          {grupo.origem === 'META_FIXA'
-                            ? `Meta fixa definida em ${
-                                grupo.meta_definida_em
-                                  ? new Date(grupo.meta_definida_em).toLocaleDateString('pt-BR')
-                                  : '—'
-                              }`
-                            : grupo.origem === 'MEDIANA_APURADA'
-                              ? 'Referência apurada no mês (mediana do grupo)'
-                              : 'Sem referência: nenhum servidor apurado no grupo'}
-                        </td>
-                        <td className="numerico">{grupo.servidores_considerados}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </Cartao>
+            <div className="grade grade-2">
+              <Cartao>
+                <Figura
+                  titulo="Atingimento por servidor"
+                  apoio="A linha tracejada é 100% da referência do grupo de cada um."
+                >
+                  <BarrasHorizontais
+                    itens={apuracao.servidores
+                      .filter((s) => s.situacao === 'APURADO' && s.atingimento !== null)
+                      .sort((a, b) => (b.atingimento ?? 0) - (a.atingimento ?? 0))
+                      .map((servidor) => ({
+                        rotulo: primeiroENome(servidor.nome),
+                        apoio: servidor.grupo_nome ?? 'sem grupo',
+                        valor: servidor.atingimento,
+                        formatado: percentual(servidor.atingimento, 0),
+                        cor:
+                          servidor.faixa === 'ABAIXO' ? 'var(--abaixo)'
+                          : servidor.faixa === 'ACIMA' ? 'var(--acima)'
+                          : 'var(--dentro)',
+                      }))}
+                    referencia={1}
+                    rotuloReferencia="100% da referência"
+                    formatar={(valor) => percentual(valor, 0)}
+                  />
+                </Figura>
+                <ul className="legenda legenda-horizontal" style={{ marginTop: '0.75rem' }}>
+                  <li><i style={{ background: 'var(--abaixo)' }} aria-hidden="true" /><span>▼ Abaixo</span></li>
+                  <li><i style={{ background: 'var(--dentro)' }} aria-hidden="true" /><span>● Dentro</span></li>
+                  <li><i style={{ background: 'var(--acima)' }} aria-hidden="true" /><span>▲ Acima</span></li>
+                </ul>
+                {apuracao.servidores.some((s) => s.situacao === 'SEM_APURACAO') && (
+                  <p className="campo-dica" style={{ marginTop: '0.5rem' }}>
+                    Fora do gráfico:{' '}
+                    {apuracao.servidores
+                      .filter((s) => s.situacao === 'SEM_APURACAO')
+                      .map((s) => primeiroENome(s.nome))
+                      .join(', ')}{' '}
+                    — sem apuração no mês.
+                  </p>
+                )}
+              </Cartao>
 
-            <Cartao
-              titulo="Servidores"
-              descricao="Distribuição de níveis e taxa de correção ajudam a ver quem está calibrando mal a autodeclaração."
-            >
-              {apuracao.servidores.length === 0 ? (
-                <Vazio titulo="Nenhum servidor com apuração neste mês">
-                  Verifique se há servidores ativos lotados neste setor.
-                </Vazio>
-              ) : (
+              <Cartao>
+                <Figura
+                  titulo="Composição dos pontos do setor"
+                  apoio="Homologação e revisão elevam o total sem gerar processo novo."
+                >
+                  <Rosca fatias={composicaoDoSetor(apuracao.servidores)} totalRotulo="pontos" />
+                </Figura>
+                <p className="campo-dica" style={{ marginTop: '0.75rem' }}>
+                  {apuracao.resumo.processos_distintos} processo(s) distinto(s) concluído(s) geraram{' '}
+                  {numero(apuracao.resumo.total_pontos, 1)} ponto(s).
+                </p>
+              </Cartao>
+            </div>
+
+            <div className="grade grade-2">
+              <Cartao>
+                <Figura
+                  titulo="Complexidade declarada por servidor"
+                  apoio="Barras quase todas escuras indicam nível inflado; quase todas claras, o contrário."
+                >
+                  <div className="tabela-envolucro">
+                    <table>
+                      <tbody>
+                        {apuracao.servidores
+                          .filter((s) => Object.values(s.distribuicao_niveis).some((v) => v > 0))
+                          .map((servidor) => (
+                            <tr key={servidor.servidor_id}>
+                              <td className="nome-servidor">{primeiroENome(servidor.nome)}</td>
+                              <td style={{ width: '100%' }}>
+                                <BarraDeNiveis niveis={servidor.distribuicao_niveis} compacta />
+                              </td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </Figura>
+                <div style={{ marginTop: '0.75rem' }}>
+                  <LegendaDeNiveis rotulos={{ 1: 'Simples', 2: 'Intermediário', 3: 'Complexo', 4: 'Excepcional' }} />
+                </div>
+              </Cartao>
+
+              <Cartao
+                titulo="Referência de cada grupo"
+                descricao="É ela que define o atingimento de quem está no grupo."
+              >
                 <div className="tabela-envolucro">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Grupo</th>
+                        <th className="numerico">Referência</th>
+                        <th>Origem</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {apuracao.grupos.map((grupo) => (
+                        <tr key={grupo.grupo_id}>
+                          <td>{grupo.nome}</td>
+                          <td className="numerico">{numero(grupo.referencia, 2)}</td>
+                          <td className="discreto">
+                            {grupo.origem === 'META_FIXA'
+                              ? `Meta fixa definida em ${
+                                  grupo.meta_definida_em
+                                    ? new Date(grupo.meta_definida_em).toLocaleDateString('pt-BR')
+                                    : '—'
+                                }`
+                              : grupo.origem === 'MEDIANA_APURADA'
+                                ? `Mediana apurada no mês, sobre ${grupo.servidores_considerados} servidor(es)`
+                                : 'Sem referência: nenhum servidor apurado no grupo'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </Cartao>
+            </div>
+
+            <Cartao>
+              <details className="detalhe-tabela">
+                <summary>Ver a tabela completa, com todos os números</summary>
+                <div className="tabela-envolucro" style={{ marginTop: '1rem' }}>
                   <table>
                     <thead>
                       <tr>
@@ -260,7 +344,6 @@ export function PainelSetor() {
                         <th className="numerico">Referência</th>
                         <th className="numerico">Atingimento</th>
                         <th>Faixa</th>
-                        <th>Níveis 1–4</th>
                         <th className="numerico">Correção</th>
                       </tr>
                     </thead>
@@ -305,9 +388,6 @@ export function PainelSetor() {
                               />
                             )}
                           </td>
-                          <td>
-                            <DistribuicaoNiveis niveis={servidor.distribuicao_niveis} />
-                          </td>
                           <td className="numerico">
                             {percentual(servidor.taxa_correcao, 0)}
                             <div className="campo-dica">
@@ -319,7 +399,7 @@ export function PainelSetor() {
                     </tbody>
                   </table>
                 </div>
-              )}
+              </details>
             </Cartao>
           </>
         )}
@@ -339,6 +419,22 @@ export function PainelSetor() {
       )}
     </>
   );
+}
+
+/** Nome curto para caber no eixo do gráfico sem quebrar linha. */
+function primeiroENome(nome: string): string {
+  const partes = nome.split(' ');
+  return partes.length <= 2 ? nome : `${partes[0]} ${partes[partes.length - 1]}`;
+}
+
+function composicaoDoSetor(servidores: ServidorApurado[]) {
+  const somar = (papel: string) =>
+    servidores.reduce((soma, s) => soma + (s.pontos_por_papel?.[papel] ?? 0), 0);
+  return [
+    { rotulo: 'Execução', valor: somar('EXECUCAO'), cor: 'var(--papel-execucao)' },
+    { rotulo: 'Revisão', valor: somar('REVISAO'), cor: 'var(--papel-revisao)' },
+    { rotulo: 'Homologação', valor: somar('HOMOLOGACAO'), cor: 'var(--papel-homologacao)' },
+  ];
 }
 
 function FecharCompetencia({

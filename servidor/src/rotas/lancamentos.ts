@@ -31,9 +31,9 @@ const CAMPOS = `
   l.data_conclusao, l.competencia, l.periodo_inicio, l.periodo_fim, l.link_externo,
   l.status, l.situacao, l.nivel_aplicado, l.percentual_papel, l.pontos,
   l.nivel_original, l.nivel_alterado_em, l.justificativa, l.validado_em,
-  l.criado_em, l.atualizado_em,
+  l.criado_em, l.atualizado_em, l.tarefa_id,
   s.nome AS servidor_nome, s.matricula AS servidor_matricula, s.setor_id, s.grupo_id,
-  g.nome AS grupo_nome,
+  g.nome AS grupo_nome, tf.nome AS tarefa_nome,
   v.nome AS validado_por_nome,
   a.nome AS nivel_alterado_por_nome,
   c.nome AS criado_por_nome`;
@@ -42,12 +42,14 @@ const DE = `
   FROM lancamentos l
   JOIN servidores s ON s.id = l.servidor_id
   LEFT JOIN grupos g ON g.id = s.grupo_id
+  LEFT JOIN tarefas tf ON tf.id = l.tarefa_id
   LEFT JOIN servidores v ON v.id = l.validado_por
   LEFT JOIN servidores a ON a.id = l.nivel_alterado_por
   LEFT JOIN servidores c ON c.id = l.criado_por`;
 
 const esquema = z.object({
   servidor_id: idNumerico('o servidor').optional(),
+  tarefa_id: idNumerico('a tarefa').nullable().optional(),
   processo: textoObrigatorio('o número do processo', 60),
   descricao: textoOpcional(1000),
   nivel: nivelComplexidade,
@@ -190,6 +192,7 @@ rotasDeLancamentos.post(
     }
 
     conferirPeriodo(dados);
+    await conferirTarefa(dados.tarefa_id ?? null, alvo.grupo_id);
     const competencia = competenciaDe(dados.data_conclusao);
     await garantirCompetenciaAberta(alvo.setor_id, competencia);
 
@@ -201,14 +204,14 @@ rotasDeLancamentos.post(
       `INSERT INTO lancamentos
          (servidor_id, processo, descricao, nivel, papel, quantidade, data_conclusao,
           periodo_inicio, periodo_fim, link_externo, status, situacao,
-          nivel_aplicado, percentual_papel, criado_por)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'PENDENTE', $4, $12, $13)
+          nivel_aplicado, percentual_papel, criado_por, tarefa_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'PENDENTE', $4, $12, $13, $14)
        RETURNING id`,
       [
         servidorId, dados.processo, dados.descricao, dados.nivel, dados.papel,
         dados.quantidade, dados.data_conclusao, dados.periodo_inicio ?? null,
         dados.periodo_fim ?? null, dados.link_externo ?? null, dados.status,
-        percentual, usuario.id,
+        percentual, usuario.id, dados.tarefa_id ?? null,
       ],
     );
 
@@ -239,6 +242,7 @@ rotasDeLancamentos.put(
     const alvo = await garantirAcessoAoServidor(usuario, anterior.servidor_id);
     const dados = validar(esquema, req.body);
     conferirPeriodo(dados);
+    await conferirTarefa(dados.tarefa_id ?? null, alvo.grupo_id);
 
     const chefia = usuario.perfil !== 'SERVIDOR';
     if (!chefia && anterior.situacao === 'VALIDADO') {
@@ -269,13 +273,15 @@ rotasDeLancamentos.put(
           SET processo = $1, descricao = $2, nivel = $3, papel = $4, quantidade = $5,
               data_conclusao = $6, periodo_inicio = $7, periodo_fim = $8,
               link_externo = $9, status = $10, situacao = $11,
-              nivel_aplicado = $3, percentual_papel = $12, atualizado_em = now()
-        WHERE id = $13 AND excluido_em IS NULL
+              nivel_aplicado = $3, percentual_papel = $12, tarefa_id = $13,
+              atualizado_em = now()
+        WHERE id = $14 AND excluido_em IS NULL
         RETURNING id`,
       [
         dados.processo, dados.descricao, dados.nivel, dados.papel, dados.quantidade,
         dados.data_conclusao, dados.periodo_inicio ?? null, dados.periodo_fim ?? null,
-        dados.link_externo ?? null, dados.status, novaSituacao, percentual, id,
+        dados.link_externo ?? null, dados.status, novaSituacao, percentual,
+        dados.tarefa_id ?? null, id,
       ],
     );
 
@@ -346,6 +352,24 @@ export async function buscarLancamento(id: number): Promise<LancamentoCompleto> 
   );
   if (!lancamento) throw erroNaoEncontrado('Lançamento não encontrado.');
   return lancamento;
+}
+
+/** A tarefa escolhida precisa ser do grupo de quem está lançando. */
+async function conferirTarefa(tarefaId: number | null, grupoId: number | null): Promise<void> {
+  if (!tarefaId) return;
+  const tarefa = await consultarUm<{ grupo_id: number; ativa: boolean; nome: string }>(
+    'SELECT grupo_id, ativa, nome FROM tarefas WHERE id = $1 AND excluido_em IS NULL',
+    [tarefaId],
+  );
+  if (!tarefa) throw erroDeRequisicao('Tarefa não encontrada.');
+  if (tarefa.grupo_id !== grupoId) {
+    throw erroDeRequisicao('Esta tarefa pertence a outro grupo. Escolha uma tarefa do seu grupo.');
+  }
+  if (!tarefa.ativa) {
+    throw erroDeRequisicao(
+      `A tarefa "${tarefa.nome}" foi retirada do catálogo e não aceita novos lançamentos.`,
+    );
+  }
 }
 
 function conferirPeriodo(dados: {
