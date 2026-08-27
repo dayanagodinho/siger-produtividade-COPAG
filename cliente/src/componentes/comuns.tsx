@@ -116,6 +116,23 @@ export function Modal({
   );
 }
 
+/** Iniciais em círculo, para dar rosto às listas por pessoa. */
+export function Avatar({ nome, tom }: { nome: string; tom?: 'proprio' }) {
+  const iniciais = nome
+    .trim()
+    .split(/\s+/)
+    .filter((parte) => parte.length > 2)
+    .slice(0, 2)
+    .map((parte) => parte[0])
+    .join('')
+    .toUpperCase();
+  return (
+    <span className="avatar" data-tom={tom} aria-hidden="true">
+      {iniciais || nome.slice(0, 1).toUpperCase()}
+    </span>
+  );
+}
+
 export function MarcaSituacao({ situacao }: { situacao: string }) {
   const classe =
     situacao === 'VALIDADO' ? 'marca-validado'

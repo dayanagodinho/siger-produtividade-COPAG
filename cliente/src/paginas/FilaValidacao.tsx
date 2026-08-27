@@ -8,6 +8,7 @@ import {
   numero,
 } from '../servicos/formato';
 import {
+  Avatar,
   Aviso,
   Campo,
   Carregando,
@@ -22,7 +23,7 @@ import { Cabecalho } from '../componentes/Layout';
 
 interface ItemDaFila {
   id: number;
-  processo: string;
+  processo: string | null;
   descricao: string | null;
   nivel: number;
   nivel_rotulo: string | null;
@@ -218,18 +219,25 @@ export function FilaValidacao() {
                           type="checkbox"
                           checked={selecionados.has(item.id)}
                           onChange={() => alternar(item.id)}
-                          aria-label={`Selecionar ${item.processo}`}
+                          aria-label={`Selecionar ${item.processo ?? item.descricao ?? 'lançamento'}`}
                         />
                       </td>
                       <td className="nome-servidor">
-                        {item.servidor_nome}
-                        <div className="campo-dica">
-                          {item.servidor_matricula}
-                          {item.grupo_nome ? ` · ${item.grupo_nome}` : ''}
-                        </div>
+                        <span className="celula-pessoa">
+                          <Avatar nome={item.servidor_nome} />
+                          <span>
+                            {item.servidor_nome}
+                            <span className="campo-dica" style={{ display: 'block' }}>
+                              {item.servidor_matricula}
+                              {item.grupo_nome ? ` · ${item.grupo_nome}` : ''}
+                            </span>
+                          </span>
+                        </span>
                       </td>
                       <td>
-                        <strong className="nao-quebra">{item.processo}</strong>
+                        <strong className="nao-quebra">
+                          {item.processo ?? <span className="discreto">sem processo</span>}
+                        </strong>
                         <div className="discreto resumo" title={item.descricao ?? ''}>
                           {item.descricao || '—'}
                         </div>
@@ -353,7 +361,7 @@ function FormularioDevolucao({
 
   return (
     <Modal
-      titulo={`Devolver o processo ${item.processo}`}
+      titulo={`Devolver: ${item.processo ?? item.descricao ?? 'lançamento'}`}
       aoFechar={aoFechar}
       rodape={
         <>
@@ -418,7 +426,7 @@ function FormularioCorrecao({
 
   return (
     <Modal
-      titulo={`Corrigir o nível do processo ${item.processo}`}
+      titulo={`Corrigir o nível: ${item.processo ?? item.descricao ?? 'lançamento'}`}
       aoFechar={aoFechar}
       rodape={
         <>

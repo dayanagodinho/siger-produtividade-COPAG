@@ -64,10 +64,16 @@ rotasDeIndicadores.get(
   }),
 );
 
+/** Primeiro e ultimo nome, para caber no eixo do grafico. */
+function nomeCurto(nome: string): string {
+  const partes = nome.trim().split(/\s+/);
+  return partes.length <= 2 ? nome : `${partes[0]} ${partes[partes.length - 1]}`;
+}
+
 /**
- * Onde a pessoa esta em relacao ao grupo, sem expor quem e quem: as medias
- * dos colegas vao anonimas e ordenadas. O objetivo e a pessoa saber o que
- * falta para acompanhar o grupo, nao montar um ranking com nomes.
+ * Onde a pessoa esta em relacao ao grupo. As medias dos colegas do mesmo
+ * grupo aparecem nomeadas, para que a comparacao seja concreta; sao sempre
+ * do proprio grupo, nunca do setor inteiro.
  */
 function montarComparacao(
   meu: Servidor,
@@ -99,9 +105,10 @@ function montarComparacao(
     total_no_grupo: ordenadas.length,
     melhor_media: ordenadas.length ? ordenadas[0].media : null,
     faltam_pontos: faltamPontos,
-    medias: ordenadas.map((servidor, indice) => ({
-      chave: `colega-${indice}`,
-      rotulo: servidor.servidor_id === meu.servidor_id ? 'Você' : `Colega ${indice + 1}`,
+    medias: ordenadas.map((servidor) => ({
+      chave: String(servidor.servidor_id),
+      rotulo:
+        servidor.servidor_id === meu.servidor_id ? 'Você' : nomeCurto(servidor.nome),
       media: servidor.media,
       sou_eu: servidor.servidor_id === meu.servidor_id,
       faixa: servidor.faixa,

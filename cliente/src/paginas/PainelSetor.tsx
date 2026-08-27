@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { api, mensagemDeErro } from '../servicos/api';
 import { competenciaAtual, competenciaLegivel, dataHora, numero, percentual } from '../servicos/formato';
 import {
+  Avatar,
   Aviso,
   Campo,
   Carregando,
@@ -278,7 +279,12 @@ export function PainelSetor() {
                           .filter((s) => Object.values(s.distribuicao_niveis).some((v) => v > 0))
                           .map((servidor) => (
                             <tr key={servidor.servidor_id}>
-                              <td className="nome-servidor">{primeiroENome(servidor.nome)}</td>
+                              <td className="nome-servidor">
+                                <span className="celula-pessoa">
+                                  <Avatar nome={servidor.nome} />
+                                  {primeiroENome(servidor.nome)}
+                                </span>
+                              </td>
                               <td style={{ width: '100%' }}>
                                 <BarraDeNiveis niveis={servidor.distribuicao_niveis} compacta />
                               </td>
@@ -351,10 +357,15 @@ export function PainelSetor() {
                       {apuracao.servidores.map((servidor) => (
                         <tr key={servidor.servidor_id}>
                           <td className="nome-servidor">
-                            {servidor.nome}
-                            <div className="campo-dica">
-                              {servidor.matricula} · {servidor.grupo_nome ?? 'sem grupo'}
-                            </div>
+                            <span className="celula-pessoa">
+                              <Avatar nome={servidor.nome} />
+                              <span>
+                                {servidor.nome}
+                                <span className="campo-dica" style={{ display: 'block' }}>
+                                  {servidor.matricula} · {servidor.grupo_nome ?? 'sem grupo'}
+                                </span>
+                              </span>
+                            </span>
                           </td>
                           <td className="numerico">
                             {numero(servidor.pontos_total, 1)}

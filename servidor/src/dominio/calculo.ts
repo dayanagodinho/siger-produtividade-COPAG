@@ -76,7 +76,7 @@ export const ROTULO_DA_FAIXA: Record<Faixa, string> = {
 
 export interface LancamentoParaApuracao {
   servidor_id: number;
-  processo: string;
+  processo: string | null;
   papel: Papel;
   status: StatusLancamento;
   situacao: SituacaoValidacao;
@@ -230,10 +230,13 @@ export function apurarSetor(
   const totalPontos = apurados.reduce((soma, apuracao) => soma + apuracao.pontos_total, 0);
   const totalDias = apurados.reduce((soma, apuracao) => soma + apuracao.dias_efetivos, 0);
 
+  // Lancamento sem numero de processo nao entra na contagem de distintos:
+  // ele nao identifica uma entrega que possa ser contada uma vez so.
   const processos = new Set(
     lancamentos
       .filter(pontuaNaMedia)
-      .map((lancamento) => lancamento.processo.trim().toUpperCase()),
+      .map((lancamento) => lancamento.processo?.trim().toUpperCase())
+      .filter((processo): processo is string => Boolean(processo)),
   );
 
   return {

@@ -23,7 +23,7 @@ import { useSessao } from '../servicos/sessao';
 
 interface Lancamento {
   id: number;
-  processo: string;
+  processo: string | null;
   descricao: string | null;
   nivel: number;
   nivel_original: number | null;
@@ -122,7 +122,8 @@ export function MeusLancamentos() {
   useEffect(carregar, [carregar]);
 
   async function excluir(lancamento: Lancamento) {
-    if (!window.confirm(`Excluir o lançamento do processo ${lancamento.processo}?`)) return;
+    const identificacao = lancamento.processo ?? lancamento.tarefa_nome ?? 'selecionado';
+    if (!window.confirm(`Excluir o lançamento ${identificacao}?`)) return;
     setErro(null);
     try {
       await api.excluir(`/lancamentos/${lancamento.id}`);
@@ -211,7 +212,11 @@ export function MeusLancamentos() {
                     {lancamentos.map((lancamento) => (
                       <tr key={lancamento.id}>
                         <td>
-                          <strong className="nao-quebra">{lancamento.processo}</strong>
+                          <strong className="nao-quebra">
+                            {lancamento.processo ?? (
+                              <span className="discreto">sem processo</span>
+                            )}
+                          </strong>
                           {lancamento.status === 'EM_ANDAMENTO' && (
                             <div className="marca marca-neutra" style={{ marginTop: '0.2rem' }}>
                               {ROTULO_DO_STATUS[lancamento.status]}
@@ -330,7 +335,7 @@ function FormularioLancamento({
     lancamento
       ? {
           tarefa_id: lancamento.tarefa_id ? String(lancamento.tarefa_id) : '',
-          processo: lancamento.processo,
+          processo: lancamento.processo ?? '',
           descricao: lancamento.descricao ?? '',
           nivel: lancamento.nivel,
           papel: lancamento.papel,
@@ -463,12 +468,14 @@ function FormularioLancamento({
           </Campo>
         )}
 
-        <Campo rotulo="Número do processo" dica="É por ele que o sistema conta as entregas do setor e avisa sobre lançamento repetido.">
+        <Campo
+          rotulo="Número do processo (se houver)"
+          dica="Com o número, o sistema conta a entrega no total do setor e avisa se alguém já lançou o mesmo processo."
+        >
           <input
             value={formulario.processo}
             onChange={(evento) => alterar('processo', evento.target.value)}
             placeholder="Ex.: 856481/2026"
-            required
           />
         </Campo>
 

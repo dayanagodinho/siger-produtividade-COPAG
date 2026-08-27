@@ -96,6 +96,7 @@ interface Nivel {
 
 interface Pendencia {
   chave: string;
+  quantidade: number;
   texto: string;
   detalhe?: string;
   destino: string;
@@ -162,7 +163,8 @@ export function PainelServidor() {
           if (fila.contagem.pendentes > 0) {
             lista.push({
               chave: 'fila',
-              texto: `${fila.contagem.pendentes} lançamento(s) aguardando sua validação`,
+              quantidade: fila.contagem.pendentes,
+              texto: 'lançamentos aguardando sua validação',
               detalhe: 'Enquanto não forem validados, ficam fora da média do setor.',
               destino: '/validacao',
               acao: 'Abrir a fila',
@@ -183,6 +185,7 @@ export function PainelServidor() {
           if (!fechado) {
             lista.push({
               chave: 'fechamento',
+              quantidade: 1,
               texto: `A competência de ${competenciaLegivel(anterior)} ainda não foi fechada`,
               detalhe: 'O consolidado do mês só existe depois do fechamento.',
               destino: '/setor',
@@ -197,7 +200,8 @@ export function PainelServidor() {
       if (painel && painel.lancamentos_devolvidos > 0) {
         lista.push({
           chave: 'devolvidos',
-          texto: `${painel.lancamentos_devolvidos} lançamento(s) seu(s) foram devolvidos`,
+          quantidade: painel.lancamentos_devolvidos,
+          texto: 'lançamentos seus foram devolvidos',
           detalhe: 'Ajuste conforme a justificativa da chefia e envie de novo.',
           destino: '/lancamentos',
           acao: 'Ver meus lançamentos',
@@ -208,7 +212,8 @@ export function PainelServidor() {
       if (painel && painel.lancamentos_em_andamento > 0) {
         lista.push({
           chave: 'andamento',
-          texto: `${painel.lancamentos_em_andamento} lançamento(s) seu(s) em andamento`,
+          quantidade: painel.lancamentos_em_andamento,
+          texto: 'lançamentos seus em andamento',
           detalhe: 'Eles só entram na média depois de marcados como concluídos.',
           destino: '/lancamentos',
           acao: 'Ver meus lançamentos',
@@ -259,6 +264,13 @@ export function PainelServidor() {
             <ul className="lista-pendencias">
               {pendencias.map((pendencia) => (
                 <li key={pendencia.chave} data-urgente={pendencia.urgente ? 'sim' : undefined}>
+                  {pendencia.chave === 'fechamento' ? (
+                    <span className="contagem-pendencia" aria-hidden="true">
+                      !
+                    </span>
+                  ) : (
+                    <span className="contagem-pendencia">{pendencia.quantidade}</span>
+                  )}
                   <div>
                     <strong>{pendencia.texto}</strong>
                     {pendencia.detalhe && <span>{pendencia.detalhe}</span>}

@@ -560,3 +560,42 @@ input[type='checkbox'] { width: auto; }
 .legenda-niveis li { display: grid; grid-template-columns: 12px 1fr auto auto; gap: 0.5rem; align-items: center; }
 
 .cabecalho .botao svg { width: 17px; height: 17px; }
+
+/* ------------------------------------------------------------- Avatares */
+
+.avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--papel);
+  border: 1px solid var(--borda);
+  color: var(--tinta-media);
+  display: inline-grid;
+  place-items: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
+}
+.avatar[data-tom='proprio'] { background: var(--destaque-fraco); border-color: #bfd9c6; color: var(--acao); }
+
+.celula-pessoa { display: flex; align-items: center; gap: 0.6rem; }
+.celula-pessoa .campo-dica { margin-top: 0.1rem; }
+
+/* Número em evidência na pendência, como um contador de fila. */
+.contagem-pendencia {
+  min-width: 2.6rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 8px;
+  background: var(--papel);
+  color: var(--tinta);
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+.lista-pendencias li[data-urgente] .contagem-pendencia { background: #f6e0c6; color: var(--abaixo); }
+.lista-pendencias li { align-items: center; }
+.lista-pendencias li > div { flex: 1; min-width: 12rem; }

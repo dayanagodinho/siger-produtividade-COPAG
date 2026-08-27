@@ -208,7 +208,7 @@ rotasDeLancamentos.post(
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'PENDENTE', $4, $12, $13, $14)
        RETURNING id`,
       [
-        servidorId, dados.processo, dados.descricao, dados.nivel, dados.papel,
+        servidorId, dados.processo ?? null, dados.descricao, dados.nivel, dados.papel,
         dados.quantidade, dados.data_conclusao, dados.periodo_inicio ?? null,
         dados.periodo_fim ?? null, dados.link_externo ?? null, dados.status,
         percentual, usuario.id, dados.tarefa_id ?? null,
@@ -278,7 +278,7 @@ rotasDeLancamentos.put(
         WHERE id = $14 AND excluido_em IS NULL
         RETURNING id`,
       [
-        dados.processo, dados.descricao, dados.nivel, dados.papel, dados.quantidade,
+        dados.processo ?? null, dados.descricao, dados.nivel, dados.papel, dados.quantidade,
         dados.data_conclusao, dados.periodo_inicio ?? null, dados.periodo_fim ?? null,
         dados.link_externo ?? null, dados.status, novaSituacao, percentual,
         dados.tarefa_id ?? null, id,
