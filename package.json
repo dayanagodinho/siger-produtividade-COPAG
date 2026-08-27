@@ -1,0 +1,18 @@
+{
+  "name": "siger-produtividade",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sistema de Controle de Produtividade para trabalho hibrido no servico publico",
+  "workspaces": ["servidor", "cliente"],
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "dev": "npm run dev --workspace=servidor",
+    "dev:cliente": "npm run dev --workspace=cliente",
+    "build": "npm run build --workspace=cliente && npm run build --workspace=servidor",
+    "start": "npm run start --workspace=servidor",
+    "migrar": "npm run migrar --workspace=servidor",
+    "semear": "npm run semear --workspace=servidor",
+    "teste": "npm run teste --workspace=servidor",
+    "verificar-tipos": "npm run verificar-tipos --workspace=servidor && npm run verificar-tipos --workspace=cliente"
+  }
+}
