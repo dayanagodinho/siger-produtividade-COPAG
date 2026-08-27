@@ -49,9 +49,65 @@ rotasDeIndicadores.get(
       dias_uteis: apuracao.dias_uteis,
       painel: montarPainel(meu, apuracao.grupos),
       limites: apuracao.limites,
+      grupo: montarComparacao(meu, apuracao),
+      setor: {
+        nome: apuracao.setor.nome,
+        sigla: apuracao.setor.sigla,
+        media_oficial: apuracao.resumo.media_oficial,
+        media_contraprova: apuracao.resumo.media_contraprova,
+        processos_distintos: apuracao.resumo.processos_distintos,
+        total_pontos: apuracao.resumo.total_pontos,
+        servidores_apurados: apuracao.resumo.servidores_apurados,
+        servidores_sem_apuracao: apuracao.resumo.servidores_sem_apuracao,
+      },
     });
   }),
 );
+
+/**
+ * Onde a pessoa esta em relacao ao grupo, sem expor quem e quem: as medias
+ * dos colegas vao anonimas e ordenadas. O objetivo e a pessoa saber o que
+ * falta para acompanhar o grupo, nao montar um ranking com nomes.
+ */
+function montarComparacao(
+  meu: Servidor,
+  apuracao: Awaited<ReturnType<typeof apurarCompetencia>>,
+) {
+  const grupo = apuracao.grupos.find((g) => g.grupo_id === meu.grupo_id);
+  if (!grupo) return null;
+
+  const colegas = apuracao.servidores.filter(
+    (s) => s.grupo_id === meu.grupo_id && s.situacao === 'APURADO' && s.media !== null,
+  );
+
+  const ordenadas = [...colegas].sort((a, b) => (b.media ?? 0) - (a.media ?? 0));
+  const posicao = ordenadas.findIndex((s) => s.servidor_id === meu.servidor_id) + 1;
+
+  // Quanto falta, em pontos, para a media alcancar a referencia neste mes.
+  const faltamPontos =
+    grupo.referencia !== null && meu.media !== null && meu.dias_efetivos > 0
+      ? Math.max(0, Math.round((grupo.referencia - meu.media) * meu.dias_efetivos * 100) / 100)
+      : null;
+
+  return {
+    grupo_id: grupo.grupo_id,
+    nome: grupo.nome,
+    referencia: grupo.referencia,
+    origem: grupo.origem,
+    servidores_considerados: grupo.servidores_considerados,
+    posicao: posicao > 0 ? posicao : null,
+    total_no_grupo: ordenadas.length,
+    melhor_media: ordenadas.length ? ordenadas[0].media : null,
+    faltam_pontos: faltamPontos,
+    medias: ordenadas.map((servidor, indice) => ({
+      chave: `colega-${indice}`,
+      rotulo: servidor.servidor_id === meu.servidor_id ? 'Você' : `Colega ${indice + 1}`,
+      media: servidor.media,
+      sou_eu: servidor.servidor_id === meu.servidor_id,
+      faixa: servidor.faixa,
+    })),
+  };
+}
 
 /**
  * Serie mensal de um servidor: media do mes e referencia do grupo aplicada.

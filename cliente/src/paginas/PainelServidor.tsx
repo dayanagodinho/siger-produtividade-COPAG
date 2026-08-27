@@ -13,6 +13,7 @@ import {
 } from '../componentes/comuns';
 import {
   BarraDeNiveis,
+  BarrasHorizontais,
   ColunasDoPeriodo,
   Figura,
   LegendaDeNiveis,
@@ -45,6 +46,28 @@ interface Painel {
   pontos_por_papel: Record<string, number>;
 }
 
+interface Comparacao {
+  nome: string;
+  referencia: number | null;
+  origem: string;
+  posicao: number | null;
+  total_no_grupo: number;
+  melhor_media: number | null;
+  faltam_pontos: number | null;
+  medias: Array<{ chave: string; rotulo: string; media: number | null; sou_eu: boolean; faixa: string | null }>;
+}
+
+interface ResumoDoSetor {
+  nome: string;
+  sigla: string;
+  media_oficial: number | null;
+  media_contraprova: number | null;
+  processos_distintos: number;
+  total_pontos: number;
+  servidores_apurados: number;
+  servidores_sem_apuracao: number;
+}
+
 interface Resposta {
   competencia: string;
   competencia_rotulo: string;
@@ -53,6 +76,8 @@ interface Resposta {
   painel: Painel | null;
   mensagem?: string;
   limites?: { abaixo: number; acima: number };
+  grupo?: Comparacao | null;
+  setor?: ResumoDoSetor;
 }
 
 interface PontoDaSerie {
@@ -313,6 +338,100 @@ export function PainelServidor() {
                 )}
               </Cartao>
             </div>
+
+            {resposta?.grupo && resposta.grupo.medias.length > 1 && (
+              <Cartao>
+                <Figura
+                  titulo={`Você e o grupo ${resposta.grupo.nome}`}
+                  apoio="As médias dos colegas aparecem sem nome: a comparação é com o nível do grupo, não com pessoas."
+                >
+                  <BarrasHorizontais
+                    itens={resposta.grupo.medias.map((linha) => ({
+                      rotulo: linha.rotulo,
+                      valor: linha.media,
+                      cor: linha.sou_eu ? 'var(--verde-600)' : 'var(--verde-300)',
+                    }))}
+                    referencia={resposta.grupo.referencia}
+                    rotuloReferencia={`referência ${numero(resposta.grupo.referencia, 2)}`}
+                    alturaDaBarra={20}
+                  />
+                </Figura>
+
+                <div className="grade grade-3" style={{ marginTop: '1rem' }}>
+                  <Medida
+                    rotulo="Sua posição"
+                    valor={
+                      resposta.grupo.posicao
+                        ? `${resposta.grupo.posicao}º de ${resposta.grupo.total_no_grupo}`
+                        : '—'
+                    }
+                    apoio="entre quem tem apuração no grupo"
+                  />
+                  <Medida
+                    rotulo="Referência do grupo"
+                    valor={numero(resposta.grupo.referencia, 2)}
+                    apoio={
+                      resposta.grupo.origem === 'META_FIXA'
+                        ? 'meta fixa definida para o grupo'
+                        : 'mediana das médias no mês'
+                    }
+                  />
+                  <Medida
+                    rotulo="Maior média do grupo"
+                    valor={numero(resposta.grupo.melhor_media, 2)}
+                    apoio="ponto por dia efetivo"
+                  />
+                </div>
+
+                {resposta.grupo.faltam_pontos !== null && resposta.grupo.faltam_pontos > 0 ? (
+                  <Aviso tipo="atencao">
+                    Para chegar à referência do grupo neste mês faltam{' '}
+                    <strong>{numero(resposta.grupo.faltam_pontos, 1)} ponto(s)</strong> — algo como{' '}
+                    {Math.ceil(resposta.grupo.faltam_pontos / 2)} tarefa(s) de nível N2 em execução.
+                  </Aviso>
+                ) : (
+                  <Aviso tipo="sucesso">
+                    Sua média já está na referência do grupo neste mês.
+                  </Aviso>
+                )}
+              </Cartao>
+            )}
+
+            {resposta?.setor && (
+              <Cartao
+                titulo={`Como está o setor em ${competenciaLegivel(competencia)}`}
+                descricao={`${resposta.setor.nome} · ${resposta.setor.servidores_apurados} servidor(es) com apuração`}
+              >
+                <div className="grade grade-4">
+                  <Medida
+                    rotulo="Média do setor"
+                    valor={numero(resposta.setor.media_oficial, 2)}
+                    apoio="média das médias de quem tem apuração"
+                  />
+                  <Medida
+                    rotulo="Contraprova"
+                    valor={numero(resposta.setor.media_contraprova, 2)}
+                    apoio={`${numero(resposta.setor.total_pontos, 0)} pontos no total`}
+                  />
+                  <Medida
+                    rotulo="Processos concluídos"
+                    valor={resposta.setor.processos_distintos}
+                    apoio="processos distintos, sem contar repetição de papel"
+                  />
+                  <Medida
+                    rotulo="Sua média"
+                    valor={numero(painel.media, 2)}
+                    apoio={
+                      resposta.setor.media_oficial && painel.media
+                        ? painel.media >= resposta.setor.media_oficial
+                          ? 'acima da média do setor'
+                          : 'abaixo da média do setor'
+                        : ''
+                    }
+                  />
+                </div>
+              </Cartao>
+            )}
 
             <Cartao>
               <Figura
