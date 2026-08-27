@@ -79,7 +79,7 @@ recente → **View Logs**. As mensagens estão em português:
 | `Variável de ambiente DATABASE_URL não definida` | Falta o passo 3, ou o nome do bloco do banco não é `Postgres` |
 | `Primeiro acesso não criado: A senha precisa...` | A `ADMIN_SENHA` é fraca. Corrija e o Railway reconstrói |
 | `Nada a fazer: o banco já tem servidores cadastrados` | Normal a partir da segunda subida — o administrador já existe |
-| `Controle de Produtividade no ar` | Deu certo |
+| `SIGAP no ar` | Deu certo |
 
 ---
 

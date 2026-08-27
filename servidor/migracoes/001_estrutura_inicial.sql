@@ -1,5 +1,5 @@
 -- =====================================================================
--- 001 - Estrutura inicial do Sistema de Controle de Produtividade
+-- 001 - Estrutura inicial do SIGAP (Sistema de Gestao de Atividades e Produtividade)
 -- =====================================================================
 
 CREATE TYPE perfil_acesso        AS ENUM ('SERVIDOR', 'CHEFE', 'ADMIN');

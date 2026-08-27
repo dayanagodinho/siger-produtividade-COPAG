@@ -2,7 +2,7 @@
   "name": "siger-produtividade-copag",
   "version": "1.0.0",
   "private": true,
-  "description": "Sistema de Controle de Produtividade para trabalho hibrido no servico publico",
+  "description": "SIGAP - Sistema de Gestao de Atividades e Produtividade da COPAG",
   "workspaces": ["servidor", "cliente"],
   "engines": { "node": ">=20" },
   "scripts": {
