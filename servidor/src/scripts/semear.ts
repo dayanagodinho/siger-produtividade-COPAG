@@ -2,6 +2,7 @@ import { pool } from '../infra/banco';
 import { gerarHashDeSenha } from '../infra/senha';
 import { aplicarMigracoes } from './migrar';
 import { calcularPontos } from '../dominio/calculo';
+import { ehDiaUtil, listarDiasDoMes } from '../dominio/datas';
 
 /**
  * Popula o banco com um setor completo para testes: cadastros, feriados,
@@ -36,7 +37,7 @@ interface ServidorSemente {
 }
 
 const SERVIDORES: ServidorSemente[] = [
-  { matricula: '100001', nome: 'Ana Ribeiro Alves',      email: 'ana.alves@orgao.gov.br',     perfil: 'ADMIN',    grupo: 'Analise de contratos', regime: 'INTEGRAL',   admissao: '2018-03-12' },
+  { matricula: '100001', nome: 'Ana Ribeiro Alves',      email: 'ana.alves@orgao.gov.br',     perfil: 'ADMIN',    grupo: null, regime: 'INTEGRAL',   admissao: '2018-03-12' },
   { matricula: '100002', nome: 'Carlos Menezes Prado',   email: 'carlos.prado@orgao.gov.br',  perfil: 'CHEFE',    grupo: 'Analise de contratos', regime: 'INTEGRAL',   admissao: '2015-08-01' },
   { matricula: '100003', nome: 'Beatriz Souza Lima',     email: 'beatriz.lima@orgao.gov.br',  perfil: 'SERVIDOR', grupo: 'Analise de contratos', regime: 'INTEGRAL',   admissao: '2019-05-20' },
   { matricula: '100004', nome: 'Diego Fontes Araujo',    email: 'diego.araujo@orgao.gov.br',  perfil: 'SERVIDOR', grupo: 'Analise de contratos', regime: 'INTEGRAL',   admissao: '2021-02-15' },
@@ -95,7 +96,7 @@ async function semear(): Promise<void> {
   const grupos = new Map<string, number>();
   for (const [nome, descricao, meta] of [
     ['Analise de contratos', 'Instrucao e analise de processos de contratacao.', null],
-    ['Pagamentos', 'Liquidacao e pagamento de notas fiscais.', 2.2],
+    ['Pagamentos', 'Liquidacao e pagamento de notas fiscais.', 0.55],
   ] as Array<[string, string, number | null]>) {
     const grupo = await pool.query<{ id: number }>(
       `INSERT INTO grupos (setor_id, nome, descricao, meta_referencia, meta_definida_em)
@@ -154,73 +155,149 @@ async function semear(): Promise<void> {
   const pesoDoPapel = (papel: string) =>
     pesos.get(`PESO_${papel}`) ?? (papel === 'EXECUCAO' ? 100 : papel === 'REVISAO' ? 40 : 20);
 
-  type Semeadura = [string, string, number, 'EXECUCAO' | 'REVISAO' | 'HOMOLOGACAO', string, string];
-  const lancamentos: Semeadura[] = [
-    // matricula, processo, nivel, papel, data_conclusao, descricao
-    ['100003', '856481/2026', 3, 'EXECUCAO', '2026-07-08', 'Analise de habilitacao e minuta contratual'],
-    ['100003', '856502/2026', 2, 'EXECUCAO', '2026-07-15', 'Instrucao de aditivo de prazo'],
-    ['100003', '856517/2026', 4, 'EXECUCAO', '2026-07-29', 'Contratacao direta com parecer da assessoria'],
-    ['100004', '856481/2026', 3, 'REVISAO',  '2026-07-10', 'Revisao da minuta contratual'],
-    ['100004', '856533/2026', 2, 'EXECUCAO', '2026-07-21', 'Analise de renovacao'],
-    ['100002', '856481/2026', 3, 'HOMOLOGACAO', '2026-07-11', 'Homologacao do processo'],
-    ['100005', '901220/2026', 1, 'EXECUCAO', '2026-07-06', 'Liquidacao de nota fiscal'],
-    ['100005', '901221/2026', 2, 'EXECUCAO', '2026-07-20', 'Conferencia de retencoes'],
-    ['100006', '901230/2026', 3, 'EXECUCAO', '2026-07-23', 'Regularizacao de pagamento com glosa'],
+  const chefeId = idsPorMatricula.get('100002')!;
+  const feriados = new Set(FERIADOS_2026.map(([data]) => data));
 
-    ['100003', '857001/2026', 3, 'EXECUCAO', '2026-08-05', 'Analise de contratacao de servico continuado'],
-    ['100003', '857014/2026', 2, 'EXECUCAO', '2026-08-12', 'Aditivo de reajuste'],
-    ['100003', '857020/2026', 1, 'EXECUCAO', '2026-08-19', 'Juntada e conferencia documental'],
-    ['100004', '857001/2026', 3, 'REVISAO',  '2026-08-07', 'Revisao da analise'],
-    ['100004', '857033/2026', 4, 'EXECUCAO', '2026-08-24', 'Processo com impugnacao e consulta juridica'],
-    ['100004', '857040/2026', 2, 'EXECUCAO', '2026-08-26', 'Instrucao de prorrogacao'],
-    ['100002', '857001/2026', 3, 'HOMOLOGACAO', '2026-08-10', 'Homologacao do processo'],
-    ['100002', '857100/2026', 2, 'EXECUCAO', '2026-08-18', 'Despacho de encaminhamento e analise'],
-    ['100005', '902110/2026', 2, 'EXECUCAO', '2026-08-06', 'Liquidacao com retencao previdenciaria'],
-    ['100005', '902118/2026', 1, 'EXECUCAO', '2026-08-25', 'Pagamento de servico contratado'],
-    ['100006', '902130/2026', 3, 'EXECUCAO', '2026-08-11', 'Ajuste de empenho e reprocessamento'],
-    ['100006', '902141/2026', 2, 'EXECUCAO', '2026-08-21', 'Conferencia de planilha de custos'],
+  // Volume mensal por servidor. Os niveis giram em ciclo para render uma
+  // distribuicao plausivel entre 1 e 4, sem sorteio: o seed precisa ser
+  // reproduzivel para conferir os numeros a mao.
+  const PRODUCAO: Record<string, { porMes: number; niveis: number[]; prefixo: number }> = {
+    '100002': { porMes: 4, niveis: [2, 3, 2], prefixo: 860 },
+    '100003': { porMes: 11, niveis: [3, 2, 4, 2, 3, 1], prefixo: 861 },
+    '100004': { porMes: 9, niveis: [2, 3, 2, 1, 3], prefixo: 862 },
+    '100005': { porMes: 10, niveis: [1, 2, 1, 2, 3], prefixo: 863 },
+    '100006': { porMes: 12, niveis: [2, 1, 3, 1, 2], prefixo: 864 },
+    '100007': { porMes: 10, niveis: [2, 1, 2, 3], prefixo: 865 },
+  };
+
+  const DESCRICOES = [
+    'Analise de habilitacao e minuta contratual',
+    'Instrucao de aditivo de prazo',
+    'Conferencia documental e juntada',
+    'Analise de renovacao contratual',
+    'Liquidacao de nota fiscal',
+    'Conferencia de retencoes',
+    'Regularizacao de pagamento com glosa',
+    'Contratacao direta com parecer da assessoria',
   ];
 
-  const chefeId = idsPorMatricula.get('100002')!;
+  interface LancamentoSemente {
+    servidorId: number;
+    processo: string;
+    nivel: number;
+    papel: 'EXECUCAO' | 'REVISAO' | 'HOMOLOGACAO';
+    conclusao: string;
+    descricao: string;
+  }
 
-  for (const [matricula, processo, nivel, papel, conclusao, descricao] of lancamentos) {
-    const servidorId = idsPorMatricula.get(matricula)!;
-    const percentual = pesoDoPapel(papel);
-    // Competencias fechadas ja nascem validadas; o mes corrente fica com fila.
-    const jaValidado = conclusao < '2026-08-01' || conclusao <= '2026-08-19';
-    await pool.query(
+  const semente: LancamentoSemente[] = [];
+
+  for (const competencia of ['2026-07-01', '2026-08-01']) {
+    const uteis = listarDiasDoMes(competencia).filter((dia) => ehDiaUtil(dia, feriados));
+    const mes = Number(competencia.slice(5, 7));
+
+    for (const [matricula, plano] of Object.entries(PRODUCAO)) {
+      // Gabriela esta de ferias em agosto: nao produz nada na competencia.
+      if (matricula === '100007' && competencia === '2026-08-01') continue;
+      const servidorId = idsPorMatricula.get(matricula)!;
+      for (let indice = 0; indice < plano.porMes; indice += 1) {
+        // Espalha os lancamentos ao longo dos dias uteis do mes.
+        const dia = uteis[Math.floor((indice * uteis.length) / plano.porMes)];
+        const nivel = plano.niveis[indice % plano.niveis.length];
+        const processo = `${plano.prefixo}${String(mes * 100 + indice).padStart(3, '0')}/2026`;
+        semente.push({
+          servidorId,
+          processo,
+          nivel,
+          papel: 'EXECUCAO',
+          conclusao: dia,
+          descricao: DESCRICOES[(indice + mes) % DESCRICOES.length],
+        });
+
+        // Um em cada quatro processos passa por revisao de um colega e por
+        // homologacao da chefia: e assim que o mesmo processo gera ate tres
+        // lancamentos e o total de pontos sobe sem entrega adicional.
+        if (indice % 4 === 0) {
+          const revisor = matricula === '100003' ? '100004' : '100003';
+          const diaRevisao = uteis[Math.min(uteis.length - 1, uteis.indexOf(dia) + 1)];
+          semente.push({
+            servidorId: idsPorMatricula.get(revisor)!,
+            processo,
+            nivel,
+            papel: 'REVISAO',
+            conclusao: diaRevisao,
+            descricao: 'Revisao do processo instruido pelo colega',
+          });
+          semente.push({
+            servidorId: chefeId,
+            processo,
+            nivel,
+            papel: 'HOMOLOGACAO',
+            conclusao: diaRevisao,
+            descricao: 'Homologacao do processo',
+          });
+        }
+      }
+    }
+  }
+
+  // A competencia anterior chega toda validada; o mes corrente deixa fila.
+  const CORTE_VALIDACAO = '2026-08-20';
+  let inseridos = 0;
+  let pendentes = 0;
+
+  for (const item of semente) {
+    const percentual = pesoDoPapel(item.papel);
+    const jaValidado = item.conclusao < CORTE_VALIDACAO;
+    if (!jaValidado) pendentes += 1;
+    const resultado = await pool.query(
       `INSERT INTO lancamentos
          (servidor_id, processo, descricao, nivel, papel, quantidade, data_conclusao,
           status, situacao, nivel_aplicado, percentual_papel, criado_por,
           validado_por, validado_em)
-       VALUES ($1, $2, $3, $4, $5, 1, $6, 'CONCLUIDO', $7, $4, $8, $1, $9, $10)`,
+       VALUES ($1, $2, $3, $4, $5, 1, $6, 'CONCLUIDO', $7, $4, $8, $1, $9, $10)
+       ON CONFLICT DO NOTHING`,
       [
-        servidorId,
-        processo,
-        descricao,
-        nivel,
-        papel,
-        conclusao,
+        item.servidorId,
+        item.processo,
+        item.descricao,
+        item.nivel,
+        item.papel,
+        item.conclusao,
         jaValidado ? 'VALIDADO' : 'PENDENTE',
         percentual,
         jaValidado ? chefeId : null,
-        jaValidado ? `${conclusao} 17:00:00-03` : null,
+        jaValidado ? `${item.conclusao} 17:00:00-03` : null,
       ],
     );
+    inseridos += resultado.rowCount ?? 0;
   }
+
+  // Um lancamento devolvido, para a tela do servidor mostrar a justificativa.
+  await pool.query(
+    `INSERT INTO lancamentos
+       (servidor_id, processo, descricao, nivel, papel, quantidade, data_conclusao,
+        status, situacao, nivel_aplicado, percentual_papel, criado_por,
+        justificativa, validado_por, validado_em, nivel_original)
+     VALUES ($1, '861899/2026', 'Conferencia de planilha de custos', 4, 'EXECUCAO', 1,
+             '2026-08-13', 'CONCLUIDO', 'DEVOLVIDO', 4, 100, $1,
+             'O processo seguiu o rito padrao, sem retencao ou consulta juridica. Reclassifique como nivel 2.',
+             $2, '2026-08-14 15:20:00-03', NULL)`,
+    [idsPorMatricula.get('100004'), chefeId],
+  );
 
   // Um lancamento em andamento, que aparece no painel mas fica fora da media.
   await pool.query(
     `INSERT INTO lancamentos
        (servidor_id, processo, descricao, nivel, papel, quantidade, data_conclusao,
         periodo_inicio, status, situacao, nivel_aplicado, percentual_papel, criado_por)
-     VALUES ($1, '857055/2026', 'Analise em curso, aguardando parecer', 3, 'EXECUCAO', 1,
+     VALUES ($1, '861950/2026', 'Analise em curso, aguardando parecer juridico', 3, 'EXECUCAO', 1,
              '2026-08-31', '2026-08-20', 'EM_ANDAMENTO', 'PENDENTE', 3, 100, $1)`,
     [idsPorMatricula.get('100003')],
   );
 
-  const total = lancamentos.length + 1;
-  console.log(`Lancamentos cadastrados: ${total}`);
+  const total = inseridos + 2;
+  console.log(`Lancamentos cadastrados: ${total} (${pendentes} aguardando validacao)`);
   console.log(
     [
       '',

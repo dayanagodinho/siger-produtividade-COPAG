@@ -6,6 +6,8 @@ import { configuracao } from './configuracao';
 types.setTypeParser(1082, (valor: string) => valor);
 // NUMERIC chega como texto por padrao; convertemos para numero nas leituras.
 types.setTypeParser(1700, (valor: string) => Number(valor));
+// BIGINT tambem chega como texto; os identificadores deste sistema cabem em number.
+types.setTypeParser(20, (valor: string) => Number(valor));
 
 export const pool = new Pool({
   connectionString: configuracao.urlBanco,

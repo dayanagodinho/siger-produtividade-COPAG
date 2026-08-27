@@ -1,0 +1,194 @@
+import { Router } from 'express';
+import { consultarUm } from '../infra/banco';
+import { erroDePermissao, erroNaoEncontrado, rota } from '../infra/erros';
+import {
+  ehAdmin,
+  exigirAutenticacao,
+  exigirChefia,
+  garantirAcessoAoServidor,
+  garantirSetorSobGestao,
+} from '../infra/autorizacao';
+import { competenciaValida, validar } from '../infra/validacao';
+import { competenciaAtual, rotularCompetencia } from '../dominio/datas';
+import { apurarCompetencia } from '../dominio/apuracao';
+import { ROTULO_DA_FAIXA } from '../dominio/calculo';
+
+export const rotasDeIndicadores = Router();
+rotasDeIndicadores.use(exigirAutenticacao);
+
+function competenciaDaConsulta(valor: unknown): string {
+  return valor ? validar(competenciaValida, valor) : competenciaAtual();
+}
+
+/** Painel do servidor: a propria producao do mes, com a referencia do grupo. */
+rotasDeIndicadores.get(
+  '/meu-painel',
+  rota(async (req, res) => {
+    const usuario = req.usuario!;
+    const competencia = competenciaDaConsulta(req.query.competencia);
+    const apuracao = await apurarCompetencia(usuario.setor_id, competencia);
+    const meu = apuracao.servidores.find((s) => s.servidor_id === usuario.id);
+
+    if (!meu) {
+      res.json({
+        competencia,
+        competencia_rotulo: rotularCompetencia(competencia),
+        painel: null,
+        mensagem:
+          'Voce ainda nao tem apuracao neste mes. Registre seus processos concluidos para acompanhar a media.',
+      });
+      return;
+    }
+
+    res.json({
+      competencia,
+      competencia_rotulo: rotularCompetencia(competencia),
+      fechado: apuracao.fechado,
+      fechamento: apuracao.fechamento,
+      dias_uteis: apuracao.dias_uteis,
+      painel: montarPainel(meu, apuracao.grupos),
+      limites: apuracao.limites,
+    });
+  }),
+);
+
+/** Painel de um servidor especifico: proprio, do setor da chefia ou qualquer um para o admin. */
+rotasDeIndicadores.get(
+  '/servidor/:id',
+  rota(async (req, res) => {
+    const usuario = req.usuario!;
+    const servidorId = Number(req.params.id);
+    const alvo = await garantirAcessoAoServidor(usuario, servidorId);
+    const competencia = competenciaDaConsulta(req.query.competencia);
+
+    const apuracao = await apurarCompetencia(alvo.setor_id, competencia);
+    const linha = apuracao.servidores.find((s) => s.servidor_id === servidorId);
+    if (!linha) throw erroNaoEncontrado('Nao ha apuracao deste servidor no mes escolhido.');
+
+    res.json({
+      competencia,
+      competencia_rotulo: rotularCompetencia(competencia),
+      fechado: apuracao.fechado,
+      dias_uteis: apuracao.dias_uteis,
+      painel: montarPainel(linha, apuracao.grupos),
+      limites: apuracao.limites,
+    });
+  }),
+);
+
+/** Painel do setor: exige chefia do proprio setor ou administracao. */
+rotasDeIndicadores.get(
+  '/setor',
+  exigirChefia,
+  rota(async (req, res) => {
+    const usuario = req.usuario!;
+    const setorId = req.query.setor_id ? Number(req.query.setor_id) : usuario.setor_id;
+    garantirSetorSobGestao(usuario, setorId);
+    const competencia = competenciaDaConsulta(req.query.competencia);
+
+    const apuracao = await apurarCompetencia(setorId, competencia);
+    res.json({
+      ...apuracao,
+      competencia_rotulo: rotularCompetencia(competencia),
+      servidores: apuracao.servidores.map((servidor) => ({
+        ...servidor,
+        faixa_rotulo: servidor.faixa ? ROTULO_DA_FAIXA[servidor.faixa] : null,
+        referencia_rotulo: rotularOrigem(servidor.origem_referencia, apuracao.grupos, servidor.grupo_id),
+      })),
+    });
+  }),
+);
+
+/** Relatorio de aderencia: quanto a chefia precisou corrigir por servidor (regra 3). */
+rotasDeIndicadores.get(
+  '/aderencia',
+  exigirChefia,
+  rota(async (req, res) => {
+    const usuario = req.usuario!;
+    const setorId = req.query.setor_id ? Number(req.query.setor_id) : usuario.setor_id;
+    garantirSetorSobGestao(usuario, setorId);
+    const competencia = competenciaDaConsulta(req.query.competencia);
+    const apuracao = await apurarCompetencia(setorId, competencia);
+
+    const linhas = apuracao.servidores
+      .map((servidor) => ({
+        servidor_id: servidor.servidor_id,
+        nome: servidor.nome,
+        matricula: servidor.matricula,
+        grupo_nome: servidor.grupo_nome,
+        lancamentos_avaliados: servidor.lancamentos_avaliados,
+        lancamentos_corrigidos: servidor.lancamentos_corrigidos,
+        taxa_correcao: servidor.taxa_correcao,
+        distribuicao_niveis: servidor.distribuicao_niveis,
+      }))
+      .sort((a, b) => (b.taxa_correcao ?? -1) - (a.taxa_correcao ?? -1));
+
+    const comTaxa = linhas.filter((l) => l.taxa_correcao !== null);
+    const taxaMedia =
+      comTaxa.length === 0
+        ? null
+        : comTaxa.reduce((soma, l) => soma + (l.taxa_correcao ?? 0), 0) / comTaxa.length;
+
+    res.json({
+      competencia,
+      competencia_rotulo: rotularCompetencia(competencia),
+      taxa_media: taxaMedia,
+      servidores: linhas,
+    });
+  }),
+);
+
+/** Setores que o usuario pode acompanhar, para alimentar o seletor das telas. */
+rotasDeIndicadores.get(
+  '/meus-setores',
+  rota(async (req, res) => {
+    const usuario = req.usuario!;
+    if (ehAdmin(usuario)) {
+      const { consultar } = await import('../infra/banco');
+      const setores = await consultar(
+        'SELECT id, nome, sigla FROM setores WHERE excluido_em IS NULL ORDER BY nome',
+      );
+      res.json({ setores });
+      return;
+    }
+    if (usuario.perfil !== 'CHEFE') throw erroDePermissao('Area restrita a chefia.');
+    const setor = await consultarUm(
+      'SELECT id, nome, sigla FROM setores WHERE id = $1 AND excluido_em IS NULL',
+      [usuario.setor_id],
+    );
+    res.json({ setores: setor ? [setor] : [] });
+  }),
+);
+
+type Servidor = Awaited<ReturnType<typeof apurarCompetencia>>['servidores'][number];
+type Grupo = Awaited<ReturnType<typeof apurarCompetencia>>['grupos'][number];
+
+function montarPainel(servidor: Servidor, grupos: Grupo[]) {
+  const grupo = grupos.find((g) => g.grupo_id === servidor.grupo_id) ?? null;
+  return {
+    ...servidor,
+    faixa_rotulo: servidor.faixa ? ROTULO_DA_FAIXA[servidor.faixa] : null,
+    referencia_rotulo: rotularOrigem(servidor.origem_referencia, grupos, servidor.grupo_id),
+    grupo: grupo,
+  };
+}
+
+/**
+ * A tela precisa deixar explicito de onde veio a referencia: media isolada
+ * nao informa nada sem o parametro de comparacao ao lado.
+ */
+function rotularOrigem(
+  origem: Servidor['origem_referencia'],
+  grupos: Grupo[],
+  grupoId: number | null,
+): string {
+  if (origem === 'META_FIXA') {
+    const grupo = grupos.find((g) => g.grupo_id === grupoId);
+    const data = grupo?.meta_definida_em
+      ? new Date(grupo.meta_definida_em).toLocaleDateString('pt-BR')
+      : null;
+    return data ? `Meta fixa definida em ${data}` : 'Meta fixa definida pelo grupo';
+  }
+  if (origem === 'MEDIANA_APURADA') return 'Referencia apurada no mes';
+  return 'Sem referencia definida para o grupo';
+}
