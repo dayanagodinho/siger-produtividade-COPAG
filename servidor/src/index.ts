@@ -67,15 +67,12 @@ async function iniciar(): Promise<void> {
     await aplicarMigracoes();
   }
 
-  // Na primeira subida, cria o administrador a partir das variaveis de
-  // ambiente. Com o banco ja povoado, nao faz nada.
-  const primeiroAcesso = await criarPrimeiroAdministrador();
-  if (primeiroAcesso) console.log(primeiroAcesso);
-
-  // Com o setor criado, entra a lista de atividades da COPAG. Uma vez
-  // carregada, as subidas seguintes passam direto.
-  const catalogo = await importarCatalogoNaPrimeiraSubida();
-  if (catalogo) console.log(catalogo);
+  // Preparo da primeira subida: o administrador e, com o setor no lugar, a
+  // lista de atividades da COPAG. Uma vez feitos, as subidas seguintes passam
+  // direto. Um tropeco aqui e quase sempre variavel mal preenchida, e derrubar
+  // o servidor por isso so esconde a mensagem que diz o que corrigir: o sistema
+  // sobe, o log explica, e a proxima subida tenta de novo.
+  await prepararPrimeiraSubida();
 
   const app = criarAplicacao();
   app.listen(configuracao.porta, () => {
@@ -83,6 +80,23 @@ async function iniciar(): Promise<void> {
       `SIGAP no ar em http://localhost:${configuracao.porta} (${configuracao.ambiente})`,
     );
   });
+}
+
+async function prepararPrimeiraSubida(): Promise<void> {
+  try {
+    const primeiroAcesso = await criarPrimeiroAdministrador();
+    if (primeiroAcesso) console.log(primeiroAcesso);
+
+    const catalogo = await importarCatalogoNaPrimeiraSubida();
+    if (catalogo) console.log(catalogo);
+  } catch (erro) {
+    const motivo = erro instanceof Error ? erro.message : String(erro);
+    console.error(
+      'Preparo da primeira subida não concluído:',
+      motivo,
+      '\nO sistema sobe assim mesmo. Confira as variáveis ADMIN_* e SETOR_* e reinicie.',
+    );
+  }
 }
 
 if (require.main === module) {
