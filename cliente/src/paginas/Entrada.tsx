@@ -26,7 +26,7 @@ export function Entrada() {
   return (
     <div className="tela-entrada">
       <form className="caixa-entrada" onSubmit={submeter}>
-        <img className="marca-entrada" src="/marca-sigap.svg" alt="" width={48} height={48} />
+        <img className="marca-entrada" src="/marca-sigap.svg" alt="" width={62} height={62} />
         <h1>SIGAP</h1>
         <p className="subtitulo">Sistema de Gestão de Atividades e Produtividade</p>
 

@@ -1,10 +1,35 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" role="img" aria-label="SIGAP">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img"
+     aria-label="SIGAP">
   <title>SIGAP</title>
-  <!-- Anel pontilhado: 26 pontos igualmente espaçados na circunferência. -->
-  <circle cx="20" cy="20" r="17.0" fill="none" stroke="#1e4034" stroke-width="2.6"
-          stroke-linecap="round" stroke-dasharray="0.01 4.1082"
-          transform="rotate(-90 20 20)" />
-  <!-- Barras crescentes: a produtividade que o anel acompanha. -->
-  <path d="M13.5 25.5V21M20 25.5V14.5M26.5 25.5v-7" fill="none" stroke="#2f6b55"
-        stroke-width="3" stroke-linecap="round" />
+  <!-- Circulo aberto: traco continuo de um lado, pontos que se afinam do outro. -->
+  <path d="M 69.56 15.01 A 46 46 0 1 0 38.40 100.62" fill="none" stroke="#1e4034" stroke-width="5.2" stroke-linecap="round"/>
+  <g fill="#2f6b55">
+    <circle cx="78.71" cy="17.98" r="4.40"/>
+    <circle cx="86.14" cy="22.15" r="4.12"/>
+    <circle cx="92.67" cy="27.62" r="3.89"/>
+    <circle cx="98.08" cy="34.19" r="3.68"/>
+    <circle cx="102.18" cy="41.66" r="3.48"/>
+    <circle cx="104.84" cy="49.75" r="3.28"/>
+    <circle cx="105.96" cy="58.19" r="3.10"/>
+    <circle cx="105.51" cy="66.70" r="2.91"/>
+    <circle cx="103.49" cy="74.98" r="2.74"/>
+    <circle cx="99.99" cy="82.74" r="2.56"/>
+    <circle cx="95.11" cy="89.72" r="2.39"/>
+    <circle cx="89.03" cy="95.69" r="2.22"/>
+    <circle cx="81.95" cy="100.43" r="2.05"/>
+    <circle cx="74.12" cy="103.78" r="1.89"/>
+    <circle cx="65.81" cy="105.63" r="1.72"/>
+    <circle cx="57.29" cy="105.92" r="1.56"/>
+    <circle cx="48.87" cy="104.63" r="1.40"/>
+  </g>
+  <!-- Barras: a producao que sobe, na propria paleta da COPAG. -->
+  <path fill="#1e4034" d="M 40.5 96 L 40.5 52.0 L 49.0 52.0 L 49.0 96 Z"/>
+  <path fill="#20553f" d="M 51.5 96 L 51.5 42.0 L 61.0 42.0 L 61.0 96 Z"/>
+  <path fill="#2f6b55" d="M 63.5 96 L 63.5 66.0 L 72.5 71.5 L 72.5 96 Z"/>
+  <path fill="#4d8571" d="M 74.5 96 L 74.5 73.0 L 83.0 77.5 L 83.0 96 Z"/>
+  <path fill="#79a091" d="M 85.0 96 L 85.0 79.0 L 93.0 82.5 L 93.0 96 Z"/>
+  <!-- Duas folhas assentam a marca no chao. -->
+  <path fill="#1e4034" d="M 58.6 99.5 C 48 99.5 38 101.6 30.5 105.2 C 39.5 106.8 50 106.4 58.6 103.6 Z"/>
+  <path fill="#2f6b55" d="M 61.4 99.5 C 72 99.5 82 101.6 89.5 105.2 C 80.5 106.8 70 106.4 61.4 103.6 Z"/>
+  <path fill="#2f6b55" d="M 26 110.5 C 44 108.6 76 108.6 94 110.5 C 76 112.2 44 112.2 26 110.5 Z"/>
 </svg>

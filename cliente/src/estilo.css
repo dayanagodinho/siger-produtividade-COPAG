@@ -710,10 +710,10 @@ input[type='checkbox'] { width: auto; }
 
 /* --------------------------------------------------- Marca e cabeçalho */
 
-.menu-marca .selo { width: 36px; height: 36px; border-radius: 50%; background: none; display: block; object-fit: contain; }
+.menu-marca .selo { width: 40px; height: 40px; border-radius: 0; background: none; display: block; object-fit: contain; }
 .menu-marca strong { font-size: 1.15rem; letter-spacing: 0.02em; }
 
-.marca-entrada { display: block; width: 48px; height: 48px; margin-bottom: 0.75rem; border-radius: 50%; object-fit: contain; }
+.marca-entrada { display: block; width: 62px; height: 62px; margin-bottom: 0.75rem; object-fit: contain; }
 .caixa-entrada h1 { font-size: 1.6rem; letter-spacing: 0.02em; }
 
 .cabecalho { align-items: flex-start; }

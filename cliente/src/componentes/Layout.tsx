@@ -48,9 +48,10 @@ export function Layout() {
     <div className="aplicacao">
       <nav className="menu-lateral">
         <div className="menu-marca">
-          {/* Para trocar a logo, basta substituir cliente/public/marca-sigap.svg
-              (ou apontar para um .png com o mesmo nome). Nenhum código muda. */}
-          <img className="selo" src="/marca-sigap.svg" alt="" width={36} height={36} />
+          {/* A marca vive em cliente/public/marca-sigap.svg e o ícone da aba,
+              mais simples, em icone-sigap.svg. Trocar os arquivos troca a
+              identidade: nenhum código muda. */}
+          <img className="selo" src="/marca-sigap.svg" alt="" width={40} height={40} />
           <strong>SIGAP</strong>
         </div>
         <p className="menu-marca-nome">
