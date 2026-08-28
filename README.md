@@ -206,8 +206,18 @@ rota — esconder botão no front é conveniência, não segurança.
 
 ## Deploy no Railway
 
-O `railway.json` define build (`npm run build`) e start (`npm start`), com
-health check em `/api/saude`.
+O `railway.json` define build e start, com health check em `/api/saude`.
+
+O build é `npm install --include=dev`, e não `npm ci`, por dois motivos que se
+somam: com `NODE_ENV=production` o npm omite o TypeScript e o Vite, e o build
+quebra em `tsc: not found`; e `npm ci` apaga `node_modules` inteiro, o que
+esbarra no cache que o Railway mantém montado em `node_modules/.cache` e derruba
+o build com `EBUSY`. O `npm install` resolve os dois: traz as ferramentas e não
+mexe no que está montado.
+
+O serviço tem de ser único e construído a partir da raiz do repositório. O
+Railway detecta os dois workspaces e propõe um serviço para cada; aceitar isso
+constrói só o back-end, e a interface não chega junto.
 
 Variáveis necessárias:
 

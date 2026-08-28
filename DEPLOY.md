@@ -33,15 +33,44 @@ O Railway começa a construir sozinho. **Vai falhar nessa primeira tentativa** �
 1. Dentro do projeto, clique em **+ Create** (ou **+ New**).
 2. Escolha **Database** e depois **Add PostgreSQL**.
 
+> **Tem que ser PostgreSQL.** A lista do Railway oferece MySQL, MongoDB e Redis
+> logo ao lado, com cara de equivalentes. Não são. O sistema fala a língua do
+> PostgreSQL — os tipos de coluna, os índices e o cálculo de pontos são escritos
+> nela. Com MySQL no lugar, nada sobe. Se você criou o errado, apague o bloco
+> (**Settings** → **Danger** → **Delete**) e crie o PostgreSQL.
+
 Um segundo bloco aparece no painel, chamado **Postgres**. Não abra, não
 configure, não crie tabela nenhuma: o próprio sistema monta as 14 tabelas na
 primeira vez que subir. O nome do bloco importa — se não for `Postgres`, anote,
 porque ele entra no passo 3.
 
-## 3. Preencher as variáveis
+## 3.1. Conferir como o aplicativo é construído
+
+Este projeto tem duas pastas, `servidor` e `cliente`, e o Railway às vezes
+conclui que são dois sistemas separados — chega a propor dois blocos. Não são: o
+`cliente` é a parte visual, que o `servidor` entrega no mesmo endereço. **Tem que
+ser um bloco só, construído a partir da raiz do repositório.**
+
+Clique no bloco do aplicativo, abra **Settings** e confira:
+
+| Campo | Valor certo |
+|---|---|
+| **Source** → Root Directory | vazio, ou `/` — nunca `/servidor` |
+| **Build** → Custom Build Command | vazio (ele lê do `railway.json`) ou `npm install --include=dev --no-audit --no-fund && npm run build` |
+| **Build** → Watch Paths | vazio |
+| **Deploy** → Custom Start Command | vazio (ele lê do `railway.json`) ou `npm start` |
+
+Se o Build Command estiver escrito com `--workspace=@siger/servidor`, ele
+constrói só o back-end: o deploy até termina, mas quem abrir o endereço vê uma
+linha de texto dizendo *"Interface ainda não compilada"*. E se estiver com
+`npm ci`, o build morre em `EBUSY` — esse comando apaga a pasta de dependências
+inteira, e o Railway mantém um cache montado lá dentro que não pode ser apagado.
+
+## 3.2. Preencher as variáveis
 
 Clique no bloco do **aplicativo** (o que tem o nome do repositório, não o do
-Postgres), abra a aba **Variables** e use **+ New Variable** para cada linha:
+Postgres), abra a aba **Variables** e use **+ New Variable** para cada linha —
+ou clique em **Raw Editor** e cole todas de uma vez:
 
 | Nome | Valor |
 |---|---|
@@ -95,12 +124,14 @@ recente → **View Logs**. As mensagens estão em português:
 
 | Mensagem | O que fazer |
 |---|---|
-| `Variável de ambiente DATABASE_URL não definida` | Falta o passo 3, ou o nome do bloco do banco não é `Postgres` |
+| `Variável de ambiente DATABASE_URL não definida` | Falta o passo 3.2, ou o nome do bloco do banco não é `Postgres` |
 | `password authentication failed` | O valor de `DATABASE_URL` foi colado à mão e envelheceu. Troque pela referência `${{Postgres.DATABASE_URL}}` |
 | `The server does not support SSL connections` | Acrescente a variável `DATABASE_SSL` com o valor `false` |
 | `self-signed certificate` ou `SSL required` | Acrescente a variável `DATABASE_SSL` com o valor `true` |
 | `Primeiro acesso não criado: A senha precisa...` | A `ADMIN_SENHA` é fraca. Corrija e o Railway reconstrói |
-| `tsc: not found` ou `vite: not found` | O build subiu sem as ferramentas. Acrescente a variável `NPM_CONFIG_PRODUCTION` com o valor `false` |
+| `tsc: not found` ou `vite: not found` | O build subiu sem as ferramentas. Confira o Build Command do passo 3.1 |
+| `EBUSY: resource busy or locked, rmdir '/app/node_modules/.cache'` | O Build Command está com `npm ci`. Troque por `npm install`, como no passo 3.1 |
+| `role "root" does not exist` ou erro de sintaxe em SQL | O banco criado é MySQL, e não PostgreSQL. Veja o passo 2 |
 | `Nada a fazer: o banco já tem servidores cadastrados` | Normal a partir da segunda subida — o administrador já existe |
 | `SIGAP no ar` | Deu certo |
 
