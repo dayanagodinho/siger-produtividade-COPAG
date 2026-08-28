@@ -1,3 +1,4 @@
+import type { PoolClient } from 'pg';
 import { Router } from 'express';
 import { z } from 'zod';
 import { consultar, consultarUm, emTransacao } from '../infra/banco';
@@ -13,6 +14,7 @@ import { competenciaValida, nivelComplexidade, textoObrigatorio, validar } from 
 import { competenciaDe } from '../dominio/datas';
 import { garantirCompetenciaAberta } from '../dominio/fechamento';
 import { calcularPontos } from '../dominio/calculo';
+import { carregarParametros } from '../dominio/parametros';
 
 export const rotasDeValidacao = Router();
 rotasDeValidacao.use(exigirChefia);
@@ -253,6 +255,14 @@ async function aplicarDecisao(
       cliente,
     );
 
+    // A conferencia da equipe e a principal producao do chefe de grupo. Ele
+    // nao pode ter de validar na fila e depois lancar isso a mao.
+    await ajustarConferencia(cliente, {
+      lancamento: linha.rows[0],
+      conferidoPor: usuario.id,
+      validado: situacao === 'VALIDADO',
+    });
+
     return linha.rows[0];
   });
 
@@ -264,4 +274,82 @@ async function aplicarDecisao(
         ? 'Lançamento validado.'
         : 'Lançamento devolvido ao servidor.',
   };
+}
+
+interface LinhaGravada {
+  id: number;
+  atividade_id: number | null;
+  nivel_aplicado: number;
+  data_conclusao: string;
+  competencia: string;
+  servidor_id: number;
+}
+
+/**
+ * Mantem em dia o lancamento de conferencia que acompanha cada validacao.
+ *
+ * Validar gera a producao de quem conferiu; desfazer a validacao apaga essa
+ * producao. O lancamento gerado nasce ja VALIDADO — nao faz sentido validar a
+ * validacao — e carrega origem AUTOMATICO, para nunca se confundir com
+ * producao que alguem lancou a mao.
+ *
+ * O percentual e o piso sao congelados aqui, como em qualquer lancamento:
+ * mudar o parametro amanha nao pode reescrever o que ja foi conferido.
+ */
+async function ajustarConferencia(
+  cliente: PoolClient,
+  dados: { lancamento: LinhaGravada; conferidoPor: number; validado: boolean },
+): Promise<void> {
+  const { lancamento, conferidoPor, validado } = dados;
+
+  // Quem confere nao pode colher a propria conferencia.
+  const anterior = await cliente.query<{ id: number }>(
+    `SELECT id FROM lancamentos
+      WHERE lancamento_origem_id = $1 AND excluido_em IS NULL`,
+    [lancamento.id],
+  );
+
+  if (!validado) {
+    // Devolveu: a conferencia deixou de existir, e o ponto dela vai junto.
+    if (anterior.rowCount) {
+      await cliente.query('UPDATE lancamentos SET excluido_em = now() WHERE id = $1', [
+        anterior.rows[0].id,
+      ]);
+    }
+    return;
+  }
+
+  const { pesos, minimoHomologacao } = await carregarParametros();
+
+  if (anterior.rowCount) {
+    // Revalidou com outro nivel: a conferencia acompanha o nivel conferido.
+    await cliente.query(
+      `UPDATE lancamentos
+          SET nivel = $1, nivel_aplicado = $1, data_conclusao = $2,
+              validado_por = $3, validado_em = now(), atualizado_em = now()
+        WHERE id = $4`,
+      [lancamento.nivel_aplicado, lancamento.data_conclusao, conferidoPor, anterior.rows[0].id],
+    );
+    return;
+  }
+
+  await cliente.query(
+    `INSERT INTO lancamentos
+       (servidor_id, atividade_id, processo, descricao, nivel, papel, quantidade,
+        data_conclusao, status, situacao, nivel_aplicado, percentual_papel,
+        pontos_minimos, criado_por, origem, lancamento_origem_id,
+        validado_por, validado_em)
+     VALUES ($1, $2, NULL, $3, $4, 'HOMOLOGACAO', 1, $5, 'CONCLUIDO', 'VALIDADO',
+             $4, $6, $7, $1, 'AUTOMATICO', $8, $1, now())`,
+    [
+      conferidoPor,
+      lancamento.atividade_id,
+      'Conferência de lançamento da equipe',
+      lancamento.nivel_aplicado,
+      lancamento.data_conclusao,
+      pesos.HOMOLOGACAO,
+      minimoHomologacao,
+      lancamento.id,
+    ],
+  );
 }

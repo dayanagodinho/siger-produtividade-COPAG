@@ -1,6 +1,7 @@
 import { consultar } from '../infra/banco';
 import {
   LIMITES_PADRAO,
+  MINIMO_HOMOLOGACAO_PADRAO,
   PESOS_PADRAO,
   type LimitesDeFaixa,
   type PesosPorPapel,
@@ -9,6 +10,8 @@ import {
 export interface ParametrosDoSistema {
   pesos: PesosPorPapel;
   limites: LimitesDeFaixa;
+  /** Piso da conferencia, em pontos. Congelado em cada lancamento gerado. */
+  minimoHomologacao: number;
 }
 
 export async function carregarParametros(): Promise<ParametrosDoSistema> {
@@ -27,5 +30,6 @@ export async function carregarParametros(): Promise<ParametrosDoSistema> {
       abaixo: mapa.get('FAIXA_ABAIXO') ?? LIMITES_PADRAO.abaixo,
       acima: mapa.get('FAIXA_ACIMA') ?? LIMITES_PADRAO.acima,
     },
+    minimoHomologacao: mapa.get('MINIMO_HOMOLOGACAO') ?? MINIMO_HOMOLOGACAO_PADRAO,
   };
 }

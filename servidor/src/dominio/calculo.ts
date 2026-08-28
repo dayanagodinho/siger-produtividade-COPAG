@@ -22,7 +22,14 @@ export interface LimitesDeFaixa {
   acima: number;  // percentual; acima disso e "Acima da referencia"
 }
 
-export const PESOS_PADRAO: PesosPorPapel = { EXECUCAO: 100, REVISAO: 40, HOMOLOGACAO: 20 };
+export const PESOS_PADRAO: PesosPorPapel = { EXECUCAO: 100, REVISAO: 40, HOMOLOGACAO: 30 };
+
+/**
+ * Piso da conferencia. Conferir um lancamento simples renderia 0,30 ponto —
+ * uma fracao que nao paga o trabalho de ler, julgar e responder. O piso diz
+ * que conferir vale ao menos um ponto, qualquer que seja o nivel conferido.
+ */
+export const MINIMO_HOMOLOGACAO_PADRAO = 1;
 export const LIMITES_PADRAO: LimitesDeFaixa = { abaixo: 85, acima: 115 };
 
 export function arredondar(valor: number, casas = 4): number {
@@ -34,9 +41,21 @@ export function percentualDoPapel(papel: Papel, pesos: PesosPorPapel): number {
   return pesos[papel];
 }
 
-/** Regra 2.5: pontos = nivel x quantidade x percentual do papel. */
-export function calcularPontos(nivel: number, quantidade: number, percentualPapel: number): number {
-  return arredondar((nivel * quantidade * percentualPapel) / 100);
+/**
+ * Regra 2.5: pontos = nivel x quantidade x percentual do papel, respeitado o
+ * piso do lancamento.
+ *
+ * O piso e zero em tudo, menos na conferencia. Ele acompanha a linha, e nao a
+ * formula, porque parametro que muda nao pode reescrever mes ja fechado — e a
+ * mesma razao pela qual o percentual do papel fica congelado no lancamento.
+ */
+export function calcularPontos(
+  nivel: number,
+  quantidade: number,
+  percentualPapel: number,
+  pontosMinimos = 0,
+): number {
+  return arredondar(Math.max((nivel * quantidade * percentualPapel) / 100, pontosMinimos));
 }
 
 /** Mediana de uma lista. Devolve null para lista vazia. */

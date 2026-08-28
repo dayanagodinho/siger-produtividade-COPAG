@@ -149,3 +149,21 @@ test('taxa de correcao ignora divisao por zero', () => {
   assert.equal(taxaDeCorrecao(10, 3), 0.3);
   assert.equal(taxaDeCorrecao(0, 0), null);
 });
+
+test('a conferência tem piso: nível baixo não vira fração de ponto', () => {
+  // 1 x 1 x 30% = 0,30 — abaixo do piso, entao vale 1.
+  assert.equal(calcularPontos(1, 1, 30, 1), 1);
+  assert.equal(calcularPontos(3, 1, 30, 1), 1);
+  // 4 x 1 x 30% = 1,20 — acima do piso, o calculo manda.
+  assert.equal(calcularPontos(4, 1, 30, 1), 1.2);
+});
+
+test('sem piso, o cálculo é o de sempre', () => {
+  assert.equal(calcularPontos(3, 1, 100), 3);
+  assert.equal(calcularPontos(2, 2, 40), 1.6);
+  assert.equal(calcularPontos(1, 1, 30), 0.3);
+});
+
+test('o piso não empurra para cima quem já passa dele', () => {
+  assert.equal(calcularPontos(4, 3, 100, 1), 12);
+});
