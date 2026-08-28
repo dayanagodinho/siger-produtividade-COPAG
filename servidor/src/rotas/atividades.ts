@@ -2,7 +2,13 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { consultar, consultarUm } from '../infra/banco';
 import { registrarAuditoria } from '../infra/auditoria';
-import { erroDeConflito, erroDePermissao, erroNaoEncontrado, rota } from '../infra/erros';
+import {
+  erroDeConflito,
+  erroDePermissao,
+  erroDeRequisicao,
+  erroNaoEncontrado,
+  rota,
+} from '../infra/erros';
 import { ehAdmin, exigirAutenticacao, exigirChefia } from '../infra/autorizacao';
 import {
   idNumerico,
@@ -82,17 +88,39 @@ rotasDeAtividades.get(
     const condicoes = ['t.excluido_em IS NULL', 'g.excluido_em IS NULL'];
     const parametros: unknown[] = [];
 
+    /*
+     * Quem lanca escolhe entre as atividades do proprio grupo, e so elas. Sem
+     * grupo nao existe "as minhas atividades": o catalogo inteiro so aparece
+     * para quem pede `todos`, na tela de cadastro.
+     *
+     * Antes, quem administra e nao tem grupo caia no ramo do catalogo inteiro
+     * e via as 296 — o seletor oferecia o que o proprio servidor recusava
+     * depois, dizendo que a atividade era de outro grupo.
+     */
     const grupoPedido = req.query.grupo_id ? Number(req.query.grupo_id) : null;
-    const grupoId = grupoPedido ?? (req.query.todos === 'true' ? null : usuario.grupo_id);
 
-    if (grupoId !== null) {
-      parametros.push(grupoId);
+    if (grupoPedido !== null) {
+      if (usuario.perfil === 'SERVIDOR' && grupoPedido !== usuario.grupo_id) {
+        throw erroDePermissao('Você vê apenas as atividades do seu próprio grupo.');
+      }
+      parametros.push(grupoPedido);
       condicoes.push(`t.grupo_id = $${parametros.length}`);
-    } else if (usuario.perfil === 'SERVIDOR') {
-      throw erroDePermissao('Você vê apenas as atividades do seu próprio grupo.');
-    } else if (!ehAdmin(usuario)) {
-      parametros.push(usuario.setor_id);
-      condicoes.push(`g.setor_id = $${parametros.length}`);
+    } else if (req.query.todos === 'true') {
+      if (usuario.perfil === 'SERVIDOR') {
+        throw erroDePermissao('Você vê apenas as atividades do seu próprio grupo.');
+      }
+      if (!ehAdmin(usuario)) {
+        parametros.push(usuario.setor_id);
+        condicoes.push(`g.setor_id = $${parametros.length}`);
+      }
+    } else if (usuario.grupo_id !== null) {
+      parametros.push(usuario.grupo_id);
+      condicoes.push(`t.grupo_id = $${parametros.length}`);
+    } else {
+      throw erroDeRequisicao(
+        'Você não está em nenhum grupo, e a lista de atividades é por grupo. ' +
+          'Peça à administração para indicar o seu grupo em Cadastros → Servidores.',
+      );
     }
 
     if (req.query.incluir_inativas !== 'true') condicoes.push('t.ativa');

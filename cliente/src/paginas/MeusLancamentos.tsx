@@ -108,6 +108,7 @@ export function MeusLancamentos() {
   const [busca, setBusca] = useState('');
   const [lancamentos, setLancamentos] = useState<Lancamento[]>([]);
   const [niveis, setNiveis] = useState<Nivel[]>([]);
+  const [semGrupo, setSemGrupo] = useState(false);
   const [atividades, setAtividades] = useState<Atividade[]>([]);
   const [pesos, setPesos] = useState<Pesos>({ EXECUCAO: 100, REVISAO: 40, HOMOLOGACAO: 20 });
   const [carregando, setCarregando] = useState(true);
@@ -130,9 +131,17 @@ export function MeusLancamentos() {
   useEffect(() => {
     api.buscar<{ niveis: Nivel[] }>('/complexidade').then((r) => setNiveis(r.niveis));
     api
-      .buscar<{ atividades: Atividade[] }>('/atividades')
-      .then((r) => setAtividades(r.atividades))
-      .catch(() => setAtividades([]));
+      .buscar<{ atividades: Atividade[] }>('/atividades?somente_lancaveis=true')
+      .then((r) => {
+        setAtividades(r.atividades);
+        setSemGrupo(false);
+      })
+      // Sem grupo não existe "as minhas atividades": o servidor recusa, e a
+      // tela precisa dizer isso antes de a pessoa preencher o formulário.
+      .catch(() => {
+        setAtividades([]);
+        setSemGrupo(true);
+      });
     api
       .buscar<{ parametros: Array<{ chave: string; valor: number }> }>('/parametros')
       .then((r) => {
@@ -185,6 +194,8 @@ export function MeusLancamentos() {
             <button
               type="button"
               className="botao botao-principal"
+              disabled={semGrupo}
+              title={semGrupo ? 'Você não está em nenhum grupo.' : undefined}
               onClick={() => {
                 setEditando(null);
                 setFormularioAberto(true);
@@ -197,6 +208,13 @@ export function MeusLancamentos() {
       />
 
       <div className="conteudo">
+        {semGrupo && (
+          <Aviso tipo="atencao">
+            Você não está em nenhum grupo, e a lista de atividades é por grupo — por isso não há o
+            que lançar aqui. Peça à administração para indicar o seu grupo em Cadastros →
+            Servidores.
+          </Aviso>
+        )}
         {erro && <Aviso tipo="erro">{erro}</Aviso>}
         {sucesso && <Aviso tipo="sucesso">{sucesso}</Aviso>}
 
