@@ -31,7 +31,10 @@ interface ServidorApurado {
   dias_efetivos: number;
   dias_ausencia: number;
   media: number | null;
+  media_base: number | null;
   referencia: number | null;
+  chefia_grupo: boolean;
+  lancamentos_conferidos: number;
   atingimento: number | null;
   faixa: string | null;
   faixa_rotulo: string | null;
@@ -180,14 +183,18 @@ export function PainelSetor() {
                 <Medida
                   rotulo="Média do setor"
                   valor={numero(apuracao.resumo.media_oficial, 2)}
-                  apoio="Oficial: média simples das médias"
+                  apoio={`Média simples das médias · contraprova ${numero(apuracao.resumo.media_contraprova, 2)}`}
                 />
               </Cartao>
+              {/* Ponto e processo lado a lado, do mesmo tamanho: o total de
+                  pontos cresce com revisão e conferência sem que nada novo
+                  tenha sido entregue. O processo distinto é o que sobra
+                  quando se conta a entrega uma vez só. */}
               <Cartao>
                 <Medida
-                  rotulo="Contraprova"
-                  valor={numero(apuracao.resumo.media_contraprova, 2)}
-                  apoio={`${numero(apuracao.resumo.total_pontos, 1)} pontos ÷ ${apuracao.resumo.total_dias_efetivos} dias`}
+                  rotulo="Pontos no mês"
+                  valor={numero(apuracao.resumo.total_pontos, 1)}
+                  apoio={`Em ${apuracao.resumo.total_dias_efetivos} dias efetivos`}
                 />
               </Cartao>
               <Cartao>
@@ -209,19 +216,26 @@ export function PainelSetor() {
             <Cartao>
               <Figura
                 titulo="Média de cada servidor"
-                apoio="Coluna vermelha é quem ainda não alcançou a meta do próprio grupo. A linha tracejada é a média do setor."
+                apoio="Produção própria por dia efetivo, que é a mesma base da meta do grupo. A conferência da chefia conta em pontos, mas fica fora desta comparação. Coluna vermelha é quem ainda não alcançou a meta."
               >
                 <ColunasPorPessoa
                   colunas={apuracao.servidores
                     .filter((s) => s.situacao === 'APURADO')
-                    .sort((a, b) => (b.media ?? 0) - (a.media ?? 0))
+                    .sort((a, b) => (b.media_base ?? 0) - (a.media_base ?? 0))
                     .map((servidor) => ({
                       rotulo: primeiroENome(servidor.nome),
-                      valor: servidor.media,
+                      valor: servidor.media_base,
                       abaixo: servidor.faixa === 'ABAIXO',
-                      apoio: servidor.referencia
-                        ? `meta do grupo ${numero(servidor.referencia, 2)}`
-                        : 'sem meta definida',
+                      apoio: [
+                        servidor.referencia
+                          ? `meta do grupo ${numero(servidor.referencia, 2)}`
+                          : 'sem meta definida',
+                        servidor.lancamentos_conferidos > 0
+                          ? `conferiu ${servidor.lancamentos_conferidos}`
+                          : null,
+                      ]
+                        .filter(Boolean)
+                        .join(' · '),
                     }))}
                   referencia={apuracao.resumo.media_oficial}
                   rotuloReferencia={`média do setor ${numero(apuracao.resumo.media_oficial, 2)}`}
@@ -315,6 +329,11 @@ export function PainelSetor() {
                               <Avatar nome={servidor.nome} />
                               <span>
                                 {servidor.nome}
+                                {servidor.chefia_grupo && (
+                                  <span className="marca marca-neutra" style={{ marginLeft: '0.4rem' }}>
+                                    chefia
+                                  </span>
+                                )}
                                 <span className="campo-dica" style={{ display: 'block' }}>
                                   {servidor.matricula} · {servidor.grupo_nome ?? 'sem grupo'}
                                 </span>
@@ -323,6 +342,12 @@ export function PainelSetor() {
                           </td>
                           <td className="numerico">
                             {numero(servidor.pontos_total, 1)}
+                            {servidor.lancamentos_conferidos > 0 && (
+                              <div className="campo-dica">
+                                {numero(servidor.pontos_total - servidor.pontos_base, 1)} de{' '}
+                                {servidor.lancamentos_conferidos} conferência(s)
+                              </div>
+                            )}
                             {servidor.lancamentos_pendentes > 0 && (
                               <div className="campo-dica">
                                 {numero(servidor.pontos_pendentes, 1)} a conferir

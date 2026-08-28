@@ -49,6 +49,10 @@ export interface ServidorApurado {
   lancamentos_devolvidos: number;
   distribuicao_niveis: Record<number, number>;
   pontos_por_papel: Record<string, number>;
+  /** Quantos lancamentos da equipe esta pessoa conferiu no mes. */
+  lancamentos_conferidos: number;
+  /** Chefia algum grupo? A lista marca a linha, para o numero ser lido certo. */
+  chefia_grupo: boolean;
   lancamentos_avaliados: number;
   lancamentos_corrigidos: number;
   taxa_correcao: number | null;
@@ -77,6 +81,7 @@ export interface ApuracaoDoSetor {
 }
 
 interface LinhaLancamento extends LancamentoParaApuracao {
+  origem?: 'MANUAL' | 'AUTOMATICO';
   id: number;
   nivel_original: number | null;
 }
@@ -126,10 +131,20 @@ export async function apurarCompetencia(
   );
   const idsServidores = servidores.map((s) => s.id);
 
+  // Quem chefia grupo tem a linha marcada na lista: a media dele cobre a
+  // producao propria, e a conferencia aparece em numero separado ao lado.
+  const chefias = await consultar<{ chefe_id: number }>(
+    `SELECT DISTINCT g.chefe_id
+       FROM grupos g
+      WHERE g.setor_id = $1 AND g.excluido_em IS NULL AND g.chefe_id IS NOT NULL`,
+    [setorId],
+  );
+  const chefesDeGrupo = new Set(chefias.map((c) => c.chefe_id));
+
   const lancamentos = idsServidores.length
     ? await consultar<LinhaLancamento>(
         `SELECT l.id, l.servidor_id, l.processo, l.papel, l.status, l.situacao,
-                l.pontos, l.nivel, l.nivel_original
+                l.pontos, l.nivel, l.nivel_original, l.origem
            FROM lancamentos l
           WHERE l.excluido_em IS NULL AND l.competencia = $1
             AND l.servidor_id = ANY($2::int[])`,
@@ -170,6 +185,8 @@ export async function apurarCompetencia(
       pontosPorPapel[papel] = Math.round(pontosPorPapel[papel] * 10000) / 10000;
     }
 
+    const conferidos = meus.filter((l) => l.origem === 'AUTOMATICO').length;
+
     return {
       servidor_id: servidor.id,
       nome: servidor.nome,
@@ -196,6 +213,8 @@ export async function apurarCompetencia(
       lancamentos_devolvidos: base.lancamentos_devolvidos,
       distribuicao_niveis: distribuirNiveis(meus.filter((l) => l.status === 'CONCLUIDO')),
       pontos_por_papel: pontosPorPapel,
+      lancamentos_conferidos: conferidos,
+      chefia_grupo: chefesDeGrupo.has(servidor.id),
       lancamentos_avaliados: avaliados.length,
       lancamentos_corrigidos: corrigidos.length,
       taxa_correcao: taxaDeCorrecao(avaliados.length, corrigidos.length),
@@ -234,7 +253,17 @@ export async function apurarCompetencia(
     const grupo = grupos.find((g) => g.grupo_id === servidor.grupo_id);
     servidor.referencia = grupo?.referencia ?? null;
     servidor.origem_referencia = grupo?.origem ?? 'INDISPONIVEL';
-    servidor.atingimento = calcularAtingimento(servidor.media, servidor.referencia);
+    /*
+     * O atingimento usa a mesma base da referencia: producao propria, sem a
+     * conferencia.
+     *
+     * Medir com a conferencia contra uma referencia que nao a contem compara
+     * coisas diferentes. Num grupo de seis pessoas, o chefe que confere tudo
+     * chegaria a 561% — nao por produzir seis vezes mais, mas por ser medido
+     * por uma regua que nao inclui o que ele faz. A conferencia continua
+     * valendo pontos e aparece ao lado, em numero proprio.
+     */
+    servidor.atingimento = calcularAtingimento(servidor.media_base, servidor.referencia);
     servidor.faixa =
       servidor.atingimento === null ? null : faixaDeAtingimento(servidor.atingimento, limites);
   }
