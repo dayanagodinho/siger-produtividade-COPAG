@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { rotasDeAuditoria } from './auditoria';
+import { rotasDeDemonstracao } from './demonstracao';
 import { rotasDeAusencias } from './ausencias';
 import { rotasDeAutenticacao } from './autenticacao';
 import { rotasDeComplexidade } from './complexidade';
@@ -35,4 +36,5 @@ rotasDaApi.use('/complexidade', rotasDeComplexidade);
 rotasDaApi.use('/feriados', rotasDeFeriados);
 rotasDaApi.use('/parametros', rotasDeParametros);
 rotasDaApi.use('/auditoria', rotasDeAuditoria);
+rotasDaApi.use('/demonstracao', rotasDeDemonstracao);
 rotasDaApi.use('/exportacoes', rotasDeExportacao);

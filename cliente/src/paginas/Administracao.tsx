@@ -18,6 +18,7 @@ const ABAS = [
   { chave: 'complexidade', rotulo: 'Tabela de complexidade' },
   { chave: 'feriados', rotulo: 'Feriados' },
   { chave: 'parametros', rotulo: 'Parâmetros' },
+  { chave: 'demonstracao', rotulo: 'Demonstração' },
 ];
 
 export function Administracao() {
@@ -37,6 +38,7 @@ export function Administracao() {
         {aba === 'complexidade' && <AbaComplexidade />}
         {aba === 'feriados' && <AbaFeriados />}
         {aba === 'parametros' && <AbaParametros />}
+        {aba === 'demonstracao' && <AbaDemonstracao />}
       </div>
     </>
   );
@@ -619,7 +621,7 @@ interface ServidorCadastro {
   id: number;
   matricula: string;
   nome: string;
-  email: string;
+  email: string | null;
   setor_id: number;
   setor_sigla: string;
   grupo_id: number | null;
@@ -627,7 +629,7 @@ interface ServidorCadastro {
   perfil: string;
   regime: string;
   situacao: string;
-  data_admissao: string;
+  data_admissao: string | null;
   data_desligamento: string | null;
 }
 
@@ -677,7 +679,7 @@ function AbaServidores() {
                   <td>{servidor.matricula}</td>
                   <td>
                     {servidor.nome}
-                    <div className="campo-dica">{servidor.email}</div>
+                    <div className="campo-dica">{servidor.email ?? 'sem e-mail'}</div>
                   </td>
                   <td className="discreto">
                     {servidor.setor_sigla}
@@ -692,7 +694,7 @@ function AbaServidores() {
                       {servidor.situacao === 'ATIVO' ? 'Ativo' : 'Inativo'}
                     </span>
                     <div className="campo-dica">
-                      desde {formatarData(servidor.data_admissao)}
+                      {servidor.data_admissao ? `desde ${formatarData(servidor.data_admissao)}` : '—'}
                     </div>
                   </td>
                   <td>
@@ -726,7 +728,12 @@ function AbaServidores() {
           campos={[
             { chave: 'matricula', rotulo: 'Matrícula', tipo: 'texto', obrigatorio: true },
             { chave: 'nome', rotulo: 'Nome completo', tipo: 'texto', obrigatorio: true },
-            { chave: 'email', rotulo: 'E-mail', tipo: 'email', obrigatorio: true },
+            {
+              chave: 'email',
+              rotulo: 'E-mail',
+              tipo: 'email',
+              dica: 'Opcional. Com e-mail, a pessoa pode entrar por ele ou pela matrícula.',
+            },
             ...(editando
               ? []
               : ([
@@ -735,7 +742,7 @@ function AbaServidores() {
                     rotulo: 'Senha inicial',
                     tipo: 'senha',
                     obrigatorio: true,
-                    dica: 'Ao menos 8 caracteres, com letras e números.',
+                    dica: 'Ao menos 8 caracteres, misturando letras e números — por exemplo, copag2026. Só números não vale. A pessoa troca no primeiro acesso.',
                   },
                 ] as CampoDoFormulario[])),
             {
@@ -785,7 +792,12 @@ function AbaServidores() {
                 { valor: 'INATIVO', rotulo: 'Inativo' },
               ],
             },
-            { chave: 'data_admissao', rotulo: 'Data de admissão', tipo: 'data', obrigatorio: true },
+            {
+              chave: 'data_admissao',
+              rotulo: 'Data de admissão',
+              tipo: 'data',
+              dica: 'Opcional. Preencha quando souber.',
+            },
             { chave: 'data_desligamento', rotulo: 'Data de desligamento', tipo: 'data' },
           ]}
           valores={{
@@ -1268,5 +1280,143 @@ function FormularioSimples({
         ))}
       </form>
     </Modal>
+  );
+}
+
+// ----------------------------------------------------------- Demonstração
+
+/**
+ * Enche o sistema com um setor fictício em funcionamento, para mostrar à
+ * chefia o que os painéis fazem antes de a equipe começar a lançar. Tudo o
+ * que entra aqui sai junto no botão de remover: quem foi cadastrado de
+ * verdade não é tocado.
+ */
+function AbaDemonstracao() {
+  const { dados, carregando, erro, setErro, carregar } = useRecurso<{
+    pessoas: number;
+    lancamentos: number;
+  }>('/demonstracao');
+  const [trabalhando, setTrabalhando] = useState(false);
+  const [sucesso, setSucesso] = useState<string | null>(null);
+  const [confirmando, setConfirmando] = useState(false);
+
+  const carregada = (dados?.pessoas ?? 0) > 0;
+
+  async function acionar(acao: 'criar' | 'remover') {
+    setTrabalhando(true);
+    setErro(null);
+    setSucesso(null);
+    try {
+      if (acao === 'criar') {
+        const resposta = await api.enviar<{
+          pessoas: number;
+          lancamentos: number;
+          competencias: string[];
+        }>('/demonstracao', {});
+        setSucesso(
+          `Pronto: ${resposta.pessoas} pessoas e ${resposta.lancamentos} lançamentos em ` +
+            `${resposta.competencias.join(' e ')}. Abra o Painel do setor para ver.`,
+        );
+      } else {
+        const resposta = await api.excluir<{ pessoas: number }>('/demonstracao');
+        setSucesso(`Removidas ${resposta.pessoas} pessoas de demonstração. O sistema ficou só com os dados reais.`);
+      }
+      carregar();
+    } catch (falha) {
+      setErro(mensagemDeErro(falha));
+    } finally {
+      setTrabalhando(false);
+      setConfirmando(false);
+    }
+  }
+
+  return (
+    <Cartao
+      titulo="Dados de demonstração"
+      descricao="Um setor fictício em funcionamento, para a chefia ver como os painéis, a fila de conferência e o cálculo se comportam — sem esperar a equipe começar a lançar."
+    >
+      {erro && <Aviso tipo="erro">{erro}</Aviso>}
+      {sucesso && <Aviso tipo="sucesso">{sucesso}</Aviso>}
+
+      {carregando ? (
+        <Carregando />
+      ) : carregada ? (
+        <>
+          <Aviso tipo="informativo">
+            A demonstração está carregada: <strong>{dados?.pessoas} pessoas</strong> e{' '}
+            <strong>{dados?.lancamentos} lançamentos</strong> fictícios. Os nomes aparecem com
+            “(demonstração)” ao lado, e as matrículas começam com DEMO.
+          </Aviso>
+          <p className="discreto">
+            Antes de a equipe começar a usar para valer, remova. A remoção apaga exatamente o que
+            foi criado aqui — quem você cadastrou de verdade e as atividades da COPAG não são
+            tocados.
+          </p>
+          <div className="acoes">
+            <button
+              type="button"
+              className="botao"
+              disabled={trabalhando}
+              onClick={() => setConfirmando(true)}
+            >
+              {trabalhando ? 'Removendo...' : 'Remover a demonstração'}
+            </button>
+          </div>
+        </>
+      ) : (
+        <>
+          <p className="discreto">
+            Serão criadas oito pessoas fictícias, distribuídas pelos grupos que existem, com dois
+            meses de lançamentos: gente acima e abaixo da referência, uma fila esperando a chefia,
+            um lançamento devolvido e umas férias que deixam o mês sem apuração.
+          </p>
+          <p className="discreto">
+            Nada do que já está cadastrado é alterado, e dá para remover tudo depois, neste mesmo
+            lugar.
+          </p>
+          <div className="acoes">
+            <button
+              type="button"
+              className="botao botao-principal"
+              disabled={trabalhando}
+              onClick={() => acionar('criar')}
+            >
+              {trabalhando ? 'Gerando...' : 'Carregar a demonstração'}
+            </button>
+          </div>
+        </>
+      )}
+
+      {confirmando && (
+        <Modal
+          titulo="Remover os dados de demonstração?"
+          aoFechar={() => setConfirmando(false)}
+          rodape={
+            <>
+              <button type="button" className="botao" onClick={() => setConfirmando(false)}>
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className="botao botao-risco"
+                disabled={trabalhando}
+                onClick={() => acionar('remover')}
+              >
+                Remover
+              </button>
+            </>
+          }
+        >
+          <p>
+            Some tudo o que a demonstração criou: as {dados?.pessoas} pessoas fictícias, os{' '}
+            {dados?.lancamentos} lançamentos delas e as ausências que as acompanham.
+          </p>
+          <p className="discreto">
+            As pessoas que você cadastrou, os lançamentos delas, os grupos e as 93 atividades da
+            COPAG continuam onde estão.
+          </p>
+        </Modal>
+      )}
+    </Cartao>
   );
 }

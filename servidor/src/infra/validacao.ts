@@ -8,7 +8,14 @@ export function validar<T extends ZodTypeAny>(esquema: T, dados: unknown): z.inf
       campo: problema.path.join('.') || '(corpo)',
       mensagem: problema.message,
     }));
-    throw erroDeRequisicao('Revise os campos destacados e envie de novo.', detalhes);
+    // Nada na tela fica destacado, entao a mensagem tem de dizer sozinha o
+    // que corrigir. Com um problema so, ele e a mensagem; com varios, a
+    // frase de abertura anuncia a lista que vem depois.
+    const resumo =
+      detalhes.length === 1
+        ? detalhes[0].mensagem
+        : `Faltou preencher ${detalhes.length} campos:`;
+    throw erroDeRequisicao(resumo, detalhes.length === 1 ? [] : detalhes);
   }
   return resultado.data;
 }

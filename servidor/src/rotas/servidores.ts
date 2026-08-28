@@ -18,7 +18,10 @@ const CAMPOS_PUBLICOS = `
 const esquemaBase = z.object({
   matricula: textoObrigatorio('a matrícula', 30),
   nome: textoObrigatorio('o nome'),
-  email: z.string().trim().email('Informe um e-mail válido.'),
+  // Quem cadastra nem sempre tem o e-mail a mao. Em branco vira nulo: a
+  // matricula ja identifica a pessoa, o e-mail so acrescenta um segundo
+  // jeito de entrar.
+  email: opcional(z.string().trim().email('Informe um e-mail válido.')),
   setor_id: idNumerico('o setor'),
   grupo_id: idNumerico('o grupo').nullable().optional(),
   perfil: z.enum(['SERVIDOR', 'CHEFE', 'ADMIN'], {
@@ -28,9 +31,17 @@ const esquemaBase = z.object({
     errorMap: () => ({ message: 'Selecione o regime de trabalho.' }),
   }),
   situacao: z.enum(['ATIVO', 'INATIVO']).optional().default('ATIVO'),
-  data_admissao: dataIso,
+  data_admissao: opcional(dataIso),
   data_desligamento: dataIso.nullable().optional(),
 });
+
+/** Campo que aceita ficar em branco: texto vazio e ausencia viram nulo. */
+function opcional<T extends z.ZodTypeAny>(esquema: T) {
+  return z.preprocess(
+    (valor) => (valor === '' || valor === undefined ? null : valor),
+    esquema.nullable(),
+  );
+}
 
 const esquemaCriacao = esquemaBase.extend({
   senha: z.string().min(1, 'Informe a senha inicial.'),
@@ -96,9 +107,9 @@ rotasDeServidores.post(
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
        RETURNING id`,
       [
-        dados.matricula, dados.nome, dados.email, senhaHash, dados.setor_id,
+        dados.matricula, dados.nome, dados.email ?? null, senhaHash, dados.setor_id,
         dados.grupo_id ?? null, dados.perfil, dados.regime, dados.situacao,
-        dados.data_admissao, dados.data_desligamento ?? null,
+        dados.data_admissao ?? null, dados.data_desligamento ?? null,
       ],
     );
 
@@ -162,8 +173,8 @@ rotasDeServidores.put(
         WHERE id = $11 AND excluido_em IS NULL
         RETURNING id`,
       [
-        dados.matricula, dados.nome, dados.email, dados.setor_id, dados.grupo_id ?? null,
-        dados.perfil, dados.regime, dados.situacao, dados.data_admissao,
+        dados.matricula, dados.nome, dados.email ?? null, dados.setor_id, dados.grupo_id ?? null,
+        dados.perfil, dados.regime, dados.situacao, dados.data_admissao ?? null,
         dados.data_desligamento ?? null, id,
       ],
     );

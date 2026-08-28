@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { Icone } from './icones';
 import { competenciaLegivel, listarCompetencias, numero, percentual } from '../servicos/formato';
 
@@ -101,9 +101,20 @@ export function Modal({
   rodape?: ReactNode;
   children: ReactNode;
 }) {
+  // Esc fecha; clique na cortina nao. O modal quase sempre guarda um
+  // formulario pela metade, e perder o preenchimento por um clique de raspao
+  // fora da caixa custa muito mais caro do que um clique a mais no Fechar.
+  useEffect(() => {
+    function aoTeclar(evento: KeyboardEvent) {
+      if (evento.key === 'Escape') aoFechar();
+    }
+    document.addEventListener('keydown', aoTeclar);
+    return () => document.removeEventListener('keydown', aoTeclar);
+  }, [aoFechar]);
+
   return (
-    <div className="cortina" onClick={aoFechar} role="presentation">
-      <div className="modal" onClick={(evento) => evento.stopPropagation()} role="dialog">
+    <div className="cortina" role="presentation">
+      <div className="modal" role="dialog" aria-modal="true">
         <div className="modal-titulo">
           <h2>{titulo}</h2>
           <button

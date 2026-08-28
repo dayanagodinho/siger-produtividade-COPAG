@@ -14,7 +14,6 @@ import {
   dataIso,
   idNumerico,
   nivelComplexidade,
-  textoObrigatorio,
   textoOpcional,
   validar,
 } from '../infra/validacao';
@@ -50,7 +49,9 @@ const DE = `
 const esquema = z.object({
   servidor_id: idNumerico('o servidor').optional(),
   atividade_id: idNumerico('a atividade').nullable().optional(),
-  processo: textoObrigatorio('o número do processo', 60),
+  // Opcional de verdade: a tela diz "Se houver", e nem toda atividade da
+  // COPAG nasce de um processo com numero.
+  processo: textoOpcional(60),
   descricao: textoOpcional(1000),
   nivel: nivelComplexidade,
   papel: z.enum(['EXECUCAO', 'REVISAO', 'HOMOLOGACAO'], {
