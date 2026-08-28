@@ -29,6 +29,7 @@ interface LinhaFila extends Record<string, unknown> {
   id: number;
   servidor_id: number;
   setor_id: number;
+  grupo_id: number | null;
   nivel: number;
   nivel_aplicado: number;
   percentual_papel: number;
@@ -196,7 +197,7 @@ async function aplicarDecisao(
 ) {
   const usuario = req.usuario!;
   const anterior = await consultarUm<LinhaFila>(
-    `SELECT l.*, s.setor_id, s.nome AS servidor_nome
+    `SELECT l.*, s.setor_id, s.grupo_id, s.nome AS servidor_nome
        FROM lancamentos l JOIN servidores s ON s.id = l.servidor_id
       WHERE l.id = $1 AND l.excluido_em IS NULL`,
     [id],
@@ -208,7 +209,11 @@ async function aplicarDecisao(
   if (anterior.servidor_id === usuario.id) {
     throw erroDePermissao('Ninguém confere o próprio lançamento.');
   }
-  await garantirCompetenciaAberta(anterior.setor_id, competenciaDe(anterior.data_conclusao));
+  await garantirCompetenciaAberta(
+    anterior.setor_id,
+    competenciaDe(anterior.data_conclusao),
+    anterior.grupo_id,
+  );
 
   const nivelMudou = novoNivel !== undefined && novoNivel !== anterior.nivel;
   if (nivelMudou && situacao === 'DEVOLVIDO') {

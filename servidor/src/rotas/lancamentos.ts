@@ -183,7 +183,7 @@ rotasDeLancamentos.post(
     conferirPeriodo(dados);
     await conferirAtividade(dados.atividade_id ?? null, alvo.grupo_id, dados.tipo_folha ?? null);
     const competencia = competenciaDe(dados.data_conclusao);
-    await garantirCompetenciaAberta(alvo.setor_id, competencia);
+    await garantirCompetenciaAberta(alvo.setor_id, competencia, alvo.grupo_id);
 
     // Regra 2.6: o percentual do papel e congelado agora e nao muda depois.
     const { pesos } = await carregarParametros();
@@ -242,9 +242,9 @@ rotasDeLancamentos.put(
 
     const competenciaAntiga = competenciaDe(anterior.data_conclusao);
     const competenciaNova = competenciaDe(dados.data_conclusao);
-    await garantirCompetenciaAberta(alvo.setor_id, competenciaAntiga);
+    await garantirCompetenciaAberta(alvo.setor_id, competenciaAntiga, alvo.grupo_id);
     if (competenciaNova !== competenciaAntiga) {
-      await garantirCompetenciaAberta(alvo.setor_id, competenciaNova);
+      await garantirCompetenciaAberta(alvo.setor_id, competenciaNova, alvo.grupo_id);
     }
 
     // Se o papel mudou, o percentual e redeclarado com os parametros de hoje.
@@ -305,7 +305,7 @@ rotasDeLancamentos.delete(
         'Este lançamento já foi validado pela chefia e não pode ser excluído por você.',
       );
     }
-    await garantirCompetenciaAberta(alvo.setor_id, competenciaDe(anterior.data_conclusao));
+    await garantirCompetenciaAberta(alvo.setor_id, competenciaDe(anterior.data_conclusao), alvo.grupo_id);
 
     await consultarUm(
       'UPDATE lancamentos SET excluido_em = now() WHERE id = $1 AND excluido_em IS NULL RETURNING id',

@@ -24,13 +24,44 @@ export async function buscarFechamentoVigente(
   );
 }
 
+export interface FechamentoDeGrupo {
+  id: number;
+  grupo_id: number;
+  grupo_nome: string;
+  versao: number;
+  fechado_em: string;
+  fechado_por_nome: string;
+}
+
+/** Devolve o fechamento em vigor de um grupo, ou null se o grupo esta aberto. */
+export async function buscarFechamentoDeGrupo(
+  grupoId: number,
+  competencia: DataIso,
+): Promise<FechamentoDeGrupo | null> {
+  return consultarUm<FechamentoDeGrupo>(
+    `SELECT fg.id, fg.grupo_id, g.nome AS grupo_nome, fg.versao, fg.fechado_em,
+            s.nome AS fechado_por_nome
+       FROM fechamentos_grupo fg
+       JOIN grupos g ON g.id = fg.grupo_id
+       JOIN servidores s ON s.id = fg.fechado_por
+      WHERE fg.grupo_id = $1 AND fg.competencia = $2
+        AND fg.vigente AND fg.reaberto_em IS NULL`,
+    [grupoId, competencia],
+  );
+}
+
 /**
  * Regra 6.1: com o mes fechado, nenhum lancamento daquela competencia pode
  * ser criado, alterado ou excluido. Reabertura e ato do administrador.
+ *
+ * O fechamento tem dois estagios, e os dois travam: o do grupo, feito por
+ * quem chefia o grupo, e o do setor, que so acontece depois que todos os
+ * grupos fecharam. Quem lanca esbarra no primeiro que estiver fechado.
  */
 export async function garantirCompetenciaAberta(
   setorId: number,
   competencia: DataIso,
+  grupoId?: number | null,
 ): Promise<void> {
   const fechamento = await buscarFechamentoVigente(setorId, competencia);
   if (fechamento) {
@@ -38,6 +69,17 @@ export async function garantirCompetenciaAberta(
       `A competência de ${rotularCompetencia(competencia)} já foi fechada e não aceita mais alterações. ` +
         'Peça a reabertura do mês a administração do sistema.',
     );
+  }
+
+  if (grupoId) {
+    const doGrupo = await buscarFechamentoDeGrupo(grupoId, competencia);
+    if (doGrupo) {
+      throw erroDeConflito(
+        `O grupo ${doGrupo.grupo_nome} já fechou ${rotularCompetencia(competencia)}, ` +
+          `em ${new Date(doGrupo.fechado_em).toLocaleDateString('pt-BR')}, e o mês não aceita mais alterações. ` +
+          'Peça a reabertura à administração do sistema.',
+      );
+    }
   }
 }
 
