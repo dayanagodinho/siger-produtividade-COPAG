@@ -20,7 +20,7 @@ const SENHA_DEMO = 'demonstracao2026';
 
 interface PessoaDemo {
   nome: string;
-  perfil: 'SERVIDOR' | 'CHEFE';
+  perfil: 'SERVIDOR' | 'CHEFE_GRUPO';
   regime: 'INTEGRAL' | 'PARCIAL' | 'PRESENCIAL';
   /** Quantos lancamentos por mes e os niveis que a pessoa costuma declarar. */
   porMes: number;
@@ -29,7 +29,7 @@ interface PessoaDemo {
 }
 
 const PESSOAS: PessoaDemo[] = [
-  { nome: 'Carlos Menezes Prado', perfil: 'CHEFE', regime: 'INTEGRAL', porMes: 5, niveis: [2, 3] },
+  { nome: 'Carlos Menezes Prado', perfil: 'CHEFE_GRUPO', regime: 'INTEGRAL', porMes: 5, niveis: [2, 3] },
   { nome: 'Beatriz Souza Lima', perfil: 'SERVIDOR', regime: 'INTEGRAL', porMes: 11, niveis: [3, 2, 4, 2, 3, 1] },
   { nome: 'Diego Fontes Araujo', perfil: 'SERVIDOR', regime: 'INTEGRAL', porMes: 9, niveis: [2, 3, 2, 1, 3] },
   { nome: 'Elaine Castro Moreira', perfil: 'SERVIDOR', regime: 'PARCIAL', porMes: 10, niveis: [1, 2, 1, 2, 3] },
@@ -115,7 +115,7 @@ export async function criarDemonstracao(criadoPor: number): Promise<ResumoDemons
       resumo.pessoas += 1;
     }
 
-    const chefe = criadas.find((c) => c.pessoa.perfil === 'CHEFE') ?? criadas[0];
+    const chefe = criadas.find((c) => c.pessoa.perfil === 'CHEFE_GRUPO') ?? criadas[0];
 
     for (const [indice, criada] of criadas.entries()) {
       const doGrupo = atividades.filter((a) => a.grupo_id === criada.grupoId);

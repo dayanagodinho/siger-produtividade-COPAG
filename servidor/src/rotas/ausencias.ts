@@ -5,6 +5,8 @@ import { registrarAuditoria } from '../infra/auditoria';
 import { erroDeRequisicao, erroNaoEncontrado, rota } from '../infra/erros';
 import {
   buscarServidorAlvo,
+  alcanceDe,
+  condicaoDoAlcance,
   exigirAutenticacao,
   exigirChefia,
   garantirAcessoAoServidor,
@@ -51,12 +53,9 @@ rotasDeAusencias.get(
       await garantirAcessoAoServidor(usuario, filtroServidor);
       parametros.push(filtroServidor);
       condicoes.push(`a.servidor_id = $${parametros.length}`);
-    } else if (usuario.perfil === 'SERVIDOR') {
-      parametros.push(usuario.id);
-      condicoes.push(`a.servidor_id = $${parametros.length}`);
-    } else if (usuario.perfil === 'CHEFE') {
-      parametros.push(usuario.setor_id);
-      condicoes.push(`s.setor_id = $${parametros.length}`);
+    } else {
+      const filtro = condicaoDoAlcance(await alcanceDe(usuario), { servidor: 'a.servidor_id', grupo: 's.grupo_id', setor: 's.setor_id' }, parametros);
+      if (filtro) condicoes.push(filtro);
     }
 
     if (req.query.competencia) {

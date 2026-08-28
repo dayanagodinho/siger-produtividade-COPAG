@@ -17,7 +17,7 @@ import { Auditoria } from './paginas/Auditoria';
 import { TrocarSenha } from './paginas/TrocarSenha';
 
 function Rotas() {
-  const { usuario, carregando, ehChefia, ehAdmin } = useSessao();
+  const { usuario, carregando, ehChefia, ehChefeDeSetor, ehAdmin } = useSessao();
 
   if (carregando) return <Carregando texto="Abrindo o sistema..." />;
   if (!usuario) return <Entrada />;
@@ -30,8 +30,8 @@ function Rotas() {
         <Route path="/senha" element={<TrocarSenha />} />
         {ehChefia && <Route path="/validacao" element={<FilaValidacao />} />}
         {ehChefia && <Route path="/ausencias" element={<Ausencias />} />}
-        {ehChefia && <Route path="/setor" element={<PainelSetor />} />}
-        {ehChefia && <Route path="/historico" element={<Historico />} />}
+        {ehChefeDeSetor && <Route path="/setor" element={<PainelSetor />} />}
+        {ehChefeDeSetor && <Route path="/historico" element={<Historico />} />}
         {ehAdmin && <Route path="/administracao" element={<Administracao />} />}
         {ehAdmin && <Route path="/auditoria" element={<Auditoria />} />}
         <Route path="*" element={<Navigate to="/" replace />} />

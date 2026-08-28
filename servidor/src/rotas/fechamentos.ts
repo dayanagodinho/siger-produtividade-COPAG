@@ -4,6 +4,7 @@ import { consultar, consultarUm, emTransacao } from '../infra/banco';
 import { registrarAuditoria } from '../infra/auditoria';
 import { erroDeConflito, erroNaoEncontrado, rota } from '../infra/erros';
 import {
+  ehChefeDeSetor,
   exigirAdmin,
   exigirAutenticacao,
   exigirChefia,
@@ -91,11 +92,9 @@ rotasDeFechamentos.get(
     const consolidado = await lerConsolidado(Number(req.params.id));
     if (!consolidado) throw erroNaoEncontrado('Consolidado não encontrado.');
     const usuario = req.usuario!;
-    if (usuario.perfil === 'SERVIDOR' || usuario.perfil === 'CHEFE') {
-      garantirSetorSobGestao(
-        { ...usuario, perfil: usuario.perfil === 'SERVIDOR' ? 'CHEFE' : usuario.perfil },
-        consolidado.setor_id,
-      );
+    // O consolidado e do setor inteiro: quem nao manda no setor nao o abre.
+    if (!ehChefeDeSetor(usuario) || usuario.setor_id !== consolidado.setor_id) {
+      garantirSetorSobGestao(usuario, consolidado.setor_id);
     }
     res.json({
       consolidado: {

@@ -7,7 +7,7 @@ export interface Usuario {
   matricula: string;
   nome: string;
   email: string;
-  perfil: 'SERVIDOR' | 'CHEFE' | 'ADMIN';
+  perfil: 'SERVIDOR' | 'CHEFE_GRUPO' | 'CHEFE_SETOR' | 'ADMIN';
   setor_id: number;
   setor_nome: string;
   grupo_id: number | null;
@@ -19,7 +19,10 @@ interface Sessao {
   carregando: boolean;
   entrar: (identificacao: string, senha: string) => Promise<void>;
   sair: () => Promise<void>;
+  /** Chefia de qualquer nível: confere lançamentos e vê ausências. */
   ehChefia: boolean;
+  /** Manda no setor inteiro: chefe de setor e administrador. */
+  ehChefeDeSetor: boolean;
   ehAdmin: boolean;
 }
 
@@ -56,7 +59,9 @@ export function ProvedorDeSessao({ children }: { children: ReactNode }) {
       carregando,
       entrar,
       sair,
-      ehChefia: usuario?.perfil === 'CHEFE' || usuario?.perfil === 'ADMIN',
+      ehChefia: usuario !== null && usuario.perfil !== 'SERVIDOR',
+      ehChefeDeSetor:
+        usuario !== null && (usuario.perfil === 'CHEFE_SETOR' || usuario.perfil === 'ADMIN'),
       ehAdmin: usuario?.perfil === 'ADMIN',
     }),
     [usuario, carregando, entrar, sair],

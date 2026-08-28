@@ -13,7 +13,7 @@ interface Tela {
   icone: ReactNode;
 }
 
-function telasDe(ehChefia: boolean, ehAdmin: boolean): Tela[] {
+function telasDe(ehChefia: boolean, ehChefeDeSetor: boolean, ehAdmin: boolean): Tela[] {
   const telas: Tela[] = [
     { destino: '/', rotulo: 'Meu painel', secao: 'Minha produção', icone: Icone.painel },
     { destino: '/lancamentos', rotulo: 'Meus lançamentos', secao: 'Minha produção', icone: Icone.lancamentos },
@@ -22,10 +22,18 @@ function telasDe(ehChefia: boolean, ehAdmin: boolean): Tela[] {
     telas.push(
       { destino: '/validacao', rotulo: 'Conferência de lançamentos', secao: 'Chefia', icone: Icone.validacao },
       { destino: '/ausencias', rotulo: 'Ausências', secao: 'Chefia', icone: Icone.ausencias },
+    );
+  }
+  // O painel e o histórico são do setor inteiro. Enquanto o chefe de grupo não
+  // tiver a visão agregada dos outros grupos, oferecer esses itens a ele seria
+  // oferecer uma porta que o servidor fecha na cara.
+  if (ehChefeDeSetor) {
+    telas.push(
       { destino: '/setor', rotulo: 'Painel do setor', secao: 'Chefia', icone: Icone.setor },
       { destino: '/historico', rotulo: 'Histórico', secao: 'Chefia', icone: Icone.historico },
     );
   }
+
   if (ehAdmin) {
     telas.push(
       { destino: '/administracao', rotulo: 'Cadastros e parâmetros', secao: 'Administração', icone: Icone.cadastros },
@@ -37,10 +45,10 @@ function telasDe(ehChefia: boolean, ehAdmin: boolean): Tela[] {
 }
 
 export function Layout() {
-  const { usuario, ehChefia, ehAdmin } = useSessao();
+  const { usuario, ehChefia, ehChefeDeSetor, ehAdmin } = useSessao();
   if (!usuario) return null;
 
-  const telas = telasDe(ehChefia, ehAdmin);
+  const telas = telasDe(ehChefia, ehChefeDeSetor, ehAdmin);
   const secoes = [...new Set(telas.map((t) => t.secao))];
   const classe = ({ isActive }: { isActive: boolean }) => (isActive ? 'ativo' : '');
 
@@ -94,14 +102,17 @@ export function Layout() {
 
 /** Busca de tela do topo, no mesmo padrão do SIPAG: lupa e atalho Ctrl+K. */
 function BuscaDeTela() {
-  const { ehChefia, ehAdmin } = useSessao();
+  const { ehChefia, ehChefeDeSetor, ehAdmin } = useSessao();
   const navegar = useNavigate();
   const local = useLocation();
   const [termo, setTermo] = useState('');
   const [aberta, setAberta] = useState(false);
   const campo = useRef<HTMLInputElement>(null);
 
-  const telas = useMemo(() => telasDe(ehChefia, ehAdmin), [ehChefia, ehAdmin]);
+  const telas = useMemo(
+    () => telasDe(ehChefia, ehChefeDeSetor, ehAdmin),
+    [ehChefia, ehChefeDeSetor, ehAdmin],
+  );
 
   const achados = useMemo(() => {
     const busca = termo

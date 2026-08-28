@@ -4,7 +4,9 @@ import { consultar, consultarUm } from '../infra/banco';
 import { registrarAuditoria } from '../infra/auditoria';
 import { erroDePermissao, erroDeRequisicao, erroNaoEncontrado, rota } from '../infra/erros';
 import {
+  alcanceDe,
   buscarServidorAlvo,
+  condicaoDoAlcance,
   ehAdmin,
   exigirAutenticacao,
   garantirAcessoAoServidor,
@@ -101,12 +103,9 @@ rotasDeLancamentos.get(
       await garantirAcessoAoServidor(usuario, filtroServidor);
       parametros.push(filtroServidor);
       condicoes.push(`l.servidor_id = $${parametros.length}`);
-    } else if (usuario.perfil === 'SERVIDOR') {
-      parametros.push(usuario.id);
-      condicoes.push(`l.servidor_id = $${parametros.length}`);
-    } else if (usuario.perfil === 'CHEFE') {
-      parametros.push(usuario.setor_id);
-      condicoes.push(`s.setor_id = $${parametros.length}`);
+    } else {
+      const filtro = condicaoDoAlcance(await alcanceDe(usuario), { servidor: 'l.servidor_id', grupo: 's.grupo_id', setor: 's.setor_id' }, parametros);
+      if (filtro) condicoes.push(filtro);
     }
 
     if (req.query.competencia) {

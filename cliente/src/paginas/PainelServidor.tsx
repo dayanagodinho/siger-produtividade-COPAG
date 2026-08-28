@@ -150,7 +150,7 @@ export function PainelServidor() {
      ficou pela metade; para a chefia, a fila e o mês por fechar. */
   useEffect(() => {
     let ativo = true;
-    const ehChefia = usuario?.perfil === 'CHEFE' || usuario?.perfil === 'ADMIN';
+    const ehChefia = usuario !== null && usuario !== undefined && usuario.perfil !== 'SERVIDOR';
     const anterior = competenciaAnterior(competencia);
 
     async function levantar() {

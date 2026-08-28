@@ -209,6 +209,8 @@ function AbaSetores() {
 // ------------------------------------------------------------------- Grupos
 
 interface Grupo {
+  chefe_id: number | null;
+  chefe_nome: string | null;
   id: number;
   setor_id: number;
   setor_nome: string;
@@ -222,6 +224,9 @@ interface Grupo {
 function AbaGrupos() {
   const { dados, carregando, erro, setErro, carregar } = useRecurso<{ grupos: Grupo[] }>('/grupos');
   const { dados: setores } = useRecurso<{ setores: Setor[] }>('/setores');
+  const { dados: chefes } = useRecurso<{
+    servidores: Array<{ id: number; nome: string; perfil: string }>;
+  }>('/servidores');
   const [editando, setEditando] = useState<Grupo | null>(null);
   const [criando, setCriando] = useState(false);
   const [sucesso, setSucesso] = useState<string | null>(null);
@@ -276,6 +281,11 @@ function AbaGrupos() {
                   </td>
                   <td className="discreto">{grupo.setor_nome}</td>
                   <td>
+                    {grupo.chefe_nome ? (
+                      <div className="campo-dica">Chefia: {grupo.chefe_nome}</div>
+                    ) : (
+                      <div className="campo-dica">Sem chefe indicado</div>
+                    )}
                     {grupo.meta_referencia === null ? (
                       'Apurada no mês (mediana)'
                     ) : (
@@ -330,6 +340,21 @@ function AbaGrupos() {
             { chave: 'nome', rotulo: 'Nome do grupo', tipo: 'texto', obrigatorio: true },
             { chave: 'descricao', rotulo: 'Descrição', tipo: 'area' },
             {
+              chave: 'chefe_id',
+              rotulo: 'Chefe do grupo',
+              tipo: 'selecao',
+              dica: 'Quem confere os lançamentos deste grupo e enxerga o detalhe por pessoa. Precisa ter perfil de chefia.',
+              opcoes: [
+                { valor: '', rotulo: 'Sem chefe indicado' },
+                ...(chefes?.servidores ?? [])
+                  .filter((s) => s.perfil !== 'SERVIDOR')
+                  .map((s) => ({
+                    valor: String(s.id),
+                    rotulo: `${s.nome} — ${ROTULO_DO_PERFIL[s.perfil]}`,
+                  })),
+              ],
+            },
+            {
               chave: 'meta_referencia',
               rotulo: 'Meta de referência (opcional)',
               tipo: 'numero',
@@ -340,6 +365,7 @@ function AbaGrupos() {
             setor_id: String(editando?.setor_id ?? setores?.setores[0]?.id ?? ''),
             nome: editando?.nome ?? '',
             descricao: editando?.descricao ?? '',
+            chefe_id: editando?.chefe_id ? String(editando.chefe_id) : '',
             meta_referencia:
               editando?.meta_referencia === null || editando?.meta_referencia === undefined
                 ? ''
@@ -354,6 +380,7 @@ function AbaGrupos() {
               setor_id: Number(valores.setor_id),
               nome: valores.nome,
               descricao: valores.descricao || null,
+              chefe_id: valores.chefe_id ? Number(valores.chefe_id) : null,
               meta_referencia: valores.meta_referencia ? Number(valores.meta_referencia) : null,
             };
             if (editando) await api.atualizar(`/grupos/${editando.id}`, corpo);

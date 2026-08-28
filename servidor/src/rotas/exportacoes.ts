@@ -4,6 +4,8 @@ import type { Response } from 'express';
 import { consultar } from '../infra/banco';
 import { rota } from '../infra/erros';
 import {
+  alcanceDe,
+  condicaoDoAlcance,
   exigirAutenticacao,
   exigirChefia,
   garantirAcessoAoServidor,
@@ -73,12 +75,13 @@ rotasDeExportacao.get(
       await garantirAcessoAoServidor(usuario, servidorId);
       parametros.push(servidorId);
       condicoes.push(`l.servidor_id = $${parametros.length}`);
-    } else if (usuario.perfil === 'SERVIDOR') {
-      parametros.push(usuario.id);
-      condicoes.push(`l.servidor_id = $${parametros.length}`);
-    } else if (usuario.perfil === 'CHEFE') {
-      parametros.push(usuario.setor_id);
-      condicoes.push(`s.setor_id = $${parametros.length}`);
+    } else {
+      const filtro = condicaoDoAlcance(
+        await alcanceDe(usuario),
+        { servidor: 'l.servidor_id', grupo: 's.grupo_id', setor: 's.setor_id' },
+        parametros,
+      );
+      if (filtro) condicoes.push(filtro);
     }
 
     const lancamentos = await consultar<Record<string, unknown>>(

@@ -77,7 +77,8 @@ export const ROTULO_DO_STATUS: Record<string, string> = {
 
 export const ROTULO_DO_PERFIL: Record<string, string> = {
   SERVIDOR: 'Servidor',
-  CHEFE: 'Chefe',
+  CHEFE_GRUPO: 'Chefe de grupo',
+  CHEFE_SETOR: 'Chefe de setor',
   ADMIN: 'Administrador',
 };
 

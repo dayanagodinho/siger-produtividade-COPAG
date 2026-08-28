@@ -3,7 +3,14 @@ import { z } from 'zod';
 import { consultar, consultarUm } from '../infra/banco';
 import { registrarAuditoria, semSegredos } from '../infra/auditoria';
 import { erroDeConflito, erroDeRequisicao, erroNaoEncontrado, rota } from '../infra/erros';
-import { ehAdmin, exigirAdmin, exigirAutenticacao } from '../infra/autorizacao';
+import {
+  alcanceDe,
+  condicaoDoAlcance,
+  ehAdmin,
+  exigirAdmin,
+  exigirAutenticacao,
+} from '../infra/autorizacao';
+import type { PerfilAcesso } from '../infra/tipos';
 import { gerarHashDeSenha, validarForcaDaSenha } from '../infra/senha';
 import { dataIso, idNumerico, textoObrigatorio, validar } from '../infra/validacao';
 
@@ -24,7 +31,7 @@ const esquemaBase = z.object({
   email: opcional(z.string().trim().email('Informe um e-mail válido.')),
   setor_id: idNumerico('o setor'),
   grupo_id: idNumerico('o grupo').nullable().optional(),
-  perfil: z.enum(['SERVIDOR', 'CHEFE', 'ADMIN'], {
+  perfil: z.enum(['SERVIDOR', 'CHEFE_GRUPO', 'CHEFE_SETOR', 'ADMIN'], {
     errorMap: () => ({ message: 'Selecione um perfil de acesso.' }),
   }),
   regime: z.enum(['INTEGRAL', 'PARCIAL', 'PRESENCIAL'], {
@@ -59,13 +66,12 @@ rotasDeServidores.get(
     const condicoes: string[] = ['s.excluido_em IS NULL'];
     const parametros: unknown[] = [];
 
-    if (usuario.perfil === 'SERVIDOR') {
-      parametros.push(usuario.id);
-      condicoes.push(`s.id = $${parametros.length}`);
-    } else if (usuario.perfil === 'CHEFE') {
-      parametros.push(usuario.setor_id);
-      condicoes.push(`s.setor_id = $${parametros.length}`);
-    }
+    const filtro = condicaoDoAlcance(
+      await alcanceDe(usuario),
+      { servidor: 's.id', grupo: 's.grupo_id', setor: 's.setor_id' },
+      parametros,
+    );
+    if (filtro) condicoes.push(filtro);
 
     if (filtroSetor) {
       parametros.push(filtroSetor);
@@ -134,7 +140,7 @@ rotasDeServidores.get(
     if (!servidor) throw erroNaoEncontrado('Servidor não encontrado.');
 
     const proprio = usuario.id === id;
-    const doSetor = usuario.perfil === 'CHEFE' && usuario.setor_id === servidor.setor_id;
+    const doSetor = usuario.perfil === 'CHEFE_SETOR' && usuario.setor_id === servidor.setor_id;
     if (!proprio && !doSetor && !ehAdmin(usuario)) {
       throw erroNaoEncontrado('Servidor não encontrado.');
     }
@@ -152,7 +158,7 @@ rotasDeServidores.put(
     if (!anterior) throw erroNaoEncontrado('Servidor não encontrado.');
     await conferirGrupoDoSetor(dados.grupo_id ?? null, dados.setor_id);
 
-    if (dados.situacao === 'INATIVO' && anterior.perfil === 'CHEFE') {
+    if (dados.situacao === 'INATIVO' && anterior.perfil !== 'SERVIDOR') {
       const chefiaAtiva = await consultarUm<{ total: number }>(
         `SELECT count(*)::int AS total FROM setores
           WHERE chefe_servidor_id = $1 AND excluido_em IS NULL`,
@@ -260,7 +266,7 @@ rotasDeServidores.delete(
 interface ServidorCompleto extends Record<string, unknown> {
   id: number;
   setor_id: number;
-  perfil: 'SERVIDOR' | 'CHEFE' | 'ADMIN';
+  perfil: PerfilAcesso;
 }
 
 async function buscarPorId(id: number): Promise<ServidorCompleto | null> {

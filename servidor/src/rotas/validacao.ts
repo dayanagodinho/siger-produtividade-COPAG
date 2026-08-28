@@ -2,8 +2,13 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { consultar, consultarUm, emTransacao } from '../infra/banco';
 import { registrarAuditoria } from '../infra/auditoria';
-import { erroDeRequisicao, erroNaoEncontrado, rota } from '../infra/erros';
-import { exigirChefia, garantirSetorSobGestao } from '../infra/autorizacao';
+import { erroDePermissao, erroDeRequisicao, erroNaoEncontrado, rota } from '../infra/erros';
+import {
+  alcanceDe,
+  condicaoDoAlcance,
+  exigirChefia,
+  garantirAcessoAoServidor,
+} from '../infra/autorizacao';
 import { competenciaValida, nivelComplexidade, textoObrigatorio, validar } from '../infra/validacao';
 import { competenciaDe } from '../dominio/datas';
 import { garantirCompetenciaAberta } from '../dominio/fechamento';
@@ -34,11 +39,19 @@ rotasDeValidacao.get(
   '/fila',
   rota(async (req, res) => {
     const usuario = req.usuario!;
-    const setorId = req.query.setor_id ? Number(req.query.setor_id) : usuario.setor_id;
-    garantirSetorSobGestao(usuario, setorId);
+    const parametros: unknown[] = [];
+    const condicoes = ['l.excluido_em IS NULL'];
 
-    const parametros: unknown[] = [setorId];
-    const condicoes = ['l.excluido_em IS NULL', 's.setor_id = $1'];
+    // Quem chefia grupo confere os grupos que chefia; quem chefia o setor
+    // confere qualquer um, para cobrir ausencia. A regra e a mesma de toda
+    // rota que devolve dado por servidor.
+    const alcance = await alcanceDe(usuario);
+    const filtro = condicaoDoAlcance(
+      alcance,
+      { servidor: 'l.servidor_id', grupo: 's.grupo_id', setor: 's.setor_id' },
+      parametros,
+    );
+    if (filtro) condicoes.push(filtro);
 
     const situacao = String(req.query.situacao ?? 'PENDENTE').toUpperCase();
     if (situacao !== 'TODAS') {
@@ -71,6 +84,19 @@ rotasDeValidacao.get(
       parametros,
     );
 
+    // A contagem segue o mesmo alcance da lista: numero no topo que nao bate
+    // com o que esta embaixo faz a pessoa procurar um lancamento que ela nao
+    // pode ver.
+    const doContador: unknown[] = [];
+    const filtroDoContador = condicaoDoAlcance(
+      alcance,
+      { servidor: 'l.servidor_id', grupo: 's.grupo_id', setor: 's.setor_id' },
+      doContador,
+    );
+    doContador.push(
+      req.query.competencia ? validar(competenciaValida, req.query.competencia) : null,
+    );
+
     const contagem = await consultarUm<{ pendentes: number; devolvidos: number; validados: number }>(
       `SELECT
          count(*) FILTER (WHERE l.situacao = 'PENDENTE')::int  AS pendentes,
@@ -78,9 +104,10 @@ rotasDeValidacao.get(
          count(*) FILTER (WHERE l.situacao = 'VALIDADO')::int  AS validados
          FROM lancamentos l
          JOIN servidores s ON s.id = l.servidor_id
-        WHERE l.excluido_em IS NULL AND s.setor_id = $1
-          AND ($2::date IS NULL OR l.competencia = $2)`,
-      [setorId, req.query.competencia ? validar(competenciaValida, req.query.competencia) : null],
+        WHERE l.excluido_em IS NULL
+          ${filtroDoContador ? `AND ${filtroDoContador}` : ''}
+          AND ($${doContador.length}::date IS NULL OR l.competencia = $${doContador.length})`,
+      doContador,
     );
 
     res.json({ lancamentos, contagem });
@@ -173,7 +200,12 @@ async function aplicarDecisao(
     [id],
   );
   if (!anterior) throw erroNaoEncontrado('Lançamento não encontrado.');
-  garantirSetorSobGestao(usuario, anterior.setor_id);
+  // Confere quem tem o lancamento no proprio alcance — e ninguem confere o
+  // que lancou, porque validar a si mesmo esvazia a conferencia.
+  await garantirAcessoAoServidor(usuario, anterior.servidor_id);
+  if (anterior.servidor_id === usuario.id) {
+    throw erroDePermissao('Ninguém confere o próprio lançamento.');
+  }
   await garantirCompetenciaAberta(anterior.setor_id, competenciaDe(anterior.data_conclusao));
 
   const nivelMudou = novoNivel !== undefined && novoNivel !== anterior.nivel;

@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { z } from 'zod';
+import type { PerfilAcesso } from '../infra/tipos';
 import { consultarUm } from '../infra/banco';
 import { registrarAuditoria } from '../infra/auditoria';
 import { erroDeAutenticacao, erroDeRequisicao, rota } from '../infra/erros';
@@ -19,7 +20,7 @@ interface LinhaServidor {
   matricula: string;
   nome: string;
   email: string;
-  perfil: 'SERVIDOR' | 'CHEFE' | 'ADMIN';
+  perfil: PerfilAcesso;
   setor_id: number;
   grupo_id: number | null;
   situacao: 'ATIVO' | 'INATIVO';

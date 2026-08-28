@@ -293,7 +293,7 @@ rotasDeIndicadores.get(
       res.json({ setores });
       return;
     }
-    if (usuario.perfil !== 'CHEFE') throw erroDePermissao('Área restrita a chefia.');
+    if (usuario.perfil === 'SERVIDOR') throw erroDePermissao('Área restrita a chefia.');
     const setor = await consultarUm(
       'SELECT id, nome, sigla FROM setores WHERE id = $1 AND excluido_em IS NULL',
       [usuario.setor_id],

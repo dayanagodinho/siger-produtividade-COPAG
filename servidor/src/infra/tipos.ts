@@ -1,4 +1,9 @@
-export type PerfilAcesso = 'SERVIDOR' | 'CHEFE' | 'ADMIN';
+/**
+ * A COPAG tem chefia do setor inteiro e chefia de cada grupo, e as duas veem
+ * coisas diferentes: o chefe de grupo enxerga nome e lancamento apenas de quem
+ * ele chefia; dos outros grupos, so o numero agregado.
+ */
+export type PerfilAcesso = 'SERVIDOR' | 'CHEFE_GRUPO' | 'CHEFE_SETOR' | 'ADMIN';
 
 export interface UsuarioAutenticado {
   id: number;

@@ -85,7 +85,7 @@ async function semear(): Promise<void> {
   );
 
   const chefe = await pool.query<{ id: number }>(
-    "SELECT id FROM servidores WHERE perfil = 'CHEFE' ORDER BY id LIMIT 1",
+    "SELECT id FROM servidores WHERE perfil <> 'SERVIDOR' AND demonstracao ORDER BY id LIMIT 1",
   );
   if (chefe.rowCount) {
     await pool.query('UPDATE setores SET chefe_servidor_id = $1 WHERE id = $2', [
