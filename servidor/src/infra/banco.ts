@@ -1,5 +1,6 @@
 import { Pool, types, type PoolClient, type QueryResultRow } from 'pg';
 import { configuracao } from './configuracao';
+import { definirSsl } from './ssl';
 
 // O driver devolve DATE como objeto Date no fuso local, o que desloca o dia.
 // Para apuracao mensal o dia precisa chegar exatamente como esta gravado.
@@ -11,9 +12,7 @@ types.setTypeParser(20, (valor: string) => Number(valor));
 
 export const pool = new Pool({
   connectionString: configuracao.urlBanco,
-  ssl: configuracao.producao && !configuracao.urlBanco.includes('localhost')
-    ? { rejectUnauthorized: false }
-    : undefined,
+  ssl: definirSsl(configuracao.urlBanco, configuracao.producao, process.env.DATABASE_SSL),
   max: 10,
 });
 

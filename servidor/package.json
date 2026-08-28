@@ -9,6 +9,7 @@
     "start": "node dist/index.js",
     "migrar": "tsx src/scripts/migrar.ts",
     "semear": "tsx src/scripts/semear.ts",
+    "importar-catalogo": "tsx src/scripts/catalogo.ts",
     "criar-admin": "tsx src/scripts/primeiro-acesso.ts",
     "teste": "node --import tsx --test testes/*.test.ts",
     "verificar-tipos": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.testes.json --noEmit"

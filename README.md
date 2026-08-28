@@ -23,6 +23,7 @@ Requisitos: Node 20+ e PostgreSQL 14+.
 cp .env.example .env          # ajuste DATABASE_URL e SESSION_SECRET
 npm install
 npm run migrar                # cria o schema
+npm run importar-catalogo     # grupos, atividades e feriados da COPAG
 npm run semear -- --recriar   # dados de exemplo (opcional)
 npm run dev                   # API em http://localhost:3000
 npm run dev:cliente           # interface em http://localhost:5173
@@ -214,8 +215,16 @@ Variáveis necessárias:
 |---|---|
 | `DATABASE_URL` | fornecida pelo plugin PostgreSQL do Railway |
 | `SESSION_SECRET` | valor aleatório e longo |
-| `NODE_ENV` | `production` (ativa cookie seguro e SSL no banco) |
+| `NODE_ENV` | `production` (ativa o cookie seguro) |
+| `DATABASE_SSL` | opcional; `true` ou `false` para decidir o TLS na mão |
 | `MIGRAR_AO_INICIAR` | `true` por padrão; use `false` para migrar à parte |
+| `IMPORTAR_CATALOGO` | `true` por padrão; use `false` para montar a lista do zero |
+
+O TLS com o banco é decidido pelo endereço, não pelo ambiente: a rede interna do
+Railway (`...railway.internal`) é privada e não atende em TLS, então exigir SSL
+ali derruba a conexão logo na subida. Endereço público, de proxy ou de terceiro
+sobe com TLS. `DATABASE_SSL` e o `sslmode` escrito na própria URL passam na
+frente dessa decisão, nessa ordem.
 
 ### Primeiro administrador
 
@@ -234,6 +243,19 @@ administrador a partir destas variáveis:
 Com o banco já povoado nada acontece: a rotina não sobrescreve cadastro nem
 senha de ninguém. O mesmo passo existe como comando avulso em
 `npm run criar-admin`.
+
+### Lista de atividades
+
+Logo depois, ainda na primeira subida e só enquanto não houver nenhuma atividade
+cadastrada, entra o catálogo da COPAG lido de `servidor/dados/atividades-copag.json`:
+os 4 grupos de pagamento, as 93 atividades, os 206 detalhamentos e os feriados do
+ano. Ele anexa ao setor de mesma sigla, ou ao único setor existente — o caso da
+primeira subida.
+
+A importação é somativa e pode ser repetida com `npm run importar-catalogo`
+(aceita `--setor=<id>`): grupo, atividade ou feriado que já exista fica como
+está, com os ajustes que o setor tiver feito pela tela. É o oposto de `semear`,
+que limpa o banco e povoa com gente fictícia.
 
 O passo a passo completo do Railway, com os cliques na ordem, está em
 [DEPLOY.md](DEPLOY.md).

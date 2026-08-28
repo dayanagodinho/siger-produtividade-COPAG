@@ -10,6 +10,7 @@ import { tratadorDeErros } from './infra/erros';
 import { rotasDaApi } from './rotas';
 import { aplicarMigracoes } from './scripts/migrar';
 import { criarPrimeiroAdministrador } from './scripts/primeiro-acesso';
+import { importarCatalogoNaPrimeiraSubida } from './scripts/catalogo';
 
 const PASTA_CLIENTE = path.resolve(__dirname, '..', '..', 'cliente', 'dist');
 
@@ -70,6 +71,11 @@ async function iniciar(): Promise<void> {
   // ambiente. Com o banco ja povoado, nao faz nada.
   const primeiroAcesso = await criarPrimeiroAdministrador();
   if (primeiroAcesso) console.log(primeiroAcesso);
+
+  // Com o setor criado, entra a lista de atividades da COPAG. Uma vez
+  // carregada, as subidas seguintes passam direto.
+  const catalogo = await importarCatalogoNaPrimeiraSubida();
+  if (catalogo) console.log(catalogo);
 
   const app = criarAplicacao();
   app.listen(configuracao.porta, () => {
