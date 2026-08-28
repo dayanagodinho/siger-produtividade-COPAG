@@ -101,7 +101,15 @@ a { color: var(--destaque); }
   overflow-y: auto;
 }
 
-.menu-marca { display: flex; align-items: center; gap: 0.65rem; padding: 0 0.35rem 0.25rem; }
+.menu-marca { display: flex; align-items: center; gap: 0.65rem; padding: 0 0.35rem; }
+.menu-marca-nome {
+  padding: 0.3rem 0.35rem 0;
+  margin: 0;
+  font-size: 0.735rem;
+  line-height: 1.35;
+  color: var(--tinta-media);
+}
+.menu-marca-nome span { color: var(--tinta-fraca); }
 .menu-marca .selo {
   width: 34px;
   height: 34px;
@@ -128,10 +136,11 @@ a { color: var(--destaque); }
 }
 .menu-navegacao a svg { width: 17px; height: 17px; flex-shrink: 0; color: var(--tinta-fraca); }
 .menu-navegacao a:hover { background: var(--papel); color: var(--tinta); }
-.menu-navegacao a.ativo:hover { background: var(--destaque-fraco); }
+.menu-navegacao a.ativo:hover { background: var(--verde-800); color: #fff; }
 .menu-navegacao a:hover svg { color: var(--tinta-media); }
-.menu-navegacao a.ativo { background: transparent; color: var(--acao); font-weight: 700; }
-.menu-navegacao a.ativo svg { color: var(--acao); }
+.menu-navegacao a.ativo { background: var(--acao); color: #fff; font-weight: 600; }
+.menu-navegacao a.ativo svg { color: #fff; }
+.menu-navegacao a.ativo:hover svg { color: #fff; }
 .menu-navegacao a:focus-visible { outline: 2px solid var(--acao); outline-offset: -2px; }
 
 .menu-secao {

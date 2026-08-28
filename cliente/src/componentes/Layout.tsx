@@ -50,11 +50,12 @@ export function Layout() {
           {/* Para trocar a logo, basta substituir cliente/public/marca-sigap.svg
               (ou apontar para um .png com o mesmo nome). Nenhum código muda. */}
           <img className="selo" src="/marca-sigap.svg" alt="" width={36} height={36} />
-          <div>
-            <strong>SIGAP</strong>
-            <span>{usuario.setor_nome}</span>
-          </div>
+          <strong>SIGAP</strong>
         </div>
+        <p className="menu-marca-nome">
+          Sistema de Gestão de Atividades e Produtividade
+          <span> da {usuario.setor_nome}</span>
+        </p>
 
         <div className="menu-navegacao">
           {secoes.map((secao) => (
@@ -76,7 +77,7 @@ export function Layout() {
           ))}
         </div>
 
-        <div className="menu-rodape">SIGAP · Sistema de Gestão de Atividades e Produtividade (1.0)</div>
+        <div className="menu-rodape">SIGAP · versão 1.0</div>
       </nav>
 
       <main className="area-principal">
