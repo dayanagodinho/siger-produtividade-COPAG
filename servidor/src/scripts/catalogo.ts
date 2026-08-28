@@ -2,49 +2,49 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { pool } from '../infra/banco';
 import { aplicarMigracoes } from './migrar';
+import { aplicarImportacao, type ResumoDaImportacao } from './importar-atividades';
 
 /**
- * Carrega no banco a lista de atividades da COPAG — os quatro grupos de
- * pagamento, as 93 atividades e o detalhamento de cada uma — junto com os
- * feriados do ano.
+ * Deixa o sistema utilizavel na primeira subida: cria o setor da COPAG, os
+ * quatro grupos de pagamento e carrega a lista de atividades do plano de
+ * trabalho, junto com os feriados do ano.
  *
- * A importacao e somativa: nao apaga nada e nao sobrescreve nada. Grupo,
- * atividade ou feriado que ja exista fica como esta, com as alteracoes que o
- * setor tiver feito pela tela. Rodar duas vezes tem o mesmo efeito de rodar
- * uma. E o oposto de `semear`, que limpa o banco e povoa com gente ficticia.
+ * A lista vem do mesmo CSV que a Coordenacao usa na tela de importacao — um
+ * caminho so, para o que sobe sozinho e o que ela recarrega depois nunca
+ * divergirem. Reimportar atualiza em vez de duplicar, entao rodar de novo nao
+ * desfaz ajuste nenhum feito pela tela.
  */
 
-interface Detalhamento {
-  numero: string;
-  texto: string;
-}
-
-interface AtividadeDoCatalogo {
-  numero: string;
-  nome: string;
-  entrega: string;
-  detalhamentos: Detalhamento[];
-}
-
-interface GrupoDoCatalogo {
+interface GrupoDoSetor {
+  codigo: string;
   nome: string;
   descricao: string;
-  atividades: AtividadeDoCatalogo[];
 }
 
-export interface Catalogo {
-  setor: { nome: string; sigla: string };
-  grupos: GrupoDoCatalogo[];
-}
+const SETOR = { nome: 'Coordenação de Gestão do Pagamento de Pessoal', sigla: 'COPAG' };
 
-export interface ResumoDaImportacao {
-  setor: string;
-  gruposCriados: number;
-  atividadesCriadas: number;
-  detalhamentosCriados: number;
-  feriadosCriados: number;
-  jaExistiam: number;
-}
+const GRUPOS: GrupoDoSetor[] = [
+  {
+    codigo: 'EFETIVOS',
+    nome: 'Pagamento dos Servidores Efetivos',
+    descricao: 'Folha dos servidores efetivos do quadro.',
+  },
+  {
+    codigo: 'INATIVOS_PENSIONISTAS',
+    nome: 'Pagamento de Inativos, Pensionistas e Benefícios Externos',
+    descricao: 'Folha de inativos, pensionistas e benefícios externos.',
+  },
+  {
+    codigo: 'PARLAMENTARES',
+    nome: 'Pagamento dos Parlamentares',
+    descricao: 'Folha de parlamentares ativos, aposentados e pensionistas.',
+  },
+  {
+    codigo: 'COMISSIONADOS',
+    nome: 'Pagamento dos Comissionados',
+    descricao: 'Folha de secretários parlamentares e cargos de natureza especial.',
+  },
+];
 
 export const FERIADOS_2026: Array<[string, string]> = [
   ['2026-01-01', 'Confraternização Universal'],
@@ -62,9 +62,42 @@ export const FERIADOS_2026: Array<[string, string]> = [
   ['2026-12-25', 'Natal'],
 ];
 
-export function lerCatalogo(): Catalogo {
-  const arquivo = path.resolve(__dirname, '..', '..', 'dados', 'atividades-copag.json');
-  return JSON.parse(fs.readFileSync(arquivo, 'utf8')) as Catalogo;
+export function lerCsvDoProjeto(): string {
+  return fs.readFileSync(
+    path.resolve(__dirname, '..', '..', 'dados', 'atividades-copag.csv'),
+    'utf8',
+  );
+}
+
+export interface ResumoDoCatalogo extends ResumoDaImportacao {
+  setor: string;
+  gruposCriados: number;
+  feriadosCriados: number;
+}
+
+export async function importarCatalogo(setorId?: number): Promise<ResumoDoCatalogo> {
+  const setor = await resolverSetor(setorId);
+  let gruposCriados = 0;
+
+  for (const grupo of GRUPOS) {
+    if (await garantirGrupo(setor.id, grupo)) gruposCriados += 1;
+  }
+
+  const usuario = await pool.query<{ id: number }>(
+    "SELECT id FROM servidores WHERE perfil = 'ADMIN' AND excluido_em IS NULL ORDER BY id LIMIT 1",
+  );
+  const importacao = await aplicarImportacao(lerCsvDoProjeto(), usuario.rows[0]?.id ?? null);
+
+  let feriadosCriados = 0;
+  for (const [data, descricao] of FERIADOS_2026) {
+    const inserido = await pool.query(
+      'INSERT INTO feriados (data, descricao) VALUES ($1, $2) ON CONFLICT (data) DO NOTHING',
+      [data, descricao],
+    );
+    feriadosCriados += inserido.rowCount ?? 0;
+  }
+
+  return { ...importacao, setor: setor.nome, gruposCriados, feriadosCriados };
 }
 
 /**
@@ -72,7 +105,7 @@ export function lerCatalogo(): Catalogo {
  * ao mais provavel: o setor pedido, o setor de mesma sigla, o unico setor do
  * banco (o caso da primeira subida) e, em ultimo caso, um setor novo.
  */
-async function resolverSetor(catalogo: Catalogo, setorId?: number): Promise<{ id: number; nome: string }> {
+async function resolverSetor(setorId?: number): Promise<{ id: number; nome: string }> {
   if (setorId) {
     const pedido = await pool.query<{ id: number; nome: string }>(
       'SELECT id, nome FROM setores WHERE id = $1 AND excluido_em IS NULL',
@@ -84,7 +117,7 @@ async function resolverSetor(catalogo: Catalogo, setorId?: number): Promise<{ id
 
   const porSigla = await pool.query<{ id: number; nome: string }>(
     'SELECT id, nome FROM setores WHERE upper(sigla) = upper($1) AND excluido_em IS NULL',
-    [catalogo.setor.sigla],
+    [SETOR.sigla],
   );
   if (porSigla.rowCount) return porSigla.rows[0];
 
@@ -95,92 +128,41 @@ async function resolverSetor(catalogo: Catalogo, setorId?: number): Promise<{ id
 
   const criado = await pool.query<{ id: number; nome: string }>(
     'INSERT INTO setores (nome, sigla) VALUES ($1, $2) RETURNING id, nome',
-    [catalogo.setor.nome, catalogo.setor.sigla],
+    [SETOR.nome, SETOR.sigla],
   );
   return criado.rows[0];
 }
 
-export async function importarCatalogo(setorId?: number): Promise<ResumoDaImportacao> {
-  const catalogo = lerCatalogo();
-  const setor = await resolverSetor(catalogo, setorId);
-  const resumo: ResumoDaImportacao = {
-    setor: setor.nome,
-    gruposCriados: 0,
-    atividadesCriadas: 0,
-    detalhamentosCriados: 0,
-    feriadosCriados: 0,
-    jaExistiam: 0,
-  };
-
-  for (const grupo of catalogo.grupos) {
-    const grupoId = await garantirGrupo(setor.id, grupo, resumo);
-
-    for (const atividade of grupo.atividades) {
-      const existente = await pool.query<{ id: number }>(
-        `SELECT id FROM atividades
-          WHERE grupo_id = $1 AND lower(nome) = lower($2) AND excluido_em IS NULL`,
-        [grupoId, atividade.nome],
-      );
-      if (existente.rowCount) {
-        resumo.jaExistiam += 1;
-        continue;
-      }
-
-      // Sem nivel_sugerido: o peso e indicado pelo servidor no lancamento.
-      const criada = await pool.query<{ id: number }>(
-        `INSERT INTO atividades (grupo_id, numero, nome, entrega, nivel_sugerido)
-         VALUES ($1, $2, $3, $4, NULL) RETURNING id`,
-        [grupoId, atividade.numero, atividade.nome, atividade.entrega || null],
-      );
-      resumo.atividadesCriadas += 1;
-
-      // O detalhamento so entra junto com a atividade nova: assim uma segunda
-      // importacao nao duplica linhas nem desfaz ajuste feito pelo setor.
-      for (const [ordem, detalhe] of atividade.detalhamentos.entries()) {
-        await pool.query(
-          `INSERT INTO detalhamentos (atividade_id, numero, texto, ordem)
-           VALUES ($1, $2, $3, $4)`,
-          [criada.rows[0].id, detalhe.numero || null, detalhe.texto, ordem],
-        );
-        resumo.detalhamentosCriados += 1;
-      }
-    }
-  }
-
-  for (const [data, descricao] of FERIADOS_2026) {
-    const inserido = await pool.query(
-      'INSERT INTO feriados (data, descricao) VALUES ($1, $2) ON CONFLICT (data) DO NOTHING',
-      [data, descricao],
-    );
-    resumo.feriadosCriados += inserido.rowCount ?? 0;
-  }
-
-  return resumo;
-}
-
-async function garantirGrupo(
-  setorId: number,
-  grupo: GrupoDoCatalogo,
-  resumo: ResumoDaImportacao,
-): Promise<number> {
-  const existente = await pool.query<{ id: number }>(
+/** Devolve true quando o grupo nasceu agora. O codigo e o que liga o CSV a ele. */
+async function garantirGrupo(setorId: number, grupo: GrupoDoSetor): Promise<boolean> {
+  const porCodigo = await pool.query(
     `SELECT id FROM grupos
-      WHERE setor_id = $1 AND lower(nome) = lower($2) AND excluido_em IS NULL`,
-    [setorId, grupo.nome],
+      WHERE setor_id = $1 AND upper(codigo) = upper($2) AND excluido_em IS NULL`,
+    [setorId, grupo.codigo],
   );
-  if (existente.rowCount) return existente.rows[0].id;
+  if (porCodigo.rowCount) return false;
 
-  const criado = await pool.query<{ id: number }>(
-    'INSERT INTO grupos (setor_id, nome, descricao) VALUES ($1, $2, $3) RETURNING id',
-    [setorId, grupo.nome, grupo.descricao || null],
+  // O grupo pode existir de uma carga anterior, so que sem codigo: nesse caso
+  // ele ganha o codigo em vez de nascer um irmao repetido.
+  const porNome = await pool.query(
+    `UPDATE grupos SET codigo = $3, atualizado_em = now()
+      WHERE setor_id = $1 AND lower(nome) = lower($2) AND excluido_em IS NULL
+        AND codigo IS NULL
+      RETURNING id`,
+    [setorId, grupo.nome, grupo.codigo],
   );
-  resumo.gruposCriados += 1;
-  return criado.rows[0].id;
+  if (porNome.rowCount) return false;
+
+  await pool.query(
+    'INSERT INTO grupos (setor_id, nome, descricao, codigo) VALUES ($1, $2, $3, $4)',
+    [setorId, grupo.nome, grupo.descricao, grupo.codigo],
+  );
+  return true;
 }
 
 /**
- * Roda a importacao na primeira subida, quando ainda nao ha nenhuma atividade
- * cadastrada. Com o catalogo ja no lugar, nao faz nada. IMPORTAR_CATALOGO=false
+ * Roda a carga na primeira subida, quando ainda nao ha nenhuma atividade
+ * cadastrada. Com a lista no lugar, nao faz nada. IMPORTAR_CATALOGO=false
  * desliga o comportamento para quem quiser montar a propria lista do zero.
  */
 export async function importarCatalogoNaPrimeiraSubida(): Promise<string | null> {
@@ -191,22 +173,22 @@ export async function importarCatalogoNaPrimeiraSubida(): Promise<string | null>
 
   const resumo = await importarCatalogo();
   return (
-    `Lista de atividades carregada em ${resumo.setor}: ` +
-    `${resumo.gruposCriados} grupos, ${resumo.atividadesCriadas} atividades, ` +
-    `${resumo.detalhamentosCriados} detalhamentos e ${resumo.feriadosCriados} feriados.`
+    `Lista de atividades carregada em ${resumo.setor}: ${resumo.gruposCriados} grupos, ` +
+    `${resumo.criadas} atividades (${resumo.lancaveis} lançáveis e ${resumo.agrupadores} ` +
+    `agrupadoras) e ${resumo.feriadosCriados} feriados.`
   );
 }
 
-function descrever(resumo: ResumoDaImportacao): string {
-  const partes = [
+function descrever(resumo: ResumoDoCatalogo): string {
+  return [
     `Setor: ${resumo.setor}`,
     `Grupos criados: ${resumo.gruposCriados}`,
-    `Atividades criadas: ${resumo.atividadesCriadas}`,
-    `Detalhamentos criados: ${resumo.detalhamentosCriados}`,
+    `Atividades criadas: ${resumo.criadas}`,
+    `Atividades atualizadas: ${resumo.atualizadas}`,
+    `Atividades desativadas: ${resumo.desativadas}`,
+    `Lançáveis: ${resumo.lancaveis} · agrupadoras: ${resumo.agrupadores}`,
     `Feriados criados: ${resumo.feriadosCriados}`,
-  ];
-  if (resumo.jaExistiam) partes.push(`Atividades que já existiam e foram mantidas: ${resumo.jaExistiam}`);
-  return partes.join('\n');
+  ].join('\n');
 }
 
 if (require.main === module) {

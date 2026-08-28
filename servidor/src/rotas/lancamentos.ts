@@ -30,9 +30,10 @@ const CAMPOS = `
   l.data_conclusao, l.competencia, l.periodo_inicio, l.periodo_fim, l.link_externo,
   l.status, l.situacao, l.nivel_aplicado, l.percentual_papel, l.pontos,
   l.nivel_original, l.nivel_alterado_em, l.justificativa, l.validado_em,
-  l.criado_em, l.atualizado_em, l.atividade_id,
+  l.criado_em, l.atualizado_em, l.atividade_id, l.tipo_folha,
   s.nome AS servidor_nome, s.matricula AS servidor_matricula, s.setor_id, s.grupo_id,
   g.nome AS grupo_nome, tf.nome AS atividade_nome, tf.numero AS atividade_numero,
+  tf.texto_completo AS atividade_texto, tf.usa_tipo_folha AS atividade_usa_tipo_folha,
   v.nome AS validado_por_nome,
   a.nome AS nivel_alterado_por_nome,
   c.nome AS criado_por_nome`;
@@ -74,6 +75,14 @@ const esquema = z.object({
     .optional()
     .or(z.literal('').transform(() => null)),
   status: z.enum(['EM_ANDAMENTO', 'CONCLUIDO']).default('CONCLUIDO'),
+  // De qual folha se trata. Fica no lancamento e nao na atividade: quatro
+  // tipos vezes cada atividade de folha inchariam a lista, e assim o tipo
+  // vira dimensao de filtro nos relatorios.
+  tipo_folha: z
+    .enum(['NORMAL', 'COMPLEMENTAR', 'ADIANTAMENTO_GRATIFICACAO', 'GRATIFICACAO_NATALINA'])
+    .nullable()
+    .optional()
+    .or(z.literal('').transform(() => null)),
 });
 
 // ---------------------------------------------------------------------------
@@ -140,29 +149,9 @@ rotasDeLancamentos.get(
   }),
 );
 
-/**
- * Regra 2.4: ao digitar um processo ja lancado, avisar antes de salvar.
- * E aviso, nao bloqueio: revisao por outra pessoa e legitima.
- */
-rotasDeLancamentos.get(
-  '/verificar-processo',
-  rota(async (req, res) => {
-    const processo = String(req.query.processo ?? '').trim();
-    if (!processo) {
-      res.json({ existentes: [] });
-      return;
-    }
-    const existentes = await consultar(
-      `SELECT l.id, l.processo, l.papel, l.nivel, l.data_conclusao, l.situacao,
-              s.nome AS servidor_nome, s.id AS servidor_id
-         ${DE}
-        WHERE l.excluido_em IS NULL AND upper(l.processo) = upper($1)
-        ORDER BY l.data_conclusao`,
-      [processo],
-    );
-    res.json({ existentes });
-  }),
-);
+// A mesma atividade se repete varias vezes no mes, e isso e o trabalho normal
+// da COPAG. Nao ha aviso nem trava de repeticao: o controle contra lancamento
+// indevido e a conferencia da chefia.
 
 rotasDeLancamentos.get(
   '/:id',
@@ -193,7 +182,7 @@ rotasDeLancamentos.post(
     }
 
     conferirPeriodo(dados);
-    await conferirAtividade(dados.atividade_id ?? null, alvo.grupo_id);
+    await conferirAtividade(dados.atividade_id ?? null, alvo.grupo_id, dados.tipo_folha ?? null);
     const competencia = competenciaDe(dados.data_conclusao);
     await garantirCompetenciaAberta(alvo.setor_id, competencia);
 
@@ -205,14 +194,14 @@ rotasDeLancamentos.post(
       `INSERT INTO lancamentos
          (servidor_id, processo, descricao, nivel, papel, quantidade, data_conclusao,
           periodo_inicio, periodo_fim, link_externo, status, situacao,
-          nivel_aplicado, percentual_papel, criado_por, atividade_id)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'PENDENTE', $4, $12, $13, $14)
+          nivel_aplicado, percentual_papel, criado_por, atividade_id, tipo_folha)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'PENDENTE', $4, $12, $13, $14, $15)
        RETURNING id`,
       [
         servidorId, dados.processo ?? null, dados.descricao, dados.nivel, dados.papel,
         dados.quantidade, dados.data_conclusao, dados.periodo_inicio ?? null,
         dados.periodo_fim ?? null, dados.link_externo ?? null, dados.status,
-        percentual, usuario.id, dados.atividade_id ?? null,
+        percentual, usuario.id, dados.atividade_id ?? null, dados.tipo_folha ?? null,
       ],
     );
 
@@ -243,7 +232,7 @@ rotasDeLancamentos.put(
     const alvo = await garantirAcessoAoServidor(usuario, anterior.servidor_id);
     const dados = validar(esquema, req.body);
     conferirPeriodo(dados);
-    await conferirAtividade(dados.atividade_id ?? null, alvo.grupo_id);
+    await conferirAtividade(dados.atividade_id ?? null, alvo.grupo_id, dados.tipo_folha ?? null);
 
     const chefia = usuario.perfil !== 'SERVIDOR';
     if (!chefia && anterior.situacao === 'VALIDADO') {
@@ -275,14 +264,14 @@ rotasDeLancamentos.put(
               data_conclusao = $6, periodo_inicio = $7, periodo_fim = $8,
               link_externo = $9, status = $10, situacao = $11,
               nivel_aplicado = $3, percentual_papel = $12, atividade_id = $13,
-              atualizado_em = now()
-        WHERE id = $14 AND excluido_em IS NULL
+              tipo_folha = $14, atualizado_em = now()
+        WHERE id = $15 AND excluido_em IS NULL
         RETURNING id`,
       [
         dados.processo ?? null, dados.descricao, dados.nivel, dados.papel, dados.quantidade,
         dados.data_conclusao, dados.periodo_inicio ?? null, dados.periodo_fim ?? null,
         dados.link_externo ?? null, dados.status, novaSituacao, percentual,
-        dados.atividade_id ?? null, id,
+        dados.atividade_id ?? null, dados.tipo_folha ?? null, id,
       ],
     );
 
@@ -356,10 +345,21 @@ export async function buscarLancamento(id: number): Promise<LancamentoCompleto> 
 }
 
 /** A atividade escolhida precisa ser do grupo de quem está lançando. */
-async function conferirAtividade(atividadeId: number | null, grupoId: number | null): Promise<void> {
+async function conferirAtividade(
+  atividadeId: number | null,
+  grupoId: number | null,
+  tipoFolha: string | null,
+): Promise<void> {
   if (!atividadeId) return;
-  const atividade = await consultarUm<{ grupo_id: number; ativa: boolean; nome: string }>(
-    'SELECT grupo_id, ativa, nome FROM atividades WHERE id = $1 AND excluido_em IS NULL',
+  const atividade = await consultarUm<{
+    grupo_id: number;
+    ativa: boolean;
+    nome: string;
+    lancavel: boolean;
+    usa_tipo_folha: boolean;
+  }>(
+    `SELECT grupo_id, ativa, nome, lancavel, usa_tipo_folha
+       FROM atividades WHERE id = $1 AND excluido_em IS NULL`,
     [atividadeId],
   );
   if (!atividade) throw erroDeRequisicao('Atividade não encontrada.');
@@ -372,6 +372,16 @@ async function conferirAtividade(atividadeId: number | null, grupoId: number | n
     throw erroDeRequisicao(
       `A atividade "${atividade.nome}" saiu da lista do grupo e não aceita novos lançamentos.`,
     );
+  }
+  // O agrupador organiza a arvore e soma nos relatorios; o trabalho concreto
+  // esta nos filhos. Lancar nele faria a mesma entrega contar duas vezes.
+  if (!atividade.lancavel) {
+    throw erroDeRequisicao(
+      `"${atividade.nome}" agrupa outras atividades e não recebe lançamento. Escolha uma das atividades que estão dentro dela.`,
+    );
+  }
+  if (atividade.usa_tipo_folha && !tipoFolha) {
+    throw erroDeRequisicao('Informe de qual folha se trata.');
   }
 }
 

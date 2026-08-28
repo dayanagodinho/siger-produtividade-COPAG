@@ -1,0 +1,297 @@
+﻿grupo;codigo;codigo_pai;nivel;lancavel;usa_tipo_folha;rotulo_curto;atividade_completa;entrega_esperada
+EFETIVOS;1;;1;SIM;NAO;Realizar cálculo retroativo;Realizar cálculo retroativo;
+EFETIVOS;2;;1;SIM;NAO;Gerar relatórios de conferência da folha;Gerar relatórios de conferência da folha;
+EFETIVOS;3;;1;SIM;NAO;DCAP judicial;Gerar DCAP judicial e encaminhar para o financeiro;
+EFETIVOS;4;;1;SIM;NAO;DCAP mensal;Gerar DCAP e encaminhar para o financeiro;
+EFETIVOS;5;;1;SIM;NAO;Realizar lançamento dos dados encaminhados;Realizar lançamento dos dados encaminhados pelo pró-saúde, funpresp, uso de telefonia, CEFOR, ADESP, progressão, frequência;
+EFETIVOS;6;;1;SIM;NAO;Impacto orçamentário de novas posses;Elaborar planilha de impacto orçamentário para posse de novos servidores;
+EFETIVOS;7;;1;SIM;NAO;Planilha de simulação de remuneração;Disponibilizar planilha de simulação de remuneração para os servidores;
+EFETIVOS;8;;1;SIM;NAO;Cadastro de pensões alimentícias;"Calcular, revisar e manter o cadastro de pensões alimentícias;";
+EFETIVOS;9;;1;SIM;NAO;Descontos de penhora judicial;"Lançar, acompanhar e controlar os descontos em folha das penhoras judiciais;";
+EFETIVOS;10;;1;SIM;NAO;Expedir declarações;"Expedir declarações;";
+EFETIVOS;11;;1;SIM;NAO;Cálculos de exoneração e vacância;Elaborar cálculos referentes às exonerações, vacância, cessões, afastamentos sem remuneração;
+EFETIVOS;12;;1;SIM;NAO;Restituição de débitos ao erário;"Adotar providências imediatas para a restituição de débitos vinculados à folha de pagamento de pessoal ou ressarcimento ao erário de servidores que vieram de outros órgãos;";
+EFETIVOS;13;;1;SIM;NAO;Comunicar teto a órgãos cessionários;Comunicar aos órgãos para os quais os servidores se encontram cedidos o valor da remuneração bruta considerada para o teto constitucional;
+EFETIVOS;14;;1;SIM;NAO;Declarações de gratificação natalina;Receber, analisar e lançar declarações acerca da gratificação natalina de servidores que vieram de outros órgãos;
+EFETIVOS;15;;1;SIM;NAO;Documentos de tempo de contribuição;"Emitir documentos complementares e necessários às declarações e certidões relativas à comprovação do tempo de contribuição;";
+EFETIVOS;16;;1;SIM;NAO;Ofício de ressarcimento a órgãos;Enviar ofício solicitando ressarcimento aos órgãos em que os servidores encontram-se cedidos sem ônus para a Câmara;
+EFETIVOS;17;;1;SIM;NAO;Receber, verificar e realizar o lançamento;Receber, verificar e realizar o lançamento dos comprovantes de recolhimento da CPSSS dos servidores afastados sem remuneração;
+EFETIVOS;18;;1;SIM;NAO;Patronal de afastados sem remuneração;Consolidar e encaminhar o pagamento da patronal dos servidores afastados sem remuneração e que optam por continuar com o recolhimento;
+EFETIVOS;19;;1;SIM;NAO;Retroativo de abono de permanência;Calcular pagamento retroativo referente à aprovação do abono de permanência;
+EFETIVOS;20;;1;SIM;NAO;Realizar controle de débito das penhoras;Realizar controle de débito das penhoras judiciais e dos servidores que estão ressarcindo o erário do órgão anterior à sua posse na Câmara;
+EFETIVOS;21;;1;SIM;NAO;Manutenção de SQL e VBA;Manutenção de códigos de programação em SQL e VBA;
+EFETIVOS;22;;1;SIM;NAO;Restituição por perda de patrimônio;Lançamento de valores relativos a restituições ao erário da Câmara por parte dos servidores efetivos, provenientes de perdas de patrimônio físico;
+INATIVOS_PENSIONISTAS;1;;1;NAO;NAO;Gerir a folha de pagamento normal;Gerir a folha de pagamento normal e complementar de servidores inativos, pensionistas civis e beneficiários externos;Folha aberta para lançamentos em contracheque e ajustes em ficha financeira
+INATIVOS_PENSIONISTAS;1.1;1;2;SIM;SIM;Lançamentos de folha normal e complementar;Lançamentos de folha normal e complementar;Folha aberta para lançamentos em contracheque e ajustes em ficha financeira
+INATIVOS_PENSIONISTAS;1.2;1;2;SIM;SIM;Fechamento de folha normal e complementar;Fechamento de folha normal e complementar;Folha fechada para geração de relatórios para o DEFIN
+INATIVOS_PENSIONISTAS;1.3;1;2;NAO;NAO;Gerar relatórios de conferência da folha;Gerar relatórios de conferência da folha;Inconsistências localizadas e sanadas
+INATIVOS_PENSIONISTAS;1.3.1;1.3;3;SIM;SIM;Inconsistências de Folha em Preparação;Inconsistências de Folha em Preparação;Inconsistências localizadas e sanadas
+INATIVOS_PENSIONISTAS;1.3.2;1.3;3;SIM;SIM;Inconsistências de Contratos de Consignação;Inconsistências de Contratos de Consignação;Inconsistências localizadas e sanadas
+INATIVOS_PENSIONISTAS;1.3.3;1.3;3;SIM;SIM;Beneficiários com Recebedores Inconsistentes;Beneficiários com Recebedores Inconsistentes;Inconsistências localizadas e sanadas
+INATIVOS_PENSIONISTAS;1.3.4;1.3;3;SIM;SIM;Valor Líquido Negativo;Valor Líquido Negativo;Inconsistências localizadas e sanadas
+INATIVOS_PENSIONISTAS;1.3.5;1.3;3;SIM;SIM;Lançamentos Manuais Não Pagos;Lançamentos Manuais Não Pagos;Inconsistências localizadas e sanadas
+INATIVOS_PENSIONISTAS;1.3.6;1.3;3;SIM;SIM;Relatórios queries de conferência;relatórios queries de conferência;Inconsistências localizadas e sanadas
+INATIVOS_PENSIONISTAS;1.4;1;2;SIM;SIM;Realizar conferência dos valores;Realizar conferência dos valores dos relatórios emitidos pelo SIGESP-CD e proceder com as correções necessárias;Inconsistências localizadas e sanadas
+INATIVOS_PENSIONISTAS;1.5;1;2;SIM;SIM;Gerar DCAPs programados para o mês;Gerar DCAPs programados para o mês de depósitos judiciais e encaminhar para o financeiro;Folha aberta para lançamentos em contracheque
+INATIVOS_PENSIONISTAS;1.6;1;2;SIM;SIM;Realizar cálculos retroativos necessários;Realizar cálculos retroativos necessários e conferência de valores;Folha aberta para lançamentos em contracheque
+INATIVOS_PENSIONISTAS;1.7;1;2;SIM;SIM;Importação de arquivos do pró-saúde;Importação de arquivos do pró-saúde;Folha aberta para lançamentos em contracheque
+INATIVOS_PENSIONISTAS;1.8;1;2;SIM;SIM;Importação de arquivos de consignações;Importação de arquivos de consignações;Folha aberta para lançamentos em contracheque
+INATIVOS_PENSIONISTAS;1.9;1;2;NAO;NAO;Gestão da folha de beneficiários externos;Gestão da folha de beneficiários externos (Grupo 12);Folha aberta para lançamentos em contracheque
+INATIVOS_PENSIONISTAS;1.9.1;1.9;3;SIM;SIM;Criar Cadastro de beneficiários externos;Criar Cadastro de beneficiários externos no Sigesp-CD, com dados pessoais e bancários;Folha aberta para lançamentos em contracheque
+INATIVOS_PENSIONISTAS;1.9.2;1.9;3;SIM;SIM;Instruir processos de valores pendentes;Instruir processos de valores pendentes com escritura pública ou ou alvará judicial, além de despachos;Folha aberta para lançamentos em contracheque
+INATIVOS_PENSIONISTAS;2;;1;NAO;NAO;Manter planilhas de controle interno;"Organizar e manter atualizada a área de trabalho compartilhada e as planilhas de controle interno dos registros relativos ao pagamento de proventos e pensões;";
+INATIVOS_PENSIONISTAS;2.1;2;2;SIM;NAO;Depósitos Judiciais;Depósitos Judiciais;
+INATIVOS_PENSIONISTAS;2.2;2;2;SIM;NAO;Acertos de Óbito;Acertos de Óbito;
+INATIVOS_PENSIONISTAS;2.3;2;2;SIM;NAO;Concessão de Aposentadorias;Concessão de Aposentadorias;
+INATIVOS_PENSIONISTAS;2.4;2;2;SIM;NAO;Concessões de Pensões;Concessões de Pensões;
+INATIVOS_PENSIONISTAS;2.5;2;2;SIM;NAO;Recadastramento anual de aposentados;Recadastramento anual de aposentados e pensionistas;
+INATIVOS_PENSIONISTAS;3;;1;NAO;NAO;Inserção e cancelamento em folha;Proceder com a inserção e cancelamento em folha de pensões alimentícias;Despacho, DCAP's e lançamentos em sistema
+INATIVOS_PENSIONISTAS;3.1;3;2;SIM;NAO;Inserção e cancelamento de pensões;Inserção e cancelamento de pensões alimentícias;
+INATIVOS_PENSIONISTAS;3.2;3;2;SIM;NAO;Alteração de fórmulas;Alteração de fórmulas;
+INATIVOS_PENSIONISTAS;3.3;3;2;SIM;NAO;Escaneamento e guarda no SIGESPCD do ofício;Escaneamento e guarda no SIGESPCD do ofício judicial;
+INATIVOS_PENSIONISTAS;3.4;3;2;SIM;NAO;Controle de cadastro de beneficiário;Controle de cadastro de beneficiário;
+INATIVOS_PENSIONISTAS;3.5;3;2;SIM;NAO;Prestar informações aos interessados;Prestar informações aos interessados;
+INATIVOS_PENSIONISTAS;4;;1;NAO;NAO;Implementar e controlar concessões;"Implementar, acompanhar, controlar os descontos em folha das penhoras judiciais;";Despacho, DCAP's e lançamentos em sistema
+INATIVOS_PENSIONISTAS;4.1;4;2;SIM;NAO;Programar as fórmulas dos descontos;Programar as fórmulas dos descontos no SIGESP-CD;
+INATIVOS_PENSIONISTAS;4.2;4;2;SIM;NAO;Registrar em planilha de controle interno;Registrar em planilha de controle interno;
+INATIVOS_PENSIONISTAS;4.3;4;2;SIM;NAO;Conferência de DCAP's devolvidos;Conferência de DCAP's devolvidos;
+INATIVOS_PENSIONISTAS;4.4;4;2;SIM;NAO;Envio de DCAPs;Envio de DCAPs;
+INATIVOS_PENSIONISTAS;4.5;4;2;SIM;NAO;Escaneamento e guarda no SIGESPCD do ofício;Escaneamento e guarda no SIGESPCD do ofício judicial;
+INATIVOS_PENSIONISTAS;4.6;4;2;SIM;NAO;Informar à Advocacia Geral do andamento;Informar à Advocacia Geral do andamento das solicitações;
+INATIVOS_PENSIONISTAS;4.7;4;2;SIM;NAO;Prestar informações aos interessados;Prestar informações aos interessados;
+INATIVOS_PENSIONISTAS;5;;1;NAO;NAO;Cálculos de concessão;Elaborar os cálculos referentes às concessão de aposentadorias e de pensões;Despacho, memória de cálculo e lançamentos em sistema
+INATIVOS_PENSIONISTAS;;5;2;SIM;NAO;Cálculo pela média de benefício;Cálculo pela média de benefício de aposentadoria e instrução do processo com as memórias de cálculo;
+INATIVOS_PENSIONISTAS;;5;2;SIM;NAO;Cálculo do Benefício Especial;Cálculo do Benefício Especial da aposentadoria e instrução do processo com as memórias de cálculo;
+INATIVOS_PENSIONISTAS;;5;2;SIM;NAO;Cálculo do benefício de pensões civis;Cálculo do benefício de pensões civis e instrução do processo com as memórias de cálculo;
+INATIVOS_PENSIONISTAS;6;;1;NAO;NAO;Elaborar cálculos de simulação;Elaborar cálculos de simulação de aposentadorias pela média e do benefício especial;Despacho, memória de cálculo e lançamentos em sistema
+INATIVOS_PENSIONISTAS;;6;2;SIM;NAO;Cálculo da simulação do benefício;Cálculo da simulação do benefício;
+INATIVOS_PENSIONISTAS;;6;2;SIM;NAO;Instrução do processo com as memórias;Instrução do processo com as memórias dos cálculos;
+INATIVOS_PENSIONISTAS;7;;1;NAO;NAO;Implementar em folha as aposentadorias;Implementar em folha as aposentadorias e pensões concedidas;Despacho, memória de cálculo e lançamentos em sistema
+INATIVOS_PENSIONISTAS;;7;2;SIM;NAO;Implantar no SIGESP-CD as aposentadorias;Implantar no SIGESP-CD as aposentadorias e pensões civis concedidas;
+INATIVOS_PENSIONISTAS;;7;2;SIM;NAO;Acertos retroativos a data do início;Realizar os acertos retroativos a data do início do pagamento de pensão civil;
+INATIVOS_PENSIONISTAS;;7;2;SIM;NAO;Acertos do mês da aposentadoria;Realizar os acertos do mês da aposentadoria;
+INATIVOS_PENSIONISTAS;;7;2;SIM;NAO;Ajustes em folha das fórmulas de pensão;Realizar os ajustes em folha das fórmulas de pensão alimentícia em decorrência da aposentadoria;
+INATIVOS_PENSIONISTAS;;7;2;SIM;NAO;Proceder com a conferência de horas extras;Proceder com a conferência de horas extras e noturnas realizadas no mês da aposentadoria;
+INATIVOS_PENSIONISTAS;;7;2;SIM;NAO;Descontos de jornada;Descontos de jornada;
+INATIVOS_PENSIONISTAS;8;;1;SIM;NAO;Descontos do teto constitucional;Gerir os descontos do teto previsto no inciso Xl do art. 37 e art. 24 da EC 103/2019 da Constituição Federal (Abate-Teto);Despacho, memória de cálculo e lançamentos em sistema
+INATIVOS_PENSIONISTAS;9;;1;SIM;NAO;Margem consignável;Liberação, suspensão ou bloqueio da margem;
+INATIVOS_PENSIONISTAS;10;;1;NAO;NAO;Atendimento de aposestados e pensionistas;Atendimento de aposestados e pensionistas presencialmente, por eDOC e por meio de ligação telefônica ou e-mail;
+INATIVOS_PENSIONISTAS;;10;2;SIM;NAO;Solicitação de informações gerais - Telefone;Solicitação de informações gerais - Telefone;
+INATIVOS_PENSIONISTAS;;10;2;SIM;NAO;Solicitação de informações gerais - E-mail;Solicitação de informações gerais - E-mail;
+INATIVOS_PENSIONISTAS;;10;2;SIM;NAO;Problemas com pagamento;Problemas com pagamento;
+INATIVOS_PENSIONISTAS;;10;2;SIM;NAO;Solicitação de contracheque e comprovante;Solicitação de contracheque e comprovante de rendimentos;
+INATIVOS_PENSIONISTAS;11;;1;SIM;NAO;Atendimento de demandas judiciais diversas;Atendimento de demandas judiciais diversas (excluem-se penhoras de salário e pensão alimentícia);Despacho, DCAP's, memória de cálculo e lançamentos em sistema
+INATIVOS_PENSIONISTAS;12;;1;NAO;NAO;Cumprir determinações e prestar informações;Prestar informações e fazer cumprir novas determinações normativas relacionadas à sua área de atuação;
+INATIVOS_PENSIONISTAS;;12;2;SIM;NAO;Administração interna;Administração interna;
+INATIVOS_PENSIONISTAS;;12;2;SIM;NAO;Advocacia Geral;Advocacia Geral;
+INATIVOS_PENSIONISTAS;;12;2;SIM;NAO;Outros órgãos;Outros órgãos;
+INATIVOS_PENSIONISTAS;13;;1;NAO;NAO;Acertos de Óbito;Acertos de Óbito;Despacho, DCAP's, memória de cálculo e lançamentos em sistema
+INATIVOS_PENSIONISTAS;;13;2;SIM;NAO;Suspensão do pagamento na comunicação do óbito;Suspensão do pagamento na comunicação do óbito;
+INATIVOS_PENSIONISTAS;;13;2;SIM;NAO;Cálculo dos acertos de óbito;Cálculo dos acertos de óbito;
+INATIVOS_PENSIONISTAS;;13;2;SIM;NAO;Registro no SIGESP-CD das rúbricas 580 e 2930;Registro no SIGESP-CD das rúbricas 580 e 2930;
+INATIVOS_PENSIONISTAS;;13;2;SIM;NAO;Ofício de comunicação dos valores pendentes;Ofício de comunicação dos valores pendentes;
+INATIVOS_PENSIONISTAS;;13;2;SIM;NAO;Acertos na folha de pensão civil;Acertos na folha de pensão civil;
+INATIVOS_PENSIONISTAS;;13;2;SIM;NAO;Comunicação aos bancos de valores pagos;Comunicação aos bancos de valores pagos indevidamente para ressarcimento ao erário;
+INATIVOS_PENSIONISTAS;;13;2;SIM;NAO;Proceder com o registro da reversão bancária;Proceder com o registro da reversão bancária no SIGESP-CD;
+INATIVOS_PENSIONISTAS;;13;2;SIM;NAO;Elaborar o DCAP da reversão bancária;Elaborar o DCAP da reversão bancária;
+INATIVOS_PENSIONISTAS;;13;2;SIM;NAO;Inclusão de dívida no SICOD;Inclusão de dívida no SICOD;
+INATIVOS_PENSIONISTAS;14;;1;NAO;NAO;Auxílio Funeral de aposentados;Auxílio Funeral de aposentados;Despacho, DCAP's e memória de cálculo
+INATIVOS_PENSIONISTAS;;14;2;SIM;NAO;Cálculo do benefício;Cálculo do benefício;
+INATIVOS_PENSIONISTAS;;14;2;SIM;NAO;Elaborar e enviar o DCAP ao financeiro;Elaborar e enviar o DCAP ao financeiro;
+INATIVOS_PENSIONISTAS;15;;1;NAO;NAO;DCAPs judiciais do mês;Geração mensalmente DCAPs judiciais;Inclusão de DCAP's
+INATIVOS_PENSIONISTAS;;15;2;SIM;NAO;Geração, inserção no eDOC e envio de DCAP's;Geração, inserção no eDOC e envio de DCAP's programados para descontos em folha a cada mês;
+INATIVOS_PENSIONISTAS;;15;2;SIM;NAO;Conferência e controle de descontos;Conferência e controle de descontos;
+INATIVOS_PENSIONISTAS;;15;2;SIM;NAO;Atualização de dados em planilha de controle;Atualização de dados em planilha de controle interno;
+INATIVOS_PENSIONISTAS;16;;1;NAO;NAO;Indenização de Férias;Indenização de Férias;Despacho, memória de cálculo e lançamentos em sistema
+INATIVOS_PENSIONISTAS;;16;2;SIM;NAO;Cálculo dos valores devidos;Cálculo dos valores devidos;
+INATIVOS_PENSIONISTAS;;16;2;SIM;NAO;Despacho DEFIN/DGP;Despacho DEFIN/DGP;
+INATIVOS_PENSIONISTAS;;16;2;SIM;NAO;Lançamento e Pagamento em folha;Lançamento e Pagamento em folha;
+INATIVOS_PENSIONISTAS;17;;1;NAO;NAO;Indenização de Licença-Prêmio;Indenização de Licença-Prêmio;Despacho, memória de cálculo e lançamentos em sistema
+INATIVOS_PENSIONISTAS;;17;2;SIM;NAO;Cálculo de valores devidos;Cálculo de valores devidos;
+INATIVOS_PENSIONISTAS;;17;2;SIM;NAO;Despacho DEFIN/DGP;Despacho DEFIN/DGP;
+INATIVOS_PENSIONISTAS;;17;2;SIM;NAO;Lançamento e Pagamento em folha;Lançamento e Pagamento em folha;
+INATIVOS_PENSIONISTAS;18;;1;NAO;NAO;Reuniões;Reuniões;Ata e/ou encaminhamentos
+INATIVOS_PENSIONISTAS;;18;2;SIM;NAO;Reunião de equipe;Reunião de equipe;
+INATIVOS_PENSIONISTAS;;18;2;SIM;NAO;Com outras unidades;com outras unidades;
+INATIVOS_PENSIONISTAS;19;;1;NAO;NAO;Corrigir planilhas de controle;Correções e alterações nas planilha de cálculo de de controle;Entrega de nova versão com os erros corrigidos
+INATIVOS_PENSIONISTAS;;19;2;SIM;NAO;Correção de eventuais erros;Correção de eventuais erros;
+INATIVOS_PENSIONISTAS;;19;2;SIM;NAO;Melhorias operacionais nas planilhas de dados;Melhorias operacionais nas planilhas de dados;
+INATIVOS_PENSIONISTAS;;19;2;SIM;NAO;Atualizações monetárias;Atualizações monetárias;
+INATIVOS_PENSIONISTAS;;19;2;SIM;NAO;Relatórios de conferência de queries;Relatórios de conferência de queries;
+INATIVOS_PENSIONISTAS;20;;1;NAO;NAO;Verificar divergências;Verificação de eventuais divergências encontradas no SIGESPCD em cálculos de valores retroativos;Confirmar erro, reportar e corrigir
+INATIVOS_PENSIONISTAS;;20;2;SIM;NAO;Acertos de óbito;Acertos de óbito;
+INATIVOS_PENSIONISTAS;;20;2;SIM;NAO;Acertos de concessão de pensões;Acertos de concessão de pensões;
+INATIVOS_PENSIONISTAS;;20;2;SIM;NAO;Acertos de aposentadoria;Acertos de aposentadoria;
+INATIVOS_PENSIONISTAS;;20;2;SIM;NAO;Acertos de pensão alimentícia;Acertos de pensão alimentícia;
+INATIVOS_PENSIONISTAS;21;;1;SIM;NAO;Autorização de pagamento;Solicitar autorização para pagamento de retroativo referente a exercícios anteriores;
+INATIVOS_PENSIONISTAS;22;;1;NAO;NAO;Gestão de Equipe;Gestão de Equipe;
+INATIVOS_PENSIONISTAS;;22;2;SIM;NAO;Controle e distribuição de processos;Controle e distribuição de processos;
+INATIVOS_PENSIONISTAS;;22;2;SIM;NAO;Gestão da caixa de e-mail;Gestão da caixa de e-mail;
+INATIVOS_PENSIONISTAS;23;;1;NAO;NAO;Recadastramento;Recadastramento;
+INATIVOS_PENSIONISTAS;;23;2;SIM;NAO;Bloqueio de contas;Bloqueio de contas;
+INATIVOS_PENSIONISTAS;;23;2;SIM;NAO;Retirada de fita;Retirada de fita;
+INATIVOS_PENSIONISTAS;;23;2;SIM;NAO;Pagamento por relação bancária;Pagamento por relação bancária;
+INATIVOS_PENSIONISTAS;;23;2;SIM;NAO;Controle de recadastramento;Controle de recadastramento;
+INATIVOS_PENSIONISTAS;23.1;;1;SIM;NAO;Expedir Declarações;Expedir Declarações;
+PARLAMENTARES;1;;1;NAO;NAO;Gerir a folha de pagamento Parlamentares;Gerir a folha de pagamento Parlamentares Ativos, Aposentados e Pensionistas de Parlamentares;
+PARLAMENTARES;;1;2;SIM;NAO;Gerar relatórios de conferência da folha;Gerar relatórios de conferência da folha;
+PARLAMENTARES;;1;2;SIM;NAO;Conferência da Planilha de Análise;Conferência da Planilha de Análise;
+PARLAMENTARES;;1;2;SIM;NAO;Conferência de totalização por rubrica;Conferência de totalização por rubrica;
+PARLAMENTARES;;1;2;SIM;NAO;Conferir e acompanhar consignações;Lançar, conferir e acompanhar as consignações em folha de pagamento;
+PARLAMENTARES;;1;2;SIM;NAO;Realizar, analisar e lançar cálculos;Realizar, analisar e lançar cálculos retroativos em folha;
+PARLAMENTARES;;1;2;SIM;NAO;Realizar conferências de rubricas duplicadas;Realizar conferências de rubricas duplicadas;
+PARLAMENTARES;;1;2;SIM;NAO;Realizar conferências SIGESP:;Realizar conferências SIGESP:;
+PARLAMENTARES;;1;2;SIM;NAO;Inconsistências de Folha em Preparação;Inconsistências de Folha em Preparação;
+PARLAMENTARES;;1;2;SIM;NAO;Inconsistências de Contratos de Consignação;Inconsistências de Contratos de Consignação;
+PARLAMENTARES;;1;2;SIM;NAO;Beneficiários com Recebedores Inconsistentes;Beneficiários com Recebedores Inconsistentes;
+PARLAMENTARES;;1;2;SIM;NAO;Valor Líquido Negativo;Valor Líquido Negativo;
+PARLAMENTARES;;1;2;SIM;NAO;Lançamentos Manuais Não Pagos;Lançamentos Manuais Não Pagos;
+PARLAMENTARES;;1;2;SIM;NAO;Tratar as críticas referentes a líquidos;Tratar as críticas referentes a líquidos negativos e outras inconsistências antes do fechamento da folha.;
+PARLAMENTARES;;1;2;SIM;NAO;Queries de conferência da folha;Rodar as queries de conferência de cada grupo e tratar as críticas para evitar inconsistências no fechamento da folha.;
+PARLAMENTARES;;1;2;SIM;NAO;Fechar a folha de pagamento;Fechar a folha de pagamento.;
+PARLAMENTARES;;1;2;SIM;NAO;Encaminhar o relatório de Consignações;Encaminhar o relatório de Consignações da COHAB com valores descontados e não descontados em folha;
+PARLAMENTARES;;1;2;SIM;NAO;Gerar DCAPs e encaminhar para o financeiro;Gerar DCAPs e encaminhar para o financeiro;
+PARLAMENTARES;2;;1;NAO;NAO;Calcular e pagar direitos devidos;II - realizar os cálculos e promover o devido pagamento das remunerações;
+PARLAMENTARES;;2;2;SIM;NAO;Realizar lançamento dos dados encaminhados;Realizar lançamento dos dados encaminhados pelo pró-saúde;
+PARLAMENTARES;;2;2;SIM;NAO;Realizar lançamento dos dados encaminhados;Realizar lançamento dos dados encaminhados pela COHAB (descontos de água, luz e gás das moradias funcionais);
+PARLAMENTARES;;2;2;SIM;NAO;Realizar lançamento dos dados encaminhados;Realizar lançamento dos dados encaminhados referente à cobranças adminsitrativas;
+PARLAMENTARES;;2;2;SIM;NAO;Informar à COHAB e Pró-Saúde sobre os motivos;"Informar à COHAB e Pró-Saúde sobre os motivos de descontos não terem sido processados;";
+PARLAMENTARES;3;;1;NAO;NAO;Organizar e manter atualizado o controle;"III - organizar e manter atualizado o controle dos registros relativos ao pagamento de pessoal;";
+PARLAMENTARES;;3;2;SIM;NAO;Atualizar as queries de verificação;"Atualizar as queries de verificação;";
+PARLAMENTARES;;3;2;SIM;NAO;Atualizar o controle de atividades;Atualizar o controle de atividades na ferramenta Trello a cada situação que possa impactar na folha de pagamento e exija acompanhamento.;
+PARLAMENTARES;4;;1;NAO;NAO;Impacto orçamentário;"IV - apurar eventuais impactos orçamentários concernentes a despesas relativas à sua área de atuação;";
+PARLAMENTARES;;4;2;SIM;NAO;Autorização de pagamento;Solicitar autorização para pagamento de retroativo referente a exercícios anteriores;
+PARLAMENTARES;5;;1;NAO;NAO;Cadastro de pensões alimentícias;"V - proceder e manter o cadastro de pensões alimentícias;";
+PARLAMENTARES;;5;2;SIM;NAO;Receber os processos referentes ao pagamento;Receber os processos referentes ao pagamento de pensões alimentícias;
+PARLAMENTARES;;5;2;SIM;NAO;Lançar na folha de pagamento os descontos;Lançar na folha de pagamento os descontos conforme determinação judicial;
+PARLAMENTARES;;5;2;SIM;NAO;Cadastrar a conta bancária do responsável;Cadastrar a conta bancária do responsável pelo recebimento;
+PARLAMENTARES;;5;2;SIM;NAO;Cadastrar o e-mail do beneficiário para envio;Cadastrar o e-mail do beneficiário para envio dos contracheques mensais;
+PARLAMENTARES;;5;2;SIM;NAO;Informar ao parlamentar sobre a implantação;Informar ao parlamentar sobre a implantação do desconto;
+PARLAMENTARES;6;;1;NAO;NAO;Descontos de penhora judicial;"VI - Lançar, acompanhar e controlar os descontos em folha das penhoras judiciais;";
+PARLAMENTARES;;6;2;SIM;NAO;Receber os processos referentes ao pagamento;Receber os processos referentes ao pagamento de penhoras judiciais;
+PARLAMENTARES;;6;2;SIM;NAO;Lançar na folha de pagamento os descontos;Lançar na folha de pagamento os descontos conforme determinação judicial;
+PARLAMENTARES;;6;2;SIM;NAO;Cadastrar a conta bancária do responsável;Cadastrar a conta bancária do responsável pelo recebimento;
+PARLAMENTARES;;6;2;SIM;NAO;Cadastrar os dados do desconto na mala direta;Cadastrar os dados do desconto na mala direta para geração dos DCAPS;
+PARLAMENTARES;;6;2;SIM;NAO;Informar ao parlamentar sobre a implantação;Informar ao parlamentar sobre a implantação do desconto;
+PARLAMENTARES;;6;2;SIM;NAO;Gerar os DCAPS mensalmente;Gerar os DCAPS mensalmente, anexar aos processos eDoc e enviar ao financeiro;
+PARLAMENTARES;;6;2;SIM;NAO;Planilha de descontos judiciais;Criar planilha sobre os descontos judiciais para cada parlamentar, com previsão de início, fim e valores debitados. Salvar cópia do processo eDoc para eventuais consultas.;
+PARLAMENTARES;;6;2;SIM;NAO;Salvar os ofícios judiciais no sistema;Salvar os ofícios judiciais no sistema;
+PARLAMENTARES;7;;1;NAO;NAO;Manter atualizada a margem consignável;"VII - manter atualizada a margem consignável;";
+PARLAMENTARES;;7;2;SIM;NAO;Após cada lançamento nas folhas de pagamento;Após cada lançamento nas folhas de pagamento, disparar o cálculo da margem consignável.;
+PARLAMENTARES;8;;1;NAO;NAO;Expedir declarações;"VIII - expedir declarações;";
+PARLAMENTARES;;8;2;SIM;NAO;Expedir declarações e ofícios;Expedir declarações e ofícios em atendimento às solicitações apresentadas pelos parlamentares ou outros órgãos.;
+PARLAMENTARES;9;;1;NAO;NAO;Cálculos de exoneração e vacância;IX - elaborar cálculos referentes às exonerações, vacância, cessões, afastamentos sem remuneração e óbitos;
+PARLAMENTARES;;9;2;SIM;NAO;Verificar ingressos e afastamentos;Verificar ingressos e afastamentos de deputados tutilares e suplentes e seus impactos na folha de pagamento;
+PARLAMENTARES;;9;2;SIM;NAO;Verficar os afastamentos para licença sem;Verficar os afastamentos para licença sem remuneração ou exercício de cargos em outros órgãos e seus impactos na folha de pagamento;
+PARLAMENTARES;;9;2;SIM;NAO;Fazer o lançamento em folha das ajudas;Fazer o lançamento em folha das ajudas de custos referentes ao início e final do mandato após avaliação do atendimento dos critérios.;
+PARLAMENTARES;;9;2;SIM;NAO;Suspender os descontos de contratos;Suspender os descontos de contratos de empréstimo e informar a secretaria para notificação dos bancos.;
+PARLAMENTARES;;9;2;SIM;NAO;Acompanhar os registros de óbitos e calcular;Acompanhar os registros de óbitos e calcular os respectivos acertos na folha de pagamento.;
+PARLAMENTARES;10;;1;NAO;NAO;Restituição de débitos ao erário;"X - adotar providências imediatas para a restituição de débitos vinculados à folha de pagamento de pessoal ou ressarcimento ao erário de servidores que vieram de outros órgãos;";
+PARLAMENTARES;;10;2;SIM;NAO;Receber as notificações de débitos;Receber as notificações de débitos dos servidores oriundos de outros órgãos, lançar os descontos na folha de pagamento e gerar os DCAPS dos repasses.;
+PARLAMENTARES;;10;2;SIM;NAO;Se for o caso, verificar com o servidor sobre;Se for o caso, verificar com o servidor sobre a conveniência de parcelamento dos débitos.;
+PARLAMENTARES;11;;1;SIM;NAO;Descontos do teto constitucional;"XI - gerir os descontos do teto previsto no inciso Xl do art. 37 da Constituição Federal;";
+PARLAMENTARES;12;;1;NAO;NAO;Controle de descontos em folha;"XII - acompanhar e controlar os descontos das contribuições previdenciárias;";
+PARLAMENTARES;;12;2;SIM;NAO;Manter os controles de descontos e repasses;Manter os controles de descontos e repasses de regimes próprios de previdência atualizados sempre que qualquer alteração for notificada.;
+PARLAMENTARES;13;;1;SIM;NAO;Documentos de tempo de contribuição;"XIII - emitir documentos complementares e necessários às declarações e certidões relativas à comprovação do tempo de contribuição;";
+PARLAMENTARES;14;;1;SIM;NAO;Informações previdenciárias a órgãos externos;"XIV - executar as tarefas relacionadas à apuração e ao fornecimento de informações de dados relativos à contribuição previdenciária de interesse de órgãos internos ou externos;";
+PARLAMENTARES;15;;1;SIM;NAO;Procedimentos de área de atuação;"XV - executar procedimentos relacionados à compensação financeira entre regimes previdenciários em sua área de atuação;";
+PARLAMENTARES;16;;1;NAO;NAO;Prestar informações da área;XVI - prestar informações relacionadas à sua área de atuação.;
+PARLAMENTARES;;16;2;SIM;NAO;Responder os questionamentos apresentados;Responder os questionamentos apresentados por telefone, e-mail ou whatsapp referentes aos diversos assuntos que impactam na folha de pagamento.;
+PARLAMENTARES;17;;1;SIM;NAO;Realizar cobrança Administrativas;XVII -Realizar cobrança Administrativas de Parlamentares que saem do mandato;
+PARLAMENTARES;18;;1;SIM;NAO;DCAPs de RA;XVIII -Gerar DCAPs das RAs encaminhadas pelo financeiro;
+PARLAMENTARES;19;;1;NAO;NAO;Registrar desconto em folha;Registrar o desconto em folha referente ao ressarcimento ao erário;
+PARLAMENTARES;;19;2;SIM;NAO;Gerar os relatórios de desconto e anexar;Gerar os relatórios de desconto e anexar ao processo para despachar aos órgãos competentes na Casa.;
+PARLAMENTARES;20;;1;SIM;NAO;Autorização de pagamento;XX - Solicitar autorização para pagamento de retroativo referente a exercícios anteriores;
+PARLAMENTARES;21;;1;NAO;NAO;Folha complementar;Fazer a folha de pagamento complementar do auxílio moradia;
+PARLAMENTARES;;21;2;SIM;NAO;Receber o arquivo do auxílio-moradia;Receber o arquivo do auxílio-moradia dos parlamentares para pagamento na próxima folha.;
+PARLAMENTARES;22;;1;NAO;NAO;Acompanhar os processos eDoc;Acompanhar os processos eDoc;
+PARLAMENTARES;;22;2;SIM;NAO;Receber os processos e verificar;Receber os processos e verificar os procedimentos necessários ao atendimento de cada um deles no prazo necessário.;
+PARLAMENTARES;23;;1;NAO;NAO;Processar decisões judiciais na folha;Acompanhar e processar na folha de pagamento o processo de recadastramento dos aposentados e pensionistas;
+PARLAMENTARES;;23;2;SIM;NAO;Após o encerramento do recadastramento;Após o encerramento do recadastramento pela Corsep,tomar as providências referentes ao pagamento.;
+PARLAMENTARES;;23;2;SIM;NAO;Bloquear o pagamento dos beneficiários;Bloquear o pagamento dos beneficiários que não se recadastraram.;
+PARLAMENTARES;;23;2;SIM;NAO;Recadastramento fora do prazo;Receber notificações de recadastramentos fora do prazo e encaminhar os pagamentos via relação bancária.;
+PARLAMENTARES;;23;2;SIM;NAO;Desbloquear pagamentos e calcular folhas após;Desbloquear pagamentos e calcular folhas após recadastramento fora do prazo.;
+PARLAMENTARES;24;;1;NAO;NAO;Acerto de óbito;Proceder o acerto de óbito de aposentados e pensionistas falecidos.;
+PARLAMENTARES;;24;2;SIM;NAO;Após o registro do óbito no sistema;Após o registro do óbito no sistema, calcular a folha do beneficiário e verificar se houve crédito ou débito remanescente;
+PARLAMENTARES;;24;2;SIM;NAO;Salvar a planilha de acerto de óbito;Salvar a planilha de acerto de óbito no sistema;
+PARLAMENTARES;;24;2;SIM;NAO;Criar checklist no trello para acompanhamento;Criar checklist no trello para acompanhamento da situação.;
+PARLAMENTARES;;24;2;SIM;NAO;Crédito a receber por família de falecido;Caso haja crédito a ser recebido pela família, aguardar manifestação dos interessados. Caso haja débito, encaminhar para cobrança administrativa.;
+PARLAMENTARES;;24;2;SIM;NAO;Verificar a possibilidade/necessidade;Verificar a possibilidade/necessidade de bloqueio do pagamento caso o falecimento ocorra após o fechamento da folha para minimizar eventuais débitos.;
+PARLAMENTARES;;24;2;SIM;NAO;Calcular a folha para pagamento a eventuais;Calcular a folha para pagamento a eventuais pensionistas em caso de falecimento de aposentado.;
+PARLAMENTARES;25;;1;NAO;NAO;Lançamento de Isenção de Imposto de Renda;Lançamento de Isenção de Imposto de Renda;
+PARLAMENTARES;;25;2;SIM;NAO;Calcular a folha de pagamento para verificar;Calcular a folha de pagamento para verificar o processamento de isenção de imposto de renda.;
+PARLAMENTARES;26;;1;NAO;NAO;Cálculo da folha de parlamentares;Fazer o cálculo da folha dos parlamentares após o processamento da frequência do mês anterior;
+PARLAMENTARES;;26;2;SIM;NAO;Após o lançamento da frequência no sistema;Após o lançamento da frequência no sistema, calcular a folha para o desconto das faltas dos parlamentares ou reembolso de descontos de faltas justificadas.;
+PARLAMENTARES;27;;1;NAO;NAO;Acompanhar os e-mails;Acompanhar os e-mails, especialmente no que se refere às movimentações parlamentares;
+PARLAMENTARES;;27;2;SIM;NAO;Triagem de movimentações parlamentares;Verificar no e-mails a existência de movimentações parlamentares que possam impactar na folha de pagamento, tais como afastamento/retorno de titulares, posse ou saída de suplentes;
+COMISSIONADOS;1;;1;NAO;NAO;Gerir a folha de pagamento de servidores;"I - gerir a folha de pagamento de servidores comissionados (Secretários parlamentares e Cargos de natureza especial);";
+COMISSIONADOS;;1;2;SIM;NAO;Conferir e executar eventos de gestão;"conferir e executar eventos de gestão que iniciam ou que repercutem no processo da folha de pagamento de comissionados;";
+COMISSIONADOS;;1;2;SIM;NAO;Ajustar os contracheques negativos;ajustar os contracheques negativos com mudança de grupo para controle e monitoramento dos servidores que mudam de sp para cne e vice e versa.;
+COMISSIONADOS;;1;2;SIM;NAO;Monitorar as implicações de pagamaento;monitorar as implicações de pagamaento decorrentes do início e fim do auxílio-doença do servidor;
+COMISSIONADOS;;1;2;SIM;NAO;Monitorar servidores fora da folha exonerados;monitorar servidores fora da folha exonerados na folha e com contas inconsistentes;
+COMISSIONADOS;;1;2;SIM;NAO;Monitorar as rubricas duplicadas;monitorar as rubricas duplicadas, novas e com mais de 5 anos;
+COMISSIONADOS;;1;2;SIM;NAO;Conferir e corrigir valores de gratificação;conferir e corrigir valores de gratificação natalina de exonerados e de licença gestante;
+COMISSIONADOS;;1;2;SIM;NAO;Conferir e corrigir valores de indenização;conferir e corrigir valores de indenização de férias para servidores exonerados no mês;
+COMISSIONADOS;;1;2;SIM;NAO;Gerir os valores de remuneração (inclusive;gerir os valores de remuneração (inclusive faltas) do mês anterior e atual;
+COMISSIONADOS;;1;2;SIM;NAO;Confere aux alimentação mes anterior e atual;confere aux alimentação mes anterior e atual;
+COMISSIONADOS;;1;2;SIM;NAO;Conferir e corrigir valores do auxílio;conferir e corrigir valores do auxílio pré-escolar do mês anterior e atual;
+COMISSIONADOS;;1;2;SIM;NAO;Conferir e corrigir os valores;conferir e corrigir os valores do auxílio-transporte do mês anterior e atual;
+COMISSIONADOS;;1;2;SIM;NAO;Gerir o pagamento do salário-familia do mês;gerir o pagamento do salário-familia do mês anterior e atual;
+COMISSIONADOS;;1;2;SIM;NAO;Gerir o pagamento de adicional de férias;gerir o pagamento de adicional de férias do mês anterior e atual, corrigindo iclusive o período aquisitivo das férias, se necessário.;
+COMISSIONADOS;;1;2;SIM;NAO;Gerir o usufruto de férias;gerir o usufruto de férias;
+COMISSIONADOS;;1;2;SIM;NAO;Verificar e corrigir início e fim de RPPS;verificar e corrigir início e fim de RPPS e RGPS (regimes de previdência);
+COMISSIONADOS;;1;2;SIM;NAO;Verificar e corrigir situações de servidores;verificar e corrigir situações de servidores que mudaram de RPPS e RGPS, além das rubricas de débito;
+COMISSIONADOS;;1;2;SIM;NAO;Conferir e ajustar INSS de qualquer mês;conferir e ajustar INSS de qualquer mês;
+COMISSIONADOS;;1;2;SIM;NAO;Conferir as rubricas 470 e 580;conferir as rubricas 470 e 580;
+COMISSIONADOS;;1;2;SIM;NAO;Gerir o pagamento de servidores ativos;gerir o pagamento de servidores ativos com débitos com a Câmara;
+COMISSIONADOS;;1;2;SIM;NAO;Conferir o imposto de renda normal;conferir o imposto de renda normal e o da gratificação natalina do mês atual;
+COMISSIONADOS;;1;2;SIM;NAO;Gerir a remuneração do servidor cedido;gerir a remuneração do servidor cedido com ou sem ônus para a origem;
+COMISSIONADOS;;1;2;SIM;NAO;Controlar e monitorar a base externa;controlar e monitorar a base externa para efeito de teto constitucional do servidor requisitado;
+COMISSIONADOS;;1;2;SIM;NAO;Monitar a previdência do servidor que optou;monitar a previdência do servidor que optou pela remuneração do cargo em comissão;
+COMISSIONADOS;;1;2;SIM;NAO;Monitar o pagameto de servidor ativo sem;monitar o pagameto de servidor ativo sem vínculo e sem desconto de inss;
+COMISSIONADOS;;1;2;SIM;NAO;Conferir o teto constitucional dos servidores;conferir o teto constitucional dos servidores do mês anterior e atual;
+COMISSIONADOS;;1;2;SIM;NAO;Conferir e corrigir os descontos;conferir e corrigir os descontos das consignações novas;
+COMISSIONADOS;;1;2;SIM;NAO;Conferir e corrigir os desocntos;conferir e corrigir os desocntos das consignações de servidores exonerados;
+COMISSIONADOS;;1;2;SIM;NAO;Monitorar e corrigir os descontos;monitorar e corrigir os descontos das consignações que não constam no mês atual;
+COMISSIONADOS;;1;2;SIM;NAO;Conferir CPF, fórmulas e inclusão de auxílio;conferir CPF, fórmulas e inclusão de auxílio pré-escolar na implementação da pensão alimentícia;
+COMISSIONADOS;;1;2;SIM;NAO;Conferir o pagamento de sessões noturnas;conferir o pagamento de sessões noturnas;
+COMISSIONADOS;;1;2;SIM;NAO;Conferir o pagamento dos valores;conferir o pagamento dos valores referente à frequência mensal e horas extras;
+COMISSIONADOS;;1;2;SIM;NAO;Importar dados do auxílio-saúde (planos;importar dados do auxílio-saúde (planos de saúde dos servidores comissionados);
+COMISSIONADOS;;1;2;SIM;NAO;Conferir rubricas 2930;conferir rubricas 2930, que informa saldo insuficiente de servidor;
+COMISSIONADOS;;1;2;SIM;NAO;Conferir situação de exonerados;conferir situação de exonerados pós-fechamento com débitos para bloqueio de pagamento;
+COMISSIONADOS;;1;2;SIM;NAO;Regularizar créditos pendentes;"regularizar créditos pendentes;";
+COMISSIONADOS;;1;2;SIM;NAO;Monitorar os servidores empossados;monitorar os servidores empossados pós-fechamento da folha, com indenização de férias no contracheque, para exclusão da indenização e bloqueio do pagamento.;
+COMISSIONADOS;2;;1;SIM;NAO;Calcular e pagar direitos devidos;"II - realizar os cálculos e promover o devido pagamento dos subsídios, remunerações, proventos, pensões e benefícios;";
+COMISSIONADOS;3;;1;NAO;NAO;Organizar e manter atualizado o controle;"III - organizar e manter atualizado o controle dos registros relativos ao pagamento de pessoal;";
+COMISSIONADOS;;3;2;SIM;NAO;Planilha de controle de débitos;elaborar e controlar planilha de débitos (com número de processo correlato) de servidores exonerados para emissão de GRU e criação de processos de cobrança;
+COMISSIONADOS;4;;1;SIM;NAO;Impacto orçamentário;"IV - apurar eventuais impactos orçamentários concernentes a despesas relativas à sua área de atuação;";
+COMISSIONADOS;5;;1;NAO;NAO;Cadastro de pensões alimentícias;"V - proceder e manter o cadastro de pensões alimentícias;";
+COMISSIONADOS;;5;2;SIM;NAO;Cadastrar processo judicial e beneficiários;receber processos judiciais, cadastrar beneficiários e recebedores, cadastrar contas bancárias,incluir documento judicial no histórico funcional, incluir fórmulas de pagamento, elaborar despacho.;
+COMISSIONADOS;6;;1;NAO;NAO;Averbação das consignações em folha;"VI - realizar a averbação das consignações em folha;";
+COMISSIONADOS;;6;2;SIM;NAO;Transferir e monitorar as consignações;"transferir e monitorar as consignações nas mudanças de grupos SP-CNE e vice-versa;";
+COMISSIONADOS;7;;1;NAO;NAO;Controle de descontos em folha;"VII - acompanhar e controlar os descontos em folha das penhoras judiciais;";
+COMISSIONADOS;;7;2;SIM;NAO;Registrar processo judicial na ficha funcional;receber processos judiciais, incluir documento judicial no histórico funcional, incluir fórmulas de pagamento com as rubricas de descontos dos depósitos judiciais, elaborar despacho, criar processo e acompanhar os descontos.;
+COMISSIONADOS;8;;1;SIM;NAO;Manter atualizada a margem consignável;"VIII - manter atualizada a margem consignável;";
+COMISSIONADOS;9;;1;SIM;NAO;Preparar declarações de rendimentos;"IX - preparar declarações de rendimentos;";
+COMISSIONADOS;10;;1;NAO;NAO;Expedir declarações;"X - expedir declarações;";
+COMISSIONADOS;;10;2;SIM;NAO;Emitir de declaração de teto INSS DESCONTO;"emitir de declaração de teto INSS DESCONTO;";
+COMISSIONADOS;;10;2;SIM;NAO;Emitir a RRC - relação das remunerações;"emitir a RRC - relação das remunerações contribuiçoes previdenciárias referente DTC - anexo V in128-2022;";
+COMISSIONADOS;;10;2;SIM;NAO;Emitir declaração de situação previdenciária;"emitir declaração de situação previdenciária;";
+COMISSIONADOS;;10;2;SIM;NAO;Emitir análises previdenciárias;"emitir análises previdenciárias para a Coordenação de Secretariado Parlamentar;";
+COMISSIONADOS;;10;2;SIM;NAO;Emitir diversar outras declarações funcionais;emitir diversar outras declarações funcionais.;
+COMISSIONADOS;11;;1;NAO;NAO;Cálculos de exoneração e vacância;"XI - elaborar cálculos referentes às exonerações, indenizações à gestante e demais obrigações trabalhistas previstas em lei;";
+COMISSIONADOS;;11;2;SIM;NAO;Indenização por exoneração em gestação;"elaborar planilhas de cálculos de indenização por exoneração em estado gestacional e controlar o desembolso financeiro conforme exames e atestados apresentados;";
+COMISSIONADOS;12;;1;NAO;NAO;Restituição de débitos ao erário;"XII - adotar providências imediatas para a restituição de débitos vinculados à folha de pagamento de pessoal;";
+COMISSIONADOS;;12;2;SIM;NAO;Emissão de GRU de cobrança;"emissão de GRU de cobrança;";
+COMISSIONADOS;;12;2;SIM;NAO;Apurar débitos e realizar processo;"apurar débitos e realizar processo de cobrança de débito de servidores exonerados;";
+COMISSIONADOS;13;;1;NAO;NAO;Descontos do teto constitucional;"XIII - gerir os descontos do teto previsto no inciso Xl do art. 37 da Constituição Federal;";
+COMISSIONADOS;;13;2;SIM;NAO;Gerir o monitoramento dos contracheques;gerir o monitoramento dos contracheques de cedidos nos meses de março e setembro para controle do teto constitucional e duplicidade de benefícios;
+COMISSIONADOS;14;;1;SIM;NAO;Controle de descontos em folha;"XIV - acompanhar e controlar os descontos das contribuições previdenciárias;";
+COMISSIONADOS;15;;1;NAO;NAO;Documentos de tempo de contribuição;"XV - emitir documentos complementares e necessários às declarações e certidões relativas à comprovação do tempo de contribuição;";
+COMISSIONADOS;;15;2;SIM;NAO;Analisar a situação previdenciária;"analisar a situação previdenciária do servidor e informar períodos de contribuição e respectivos valores relativos aos diversos regimes previdenciários;";
+COMISSIONADOS;16;;1;SIM;NAO;Informações previdenciárias a órgãos externos;"XVI - executar as tarefas relacionadas à apuração e ao fornecimento de informações de dados relativos à contribuição previdenciária de interesse de órgãos internos ou externos;";
+COMISSIONADOS;17;;1;SIM;NAO;Procedimentos de área de atuação;"XVII - executar procedimentos relacionados à compensação financeira entre regimes previdenciários em sua área de atuação;";
+COMISSIONADOS;18;;1;SIM;NAO;Envio de eventos e guias ao eSocial;"XVIII - realizar o acompanhamento e controle do envio de eventos, guias e documentos de sua área de atuação ao Sistema de Escrituração Digital das Obrigações Fiscais, Previdenciárias e Trabalhistas (e-Social), bem como promover os devidos ajustes, quando necessário;";
+COMISSIONADOS;19;;1;NAO;NAO;Prestar informações da área;XIX - prestar informações relacionadas à sua área de atuação seja por telefone, seja presencialmente.;
+COMISSIONADOS;;19;2;SIM;NAO;Fornecer informações e documentos solicitados;fornecer informações e documentos solicitados por órgãos internos e externos.;
+COMISSIONADOS;20;;1;SIM;NAO;Processos administrativos disciplinares;XX - atuar como parte nos processos administrativos disciplinares, bem como fornecer informações e iniciar processos de cobrança quando determinado pela Diretoria Geral.;

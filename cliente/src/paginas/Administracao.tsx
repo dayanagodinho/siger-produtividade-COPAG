@@ -9,6 +9,7 @@ import {
 } from '../servicos/formato';
 import { Abas, Aviso, Campo, Carregando, Cartao, Modal, Vazio } from '../componentes/comuns';
 import { Cabecalho } from '../componentes/Layout';
+import { Icone } from '../componentes/icones';
 
 const ABAS = [
   { chave: 'setores', rotulo: 'Setores' },
@@ -376,13 +377,18 @@ interface Atividade {
   grupo_nome: string;
   numero: string | null;
   nome: string;
+  texto_completo: string | null;
   descricao: string | null;
   entrega: string | null;
   nivel_sugerido: number | null;
   nivel_rotulo: string | null;
   ativa: boolean;
+  lancavel: boolean;
+  usa_tipo_folha: boolean;
+  nivel_hierarquia: number;
+  atividade_pai_id: number | null;
+  caminho: string[];
   lancamentos: number;
-  detalhamentos: Array<{ numero: string | null; texto: string }>;
 }
 
 function AbaAtividades() {
@@ -393,8 +399,8 @@ function AbaAtividades() {
   const [editando, setEditando] = useState<Atividade | null>(null);
   const [criando, setCriando] = useState(false);
   const [filtroGrupo, setFiltroGrupo] = useState('');
-  const [aberta, setAberta] = useState<number | null>(null);
   const [sucesso, setSucesso] = useState<string | null>(null);
+  const [importando, setImportando] = useState(false);
 
   async function excluir(atividade: Atividade) {
     if (!window.confirm(`Excluir a atividade ${atividade.nome}?`)) return;
@@ -422,8 +428,55 @@ function AbaAtividades() {
         rotulo: `${g.nome} (${g.setor_nome})`,
       })),
     },
-    { chave: 'numero', rotulo: 'Número na lista do grupo', tipo: 'texto' },
-    { chave: 'nome', rotulo: 'Atividade', tipo: 'area', obrigatorio: true },
+    { chave: 'numero', rotulo: 'Código na lista do grupo', tipo: 'texto', dica: 'Como "1", "1.3" ou "1.3.4".' },
+    {
+      chave: 'nome',
+      rotulo: 'Rótulo curto',
+      tipo: 'texto',
+      obrigatorio: true,
+      dica: 'É o que aparece no seletor e nas tabelas. Até 46 caracteres cabem bem.',
+    },
+    {
+      chave: 'texto_completo',
+      rotulo: 'Redação do plano de trabalho',
+      tipo: 'area',
+      dica: 'O texto oficial, inteiro. Aparece no detalhe do lançamento e na exportação.',
+    },
+    {
+      chave: 'atividade_pai_id',
+      rotulo: 'Fica dentro de',
+      tipo: 'selecao',
+      dica: 'Deixe em branco se a atividade é de primeiro nível.',
+      opcoes: [
+        { valor: '', rotulo: 'Nenhuma — é de primeiro nível' },
+        ...(dados?.atividades ?? [])
+          .filter((a) => a.id !== editando?.id)
+          .map((a) => ({
+            valor: String(a.id),
+            rotulo: `${a.numero ? `${a.numero}. ` : ''}${a.nome}`,
+          })),
+      ],
+    },
+    {
+      chave: 'lancavel',
+      rotulo: 'Recebe lançamento',
+      tipo: 'selecao',
+      dica: 'Não, quando a atividade só agrupa outras. Agrupador que recebe lançamento faz a mesma entrega contar duas vezes.',
+      opcoes: [
+        { valor: 'sim', rotulo: 'Sim' },
+        { valor: 'nao', rotulo: 'Não — só agrupa outras' },
+      ],
+    },
+    {
+      chave: 'usa_tipo_folha',
+      rotulo: 'Pergunta de qual folha se trata',
+      tipo: 'selecao',
+      dica: 'Ligue nas atividades de folha. O servidor então escolhe entre normal, complementar, adiantamento e gratificação natalina.',
+      opcoes: [
+        { valor: 'nao', rotulo: 'Não' },
+        { valor: 'sim', rotulo: 'Sim' },
+      ],
+    },
     { chave: 'entrega', rotulo: 'Entrega esperada', tipo: 'area' },
     { chave: 'descricao', rotulo: 'Quando usar esta atividade', tipo: 'area' },
     {
@@ -455,13 +508,29 @@ function AbaAtividades() {
       titulo="Atividades dos grupos"
       descricao="A lista que aparece na tela de lançamento. A pontuação é por atividade; o detalhamento descreve o que cai dentro dela e não pontua."
       acoes={
-        <button type="button" className="botao botao-principal" onClick={() => setCriando(true)}>
-          Nova atividade
-        </button>
+        <div className="acoes">
+          <button type="button" className="botao" onClick={() => setImportando(true)}>
+            {Icone.baixar} Importar lista (CSV)
+          </button>
+          <button type="button" className="botao botao-principal" onClick={() => setCriando(true)}>
+            Nova atividade
+          </button>
+        </div>
       }
     >
       {erro && <Aviso tipo="erro">{erro}</Aviso>}
       {sucesso && <Aviso tipo="sucesso">{sucesso}</Aviso>}
+
+      {importando && (
+        <ImportadorDeAtividades
+          aoFechar={() => setImportando(false)}
+          aoConcluir={(mensagem) => {
+            setImportando(false);
+            setSucesso(mensagem);
+            carregar();
+          }}
+        />
+      )}
 
       <div className="filtros">
         <Campo rotulo="Grupo">
@@ -485,8 +554,8 @@ function AbaAtividades() {
       ) : (
         <>
           <p className="campo-dica" style={{ marginBottom: '0.75rem' }}>
-            {lista.length} atividade(s) ·{' '}
-            {lista.reduce((soma, a) => soma + a.detalhamentos.length, 0)} detalhamento(s)
+            {lista.length} atividade(s) · {lista.filter((a) => a.lancavel).length} recebem
+            lançamento · {lista.filter((a) => !a.lancavel).length} apenas agrupam
           </p>
           <div className="tabela-envolucro">
             <table>
@@ -504,38 +573,25 @@ function AbaAtividades() {
                 {lista.map((atividade) => (
                   <tr key={atividade.id}>
                     <td className="numerico">{atividade.numero ?? '—'}</td>
-                    <td>
+                    <td style={{ paddingLeft: `${(atividade.nivel_hierarquia - 1) * 1.1 + 0.5}rem` }}>
+                      {atividade.caminho.length > 0 && (
+                        <div className="campo-dica">{atividade.caminho.join(' › ')}</div>
+                      )}
                       {atividade.nome}
                       {atividade.entrega && (
                         <div className="campo-dica">Entrega: {atividade.entrega}</div>
                       )}
-                      {atividade.detalhamentos.length > 0 && (
-                        <button
-                          type="button"
-                          className="botao botao-discreto botao-pequeno"
-                          onClick={() =>
-                            setAberta(aberta === atividade.id ? null : atividade.id)
-                          }
-                        >
-                          {aberta === atividade.id ? 'Ocultar' : 'Ver'} os{' '}
-                          {atividade.detalhamentos.length} detalhamentos
-                        </button>
-                      )}
-                      {aberta === atividade.id && (
-                        <ul className="lista-detalhamento">
-                          {atividade.detalhamentos.map((detalhe, indice) => (
-                            <li key={`${detalhe.numero ?? indice}`}>
-                              {detalhe.numero && <span className="numero">{detalhe.numero}</span>}
-                              {detalhe.texto}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                      {!atividade.ativa && (
-                        <div>
+                      <div className="marcas-da-atividade">
+                        {!atividade.lancavel && (
+                          <span className="marca marca-neutra">Só agrupa</span>
+                        )}
+                        {atividade.usa_tipo_folha && (
+                          <span className="marca marca-pendente">Pergunta a folha</span>
+                        )}
+                        {!atividade.ativa && (
                           <span className="marca marca-neutra">Fora da lista</span>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </td>
                     <td className="discreto">{atividade.grupo_nome}</td>
                     <td className="nao-quebra">
@@ -583,6 +639,10 @@ function AbaAtividades() {
             grupo_id: String(editando?.grupo_id ?? grupos?.grupos[0]?.id ?? ''),
             numero: editando?.numero ?? '',
             nome: editando?.nome ?? '',
+            texto_completo: editando?.texto_completo ?? '',
+            atividade_pai_id: editando?.atividade_pai_id ? String(editando.atividade_pai_id) : '',
+            lancavel: editando?.lancavel === false ? 'nao' : 'sim',
+            usa_tipo_folha: editando?.usa_tipo_folha ? 'sim' : 'nao',
             entrega: editando?.entrega ?? '',
             descricao: editando?.descricao ?? '',
             nivel_sugerido: editando?.nivel_sugerido ? String(editando.nivel_sugerido) : '',
@@ -597,6 +657,10 @@ function AbaAtividades() {
               grupo_id: Number(valores.grupo_id),
               numero: valores.numero || null,
               nome: valores.nome,
+              texto_completo: valores.texto_completo || null,
+              atividade_pai_id: valores.atividade_pai_id ? Number(valores.atividade_pai_id) : null,
+              lancavel: valores.lancavel === 'sim',
+              usa_tipo_folha: valores.usa_tipo_folha === 'sim',
               entrega: valores.entrega || null,
               descricao: valores.descricao || null,
               nivel_sugerido: valores.nivel_sugerido ? Number(valores.nivel_sugerido) : null,
@@ -1418,5 +1482,207 @@ function AbaDemonstracao() {
         </Modal>
       )}
     </Cartao>
+  );
+}
+
+// ------------------------------------------------- Importação da lista
+
+interface GrupoDaPrevia {
+  codigo: string;
+  nome: string | null;
+  registros: number;
+  novas: number;
+  atualizadas: number;
+}
+
+interface Previa {
+  registros: number;
+  lancaveis: number;
+  agrupadores: number;
+  comTipoDeFolha: number;
+  grupos: GrupoDaPrevia[];
+  gruposDesconhecidos: string[];
+  aDesativar: number;
+  aDesativarComLancamentos: number;
+  problemas: string[];
+}
+
+/**
+ * Carga da lista de atividades a partir do arquivo do plano de trabalho.
+ *
+ * Em dois tempos de propósito: primeiro a prévia, que só lê e conta, e depois
+ * a gravação. Ninguém deveria trocar centenas de atividades sem ver antes
+ * quantas entram, quantas mudam e quantas saem de circulação.
+ */
+function ImportadorDeAtividades({
+  aoFechar,
+  aoConcluir,
+}: {
+  aoFechar: () => void;
+  aoConcluir: (mensagem: string) => void;
+}) {
+  const [conteudo, setConteudo] = useState('');
+  const [nomeDoArquivo, setNomeDoArquivo] = useState('');
+  const [previa, setPrevia] = useState<Previa | null>(null);
+  const [erro, setErro] = useState<string | null>(null);
+  const [trabalhando, setTrabalhando] = useState(false);
+
+  async function escolher(arquivo: File) {
+    setErro(null);
+    setPrevia(null);
+    setNomeDoArquivo(arquivo.name);
+    const texto = await arquivo.text();
+    setConteudo(texto);
+    setTrabalhando(true);
+    try {
+      setPrevia(await api.enviar<Previa>('/atividades/importacao/previa', { conteudo: texto }));
+    } catch (falha) {
+      setErro(mensagemDeErro(falha));
+    } finally {
+      setTrabalhando(false);
+    }
+  }
+
+  async function confirmar() {
+    setTrabalhando(true);
+    setErro(null);
+    try {
+      const resultado = await api.enviar<{
+        criadas: number;
+        atualizadas: number;
+        desativadas: number;
+      }>('/atividades/importacao', { conteudo });
+      aoConcluir(
+        `Lista importada: ${resultado.criadas} nova(s), ${resultado.atualizadas} atualizada(s)` +
+          (resultado.desativadas ? ` e ${resultado.desativadas} retirada(s) de circulação.` : '.'),
+      );
+    } catch (falha) {
+      setErro(mensagemDeErro(falha));
+      setTrabalhando(false);
+    }
+  }
+
+  const impedida =
+    !previa ||
+    previa.problemas.length > 0 ||
+    previa.gruposDesconhecidos.length > 0 ||
+    previa.registros === 0;
+
+  return (
+    <Modal
+      titulo="Importar a lista de atividades"
+      aoFechar={aoFechar}
+      rodape={
+        <>
+          <button type="button" className="botao" onClick={aoFechar}>
+            Cancelar
+          </button>
+          <button
+            type="button"
+            className="botao botao-principal"
+            disabled={impedida || trabalhando}
+            onClick={() => void confirmar()}
+          >
+            {trabalhando ? 'Gravando...' : 'Confirmar a importação'}
+          </button>
+        </>
+      }
+    >
+      {erro && <Aviso tipo="erro">{erro}</Aviso>}
+
+      <Campo
+        rotulo="Arquivo CSV"
+        dica="Separado por ponto-e-vírgula, com as colunas grupo, codigo, codigo_pai, nivel, lancavel, usa_tipo_folha, rotulo_curto, atividade_completa e entrega_esperada."
+      >
+        <input
+          type="file"
+          accept=".csv,text/csv"
+          onChange={(evento) => {
+            const arquivo = evento.target.files?.[0];
+            if (arquivo) void escolher(arquivo);
+          }}
+        />
+      </Campo>
+
+      {trabalhando && !previa && <Carregando />}
+
+      {previa && (
+        <>
+          <p className="campo-dica">
+            <strong>{nomeDoArquivo}</strong> — {previa.registros} registro(s):{' '}
+            {previa.lancaveis} recebem lançamento, {previa.agrupadores} apenas agrupam,{' '}
+            {previa.comTipoDeFolha} perguntam de qual folha se trata.
+          </p>
+
+          {previa.problemas.length > 0 && (
+            <Aviso tipo="erro">
+              O arquivo tem {previa.problemas.length} problema(s). Corrija e escolha de novo:
+              <ul className="lista-detalhamento">
+                {previa.problemas.slice(0, 8).map((problema) => (
+                  <li key={problema}>{problema}</li>
+                ))}
+              </ul>
+              {previa.problemas.length > 8 && <p>…e mais {previa.problemas.length - 8}.</p>}
+            </Aviso>
+          )}
+
+          {previa.gruposDesconhecidos.length > 0 && (
+            <Aviso tipo="erro">
+              Não há grupo cadastrado com o código{' '}
+              <strong>{previa.gruposDesconhecidos.join(', ')}</strong>. Cadastre o grupo, ou
+              informe esse código no grupo correspondente em Cadastros → Grupos.
+            </Aviso>
+          )}
+
+          {previa.grupos.length > 0 && (
+            <div className="tabela-envolucro">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Grupo</th>
+                    <th className="numerico">No arquivo</th>
+                    <th className="numerico">Novas</th>
+                    <th className="numerico">Atualizadas</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {previa.grupos.map((grupo) => (
+                    <tr key={grupo.codigo}>
+                      <td>
+                        {grupo.nome ?? grupo.codigo}
+                        <div className="campo-dica">{grupo.codigo}</div>
+                      </td>
+                      <td className="numerico">{grupo.registros}</td>
+                      <td className="numerico">{grupo.novas}</td>
+                      <td className="numerico">{grupo.atualizadas}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {previa.aDesativar > 0 && (
+            <Aviso tipo="atencao">
+              {previa.aDesativar} atividade(s) que hoje estão na lista não aparecem no arquivo e
+              saem de circulação — deixam de ser oferecidas no lançamento.
+              {previa.aDesativarComLancamentos > 0 && (
+                <>
+                  {' '}
+                  Dessas, {previa.aDesativarComLancamentos} já têm lançamento: elas continuam no
+                  banco e o histórico não muda.
+                </>
+              )}
+            </Aviso>
+          )}
+
+          {!impedida && previa.aDesativar === 0 && (
+            <Aviso tipo="informativo">
+              Nada sai de circulação. Pode confirmar.
+            </Aviso>
+          )}
+        </>
+      )}
+    </Modal>
   );
 }

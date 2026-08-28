@@ -257,15 +257,42 @@ senha de ninguém. O mesmo passo existe como comando avulso em
 ### Lista de atividades
 
 Logo depois, ainda na primeira subida e só enquanto não houver nenhuma atividade
-cadastrada, entra o catálogo da COPAG lido de `servidor/dados/atividades-copag.json`:
-os 4 grupos de pagamento, as 93 atividades, os 206 detalhamentos e os feriados do
-ano. Ele anexa ao setor de mesma sigla, ou ao único setor existente — o caso da
+cadastrada, entra a lista da COPAG lida de `servidor/dados/atividades-copag.csv`:
+os 4 grupos de pagamento, as 296 atividades do plano de trabalho e os feriados do
+ano. Ela anexa ao setor de mesma sigla, ou ao único setor existente — o caso da
 primeira subida.
 
-A importação é somativa e pode ser repetida com `npm run importar-catalogo`
-(aceita `--setor=<id>`): grupo, atividade ou feriado que já exista fica como
-está, com os ajustes que o setor tiver feito pela tela. É o oposto de `semear`,
-que limpa o banco e povoa com gente fictícia.
+A lista é uma **árvore**. Os níveis de cima organizam e somam nos relatórios, mas
+não descrevem trabalho concreto: são agrupadores, e lançar neles faria a mesma
+entrega contar duas vezes. Das 296, **244 recebem lançamento e 52 apenas
+agrupam**. Cada atividade guarda duas redações — o rótulo curto, que cabe em
+seletor e tabela, e o texto oficial do plano de trabalho, que aparece inteiro no
+detalhe e na exportação.
+
+Quinze atividades pedem **de qual folha se trata** (normal, complementar,
+adiantamento da gratificação natalina ou gratificação natalina). O tipo fica no
+lançamento e não na atividade: quatro tipos vezes cada atividade de folha
+inchariam a lista, e assim o tipo vira dimensão de filtro nos relatórios.
+
+A mesma lista é recarregável pela tela, em **Cadastros → Atividades dos grupos →
+Importar lista (CSV)**, sem depender de ninguém com acesso ao servidor. A carga
+mostra a prévia antes de gravar — quantas entram, quantas mudam, quantas saem —
+e é repetível: cada atividade carrega a chave que veio do arquivo, então
+reimportar atualiza em vez de duplicar. Atividade que sai da lista não é apagada,
+é desativada: pode haver lançamento apontando para ela, e o histórico do que já
+foi produzido não muda porque a lista foi reescrita.
+
+O CSV é separado por `;`, em UTF-8, com as colunas `grupo`, `codigo`,
+`codigo_pai`, `nivel`, `lancavel`, `usa_tipo_folha`, `rotulo_curto`,
+`atividade_completa` e `entrega_esperada`. O `grupo` casa com o campo **código**
+do grupo cadastrado. O mesmo arquivo também sobe pela linha de comando com
+`npm run importar-catalogo` (aceita `--setor=<id>`).
+
+### Sem trava de duplicidade
+
+A mesma atividade pode ser lançada quantas vezes for no mês pelo mesmo servidor,
+com ou sem número de processo repetido: isso é o trabalho normal da COPAG, não
+erro. O controle contra lançamento indevido é a conferência da chefia.
 
 O passo a passo completo do Railway, com os cliques na ordem, está em
 [DEPLOY.md](DEPLOY.md).

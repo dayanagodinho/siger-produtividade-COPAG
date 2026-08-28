@@ -20,9 +20,11 @@ import {
 } from '../componentes/comuns';
 import { Cabecalho } from '../componentes/Layout';
 import { Icone } from '../componentes/icones';
+import { SeletorDeAtividade } from '../componentes/SeletorDeAtividade';
 import { useSessao } from '../servicos/sessao';
 
 interface Lancamento {
+  tipo_folha: string | null;
   id: number;
   processo: string | null;
   descricao: string | null;
@@ -58,13 +60,16 @@ interface Atividade {
   id: number;
   numero: string | null;
   nome: string;
+  texto_completo: string | null;
   descricao: string | null;
   entrega: string | null;
   grupo_id: number;
   grupo_nome: string;
   nivel_sugerido: number | null;
   nivel_rotulo: string | null;
-  detalhamentos: Array<{ numero: string | null; texto: string }>;
+  lancavel: boolean;
+  usa_tipo_folha: boolean;
+  caminho: string[];
 }
 
 type Pesos = Record<string, number>;
@@ -73,6 +78,14 @@ type Pesos = Record<string, number>;
 function encurtar(texto: string, limite: number): string {
   return texto.length <= limite ? texto : `${texto.slice(0, limite - 1).trimEnd()}…`;
 }
+
+/** Os quatro tipos de folha, como a Coordenação os chama. */
+const ROTULO_DA_FOLHA: Record<string, string> = {
+  NORMAL: 'normal',
+  COMPLEMENTAR: 'complementar',
+  ADIANTAMENTO_GRATIFICACAO: 'de adiantamento da gratificação natalina',
+  GRATIFICACAO_NATALINA: 'de gratificação natalina',
+};
 
 const FORMULARIO_VAZIO = {
   atividade_id: '',
@@ -86,6 +99,7 @@ const FORMULARIO_VAZIO = {
   periodo_fim: '',
   link_externo: '',
   status: 'CONCLUIDO',
+  tipo_folha: '',
 };
 
 export function MeusLancamentos() {
@@ -238,6 +252,11 @@ export function MeusLancamentos() {
                         <td className="discreto">
                           <div className="resumo" title={lancamento.descricao ?? ''}>
                             {lancamento.atividade_nome ?? lancamento.descricao ?? '—'}
+                            {lancamento.tipo_folha && (
+                              <div className="campo-dica">
+                                Folha {ROTULO_DA_FOLHA[lancamento.tipo_folha]}
+                              </div>
+                            )}
                           </div>
                           {lancamento.justificativa && (
                             <div style={{ marginTop: '0.35rem', color: 'var(--alerta)' }}>
@@ -320,14 +339,6 @@ export function MeusLancamentos() {
   );
 }
 
-interface Existente {
-  id: number;
-  servidor_nome: string;
-  papel: string;
-  data_conclusao: string;
-  nivel: number;
-}
-
 function FormularioLancamento({
   niveis,
   atividades,
@@ -357,34 +368,14 @@ function FormularioLancamento({
           periodo_fim: lancamento.periodo_fim?.slice(0, 10) ?? '',
           link_externo: lancamento.link_externo ?? '',
           status: lancamento.status,
+          tipo_folha: lancamento.tipo_folha ?? '',
         }
       : FORMULARIO_VAZIO,
   );
-  const [existentes, setExistentes] = useState<Existente[]>([]);
   const [erro, setErro] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
 
   const criterio = niveis.find((n) => n.nivel === Number(formulario.nivel));
-
-  // Regra 2.4: avisa que o processo ja foi lancado, sem impedir o registro.
-  useEffect(() => {
-    const processo = formulario.processo.trim();
-    if (processo.length < 4) {
-      setExistentes([]);
-      return;
-    }
-    const espera = setTimeout(() => {
-      api
-        .buscar<{ existentes: Existente[] }>(
-          `/lancamentos/verificar-processo?processo=${encodeURIComponent(processo)}`,
-        )
-        .then((resposta) =>
-          setExistentes(resposta.existentes.filter((e) => e.id !== lancamento?.id)),
-        )
-        .catch(() => setExistentes([]));
-    }, 350);
-    return () => clearTimeout(espera);
-  }, [formulario.processo, lancamento?.id]);
 
   function alterar(campo: string, valor: string | number) {
     setFormulario((atual) => ({ ...atual, [campo]: valor }));
@@ -392,24 +383,20 @@ function FormularioLancamento({
 
   const atividadeEscolhida = atividades.find((a) => String(a.id) === formulario.atividade_id);
 
-  /* Quem tem grupo vê só o dele; quem administra vê todos, então as
-     atividades saem separadas por grupo no seletor. */
-  const porGrupo = Object.entries(
-    atividades.reduce<Record<string, Atividade[]>>((mapa, atividade) => {
-      const chave = atividade.grupo_nome ?? 'Sem grupo';
-      (mapa[chave] ??= []).push(atividade);
-      return mapa;
-    }, {}),
-  ).sort(([a], [b]) => a.localeCompare(b, 'pt-BR'));
+  /* Quem administra vê mais de um grupo, e aí o seletor precisa dizer de qual
+     grupo é cada atividade. */
+  const variosGrupos = new Set(atividades.map((a) => a.grupo_nome)).size > 1;
 
   /* A atividade define o que foi feito. O peso é indicado pelo servidor, então
-     o nível só vem preenchido quando o setor já fixou um para a atividade. */
-  function escolherAtividade(id: string) {
-    const atividade = atividades.find((a) => String(a.id) === id);
+     o nível só vem preenchido quando o setor já fixou um para a atividade.
+     Trocar de atividade limpa o tipo de folha: ele só vale para as atividades
+     que o pedem, e sobrar de uma escolha anterior gravaria dado errado. */
+  function escolherAtividade(atividade: Atividade | null) {
     setFormulario((atual) => ({
       ...atual,
-      atividade_id: id,
+      atividade_id: atividade ? String(atividade.id) : '',
       nivel: atividade?.nivel_sugerido ?? atual.nivel,
+      tipo_folha: atividade?.usa_tipo_folha ? atual.tipo_folha : '',
     }));
   }
 
@@ -434,6 +421,7 @@ function FormularioLancamento({
       periodo_fim: formulario.periodo_fim || null,
       link_externo: formulario.link_externo || null,
       descricao: formulario.descricao || null,
+      tipo_folha: formulario.tipo_folha || null,
     };
     try {
       if (lancamento) {
@@ -475,53 +463,52 @@ function FormularioLancamento({
         {atividades.length > 0 && (
           <Campo
             rotulo="Atividade"
-            dica="A lista é a do seu grupo. É a atividade que recebe a pontuação."
+            dica="Digite parte do nome para achar. É a atividade que recebe a pontuação."
           >
+            <SeletorDeAtividade
+              atividades={atividades}
+              valor={atividadeEscolhida ?? null}
+              aoEscolher={escolherAtividade}
+              variosGrupos={variosGrupos}
+            />
+          </Campo>
+        )}
+
+        {atividadeEscolhida?.usa_tipo_folha && (
+          <Campo rotulo="De qual folha se trata" dica="Obrigatório para as atividades de folha.">
             <select
-              className="seletor-atividade"
-              value={formulario.atividade_id}
-              onChange={(evento) => escolherAtividade(evento.target.value)}
+              value={formulario.tipo_folha}
+              onChange={(evento) => alterar('tipo_folha', evento.target.value)}
+              required
             >
-              <option value="">Selecione a atividade...</option>
-              {porGrupo.map(([grupo, doGrupo]) => (
-                <optgroup key={grupo} label={grupo}>
-                  {doGrupo.map((atividade) => (
-                    <option key={atividade.id} value={atividade.id} title={atividade.nome}>
-                      {atividade.numero ? `${atividade.numero}. ` : ''}
-                      {encurtar(atividade.nome, 74)}
-                    </option>
-                  ))}
-                </optgroup>
-              ))}
+              <option value="">Selecione...</option>
+              <option value="NORMAL">Normal</option>
+              <option value="COMPLEMENTAR">Complementar</option>
+              <option value="ADIANTAMENTO_GRATIFICACAO">Adiantamento de gratificação natalina</option>
+              <option value="GRATIFICACAO_NATALINA">Gratificação natalina</option>
             </select>
           </Campo>
         )}
 
-        {atividadeEscolhida && (atividadeEscolhida.entrega || atividadeEscolhida.detalhamentos.length > 0) && (
-          <details className="detalhe-tabela">
-            <summary>
-              O que entra nesta atividade
-              {atividadeEscolhida.detalhamentos.length > 0
-                ? ` (${atividadeEscolhida.detalhamentos.length} itens)`
-                : ''}
-            </summary>
-            {atividadeEscolhida.entrega && (
-              <p className="campo-dica" style={{ marginTop: '0.5rem' }}>
-                <strong>Entrega esperada:</strong> {atividadeEscolhida.entrega}
-              </p>
-            )}
-            {atividadeEscolhida.detalhamentos.length > 0 && (
-              <ul className="lista-detalhamento">
-                {atividadeEscolhida.detalhamentos.map((detalhe, indice) => (
-                  <li key={`${detalhe.numero ?? indice}`}>
-                    {detalhe.numero && <span className="numero">{detalhe.numero}</span>}
-                    {detalhe.texto}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </details>
-        )}
+        {atividadeEscolhida &&
+          (atividadeEscolhida.entrega ||
+            (atividadeEscolhida.texto_completo &&
+              atividadeEscolhida.texto_completo !== atividadeEscolhida.nome)) && (
+            <details className="detalhe-tabela">
+              <summary>Redação do plano de trabalho</summary>
+              {atividadeEscolhida.texto_completo &&
+                atividadeEscolhida.texto_completo !== atividadeEscolhida.nome && (
+                  <p className="campo-dica" style={{ marginTop: '0.5rem' }}>
+                    {atividadeEscolhida.texto_completo}
+                  </p>
+                )}
+              {atividadeEscolhida.entrega && (
+                <p className="campo-dica">
+                  <strong>Entrega esperada:</strong> {atividadeEscolhida.entrega}
+                </p>
+              )}
+            </details>
+          )}
 
         <div className="linha-lancamento">
           <Campo rotulo="Nº do processo" dica="Se houver.">
