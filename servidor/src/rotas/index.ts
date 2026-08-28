@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { versaoDoServidor } from '../infra/versao';
 import { rotasDeAuditoria } from './auditoria';
 import { rotasDeDemonstracao } from './demonstracao';
 import { rotasDeAusencias } from './ausencias';
@@ -18,8 +19,10 @@ import { rotasDeValidacao } from './validacao';
 
 export const rotasDaApi = Router();
 
+// A saude tambem diz que versao esta no ar: e por onde se confere, sem entrar
+// no sistema, se um deploy chegou.
 rotasDaApi.get('/saude', (_req, res) => {
-  res.json({ situacao: 'no ar', em: new Date().toISOString() });
+  res.json({ situacao: 'no ar', em: new Date().toISOString(), versao: versaoDoServidor() });
 });
 
 rotasDaApi.use('/autenticacao', rotasDeAutenticacao);

@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { useSessao } from '../servicos/sessao';
 import { ROTULO_DO_PERFIL } from '../servicos/formato';
 import { Icone } from './icones';
+import { VERSAO, VERSAO_LEGIVEL } from '../servicos/versao';
 
 interface Tela {
   destino: string;
@@ -77,7 +78,9 @@ export function Layout() {
           ))}
         </div>
 
-        <div className="menu-rodape">SIGAP · versão 1.0</div>
+        <div className="menu-rodape" title={VERSAO.commit ? `Publicado a partir do commit ${VERSAO.commit}` : undefined}>
+          SIGAP · versão {VERSAO_LEGIVEL}
+        </div>
       </nav>
 
       <main className="area-principal">

@@ -94,6 +94,26 @@ function linhasLogicas(texto: string): string[] {
   return linhas;
 }
 
+/**
+ * Tira o inciso do regimento do comeco da redacao oficial: "II - realizar os
+ * calculos" vira "Realizar os calculos".
+ *
+ * O numero romano numera o item do artigo, e a atividade ja carrega o proprio
+ * codigo — que e o que aparece na tela. Manter os dois deixa a lista dizendo
+ * "2." de um lado e "II -" do outro, sobre a mesma coisa.
+ *
+ * O olhar adiante exige um algarismo romano de verdade antes do tracinho, para
+ * que um texto que apenas comece com hifen passe intacto.
+ */
+const INCISO = /^\s*(?=[IVXL])(X{0,3})(IX|IV|V?I{0,3})\s*[-–—.)]\s*/;
+
+export function semInciso(texto: string): string {
+  const limpo = texto.replace(INCISO, '').trim();
+  if (!limpo) return texto.trim();
+  // A frase perdia a maiuscula quando o romano vinha antes dela.
+  return limpo[0].toUpperCase() + limpo.slice(1);
+}
+
 function simOuNao(valor: string): boolean | null {
   const limpo = valor.trim().toUpperCase();
   if (limpo === 'SIM' || limpo === 'S' || limpo === 'TRUE' || limpo === '1') return true;
@@ -136,8 +156,8 @@ export function lerCsvDeAtividades(texto: string): LeituraDoCsv {
     const grupo = pegar('grupo').toUpperCase();
     if (!grupo) continue; // linha em branco no fim do arquivo
 
-    const rotuloCurto = pegar('rotulo_curto');
-    const textoCompleto = pegar('atividade_completa') || rotuloCurto;
+    const rotuloCurto = semInciso(pegar('rotulo_curto'));
+    const textoCompleto = semInciso(pegar('atividade_completa')) || rotuloCurto;
     if (!rotuloCurto && !textoCompleto) {
       problemas.push(`Linha ${numeroDaLinha}: sem rótulo e sem texto da atividade.`);
       continue;

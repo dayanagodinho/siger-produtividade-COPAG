@@ -1,6 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { chaveDaLinha, lerCsvDeAtividades, separarCampos } from '../src/dominio/csv-atividades';
+import {
+  chaveDaLinha,
+  lerCsvDeAtividades,
+  semInciso,
+  separarCampos,
+} from '../src/dominio/csv-atividades';
 
 const CABECALHO =
   'grupo;codigo;codigo_pai;nivel;lancavel;usa_tipo_folha;rotulo_curto;atividade_completa;entrega_esperada';
@@ -79,4 +84,32 @@ test('quebra de linha dentro de aspas nao parte o registro', () => {
   assert.deepEqual(problemas, []);
   assert.equal(linhas.length, 1);
   assert.equal(linhas[0].textoCompleto, 'Texto com\nduas linhas');
+});
+
+test('o inciso do regimento sai da frente da redação oficial', () => {
+  assert.equal(semInciso('II - realizar os cálculos'), 'Realizar os cálculos');
+  assert.equal(semInciso('XVIII -Gerar DCAPs das RAs'), 'Gerar DCAPs das RAs');
+  assert.equal(semInciso('XX - atuar como parte'), 'Atuar como parte');
+  assert.equal(semInciso('V. proceder ao cadastro'), 'Proceder ao cadastro');
+});
+
+test('texto que apenas começa com I, V ou X fica intacto', () => {
+  assert.equal(semInciso('Importação de arquivos do pró-saúde'), 'Importação de arquivos do pró-saúde');
+  assert.equal(semInciso('Verificar divergências'), 'Verificar divergências');
+  assert.equal(semInciso('Indenização de Férias'), 'Indenização de Férias');
+});
+
+test('hífen solto no começo não é confundido com inciso', () => {
+  assert.equal(semInciso('- alguma coisa'), '- alguma coisa');
+});
+
+test('nada sobra depois do inciso: o texto original permanece', () => {
+  assert.equal(semInciso('IV -'), 'IV -');
+});
+
+test('a redação oficial chega limpa pela leitura do arquivo', () => {
+  const { linhas } = lerCsvDeAtividades(
+    `${CABECALHO}\nPARLAMENTARES;2;;1;NAO;NAO;Calcular e pagar;II - realizar os cálculos;`,
+  );
+  assert.equal(linhas[0].textoCompleto, 'Realizar os cálculos');
 });
