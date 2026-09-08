@@ -1,8 +1,7 @@
 {
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
-    "builder": "NIXPACKS",
-    "buildCommand": "npm ci --omit=dev --no-audit --no-fund"
+    "builder": "NIXPACKS"
   },
   "deploy": {
     "startCommand": "npm run migrate && npm run seed -- --so-se-vazio && npm start",
