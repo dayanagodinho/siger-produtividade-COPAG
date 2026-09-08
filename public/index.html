@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Escala Híbrida</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<section id="login">
+  <form class="caixa" id="form-login">
+    <h1>Escala Híbrida</h1>
+    <p class="sub">Controle de trabalho presencial, à distância e afastamentos.</p>
+    <label for="email">E-mail</label>
+    <input id="email" type="email" autocomplete="username" required>
+    <label for="senha">Senha</label>
+    <input id="senha" type="password" autocomplete="current-password" required>
+    <button class="primario" type="submit">Entrar</button>
+    <p class="erro" id="erro-login"></p>
+  </form>
+</section>
+
+<div id="app" class="oculto">
+  <header class="topo">
+    <h1>Escala Híbrida</h1>
+    <div class="abas">
+      <button data-visao="dia">Diário</button>
+      <button data-visao="semana" class="ativa">Semanal</button>
+      <button data-visao="mes">Mensal</button>
+    </div>
+    <div class="espaco"></div>
+    <span id="quem" style="font-size:13px;color:var(--suave)"></span>
+    <button id="btn-config" class="oculto">Configurações</button>
+    <button id="btn-senha">Trocar senha</button>
+    <button id="btn-sair">Sair</button>
+  </header>
+
+  <main>
+    <div class="barra">
+      <button id="ant">◀</button>
+      <button id="hoje">Hoje</button>
+      <button id="prox">▶</button>
+      <span class="periodo" id="periodo"></span>
+      <div class="espaco"></div>
+      <div class="legenda">
+        <span><span class="ponto" style="background:var(--presencial)"></span>Presencial</span>
+        <span><span class="ponto" style="background:var(--distancia)"></span>À distância</span>
+        <span><span class="ponto" style="background:var(--afastamento)"></span>Afastamento</span>
+        <span><span class="ponto" style="background:#fca5a5"></span>Sem cobertura</span>
+      </div>
+      <button id="btn-afastamento">Registrar afastamento</button>
+      <button id="btn-replicar">Repetir semana</button>
+    </div>
+
+    <div id="alerta"></div>
+    <div id="conteudo"></div>
+  </main>
+</div>
+
+<div id="aviso"></div>
+<div id="modais"></div>
+<script src="app.js"></script>
+</body>
+</html>

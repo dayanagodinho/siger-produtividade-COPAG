@@ -1,0 +1,1539 @@
+{
+ "servidores": [
+  "Dayana",
+  "Daniela",
+  "Diogo",
+  "Fernanda",
+  "Luiz",
+  "Marcelo",
+  "Saulo"
+ ],
+ "turnos": [
+  {
+   "servidor": "Daniela",
+   "data": "2026-09-08",
+   "inicio": "12:00",
+   "fim": "19:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-09-09",
+   "inicio": "13:00",
+   "fim": "19:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-09-09",
+   "inicio": "09:30",
+   "fim": "12:30",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-09-10",
+   "inicio": "12:00",
+   "fim": "19:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-09-11",
+   "inicio": "10:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Diogo",
+   "data": "2026-09-08",
+   "inicio": "08:00",
+   "fim": "15:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Diogo",
+   "data": "2026-09-09",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Diogo",
+   "data": "2026-09-10",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Diogo",
+   "data": "2026-09-11",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Luiz",
+   "data": "2026-09-08",
+   "inicio": "07:00",
+   "fim": "14:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Luiz",
+   "data": "2026-09-09",
+   "inicio": "07:00",
+   "fim": "14:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Luiz",
+   "data": "2026-09-10",
+   "inicio": "07:00",
+   "fim": "14:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Luiz",
+   "data": "2026-09-11",
+   "inicio": "07:00",
+   "fim": "14:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-09-08",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-09-09",
+   "inicio": "07:30",
+   "fim": "14:30",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-09-09",
+   "inicio": "15:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-09-10",
+   "inicio": "07:30",
+   "fim": "14:30",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-09-11",
+   "inicio": "08:00",
+   "fim": "15:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Saulo",
+   "data": "2026-09-08",
+   "inicio": "08:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Saulo",
+   "data": "2026-09-09",
+   "inicio": "09:30",
+   "fim": "16:30",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Saulo",
+   "data": "2026-09-10",
+   "inicio": "08:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Saulo",
+   "data": "2026-09-11",
+   "inicio": "10:00",
+   "fim": "16:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-09-14",
+   "inicio": "10:00",
+   "fim": "19:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-09-15",
+   "inicio": "12:00",
+   "fim": "19:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-09-16",
+   "inicio": "13:00",
+   "fim": "19:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-09-16",
+   "inicio": "09:30",
+   "fim": "12:30",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-09-17",
+   "inicio": "12:00",
+   "fim": "19:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-09-18",
+   "inicio": "10:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Diogo",
+   "data": "2026-09-14",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Diogo",
+   "data": "2026-09-15",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Diogo",
+   "data": "2026-09-16",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Diogo",
+   "data": "2026-09-17",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Diogo",
+   "data": "2026-09-18",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Luiz",
+   "data": "2026-09-14",
+   "inicio": "07:00",
+   "fim": "14:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Luiz",
+   "data": "2026-09-15",
+   "inicio": "07:00",
+   "fim": "14:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Luiz",
+   "data": "2026-09-16",
+   "inicio": "07:00",
+   "fim": "14:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Luiz",
+   "data": "2026-09-17",
+   "inicio": "07:00",
+   "fim": "14:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Luiz",
+   "data": "2026-09-18",
+   "inicio": "07:00",
+   "fim": "14:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-09-14",
+   "inicio": "07:30",
+   "fim": "14:30",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-09-14",
+   "inicio": "15:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-09-15",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-09-16",
+   "inicio": "07:30",
+   "fim": "14:30",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-09-16",
+   "inicio": "15:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-09-17",
+   "inicio": "07:30",
+   "fim": "14:30",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-09-18",
+   "inicio": "08:00",
+   "fim": "15:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Saulo",
+   "data": "2026-09-14",
+   "inicio": "09:30",
+   "fim": "16:30",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Saulo",
+   "data": "2026-09-15",
+   "inicio": "08:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Saulo",
+   "data": "2026-09-16",
+   "inicio": "09:30",
+   "fim": "16:30",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Saulo",
+   "data": "2026-09-17",
+   "inicio": "08:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Saulo",
+   "data": "2026-09-18",
+   "inicio": "10:00",
+   "fim": "16:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-09-21",
+   "inicio": "10:00",
+   "fim": "19:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-09-22",
+   "inicio": "12:00",
+   "fim": "19:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-09-23",
+   "inicio": "13:00",
+   "fim": "19:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-09-23",
+   "inicio": "09:30",
+   "fim": "12:30",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-09-24",
+   "inicio": "12:00",
+   "fim": "19:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-09-25",
+   "inicio": "10:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Diogo",
+   "data": "2026-09-21",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Diogo",
+   "data": "2026-09-22",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Diogo",
+   "data": "2026-09-23",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Diogo",
+   "data": "2026-09-24",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Diogo",
+   "data": "2026-09-25",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Luiz",
+   "data": "2026-09-21",
+   "inicio": "07:00",
+   "fim": "14:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Luiz",
+   "data": "2026-09-22",
+   "inicio": "07:00",
+   "fim": "14:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Luiz",
+   "data": "2026-09-23",
+   "inicio": "07:00",
+   "fim": "14:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Luiz",
+   "data": "2026-09-24",
+   "inicio": "07:00",
+   "fim": "14:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Luiz",
+   "data": "2026-09-25",
+   "inicio": "07:00",
+   "fim": "14:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-09-21",
+   "inicio": "07:30",
+   "fim": "14:30",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-09-21",
+   "inicio": "15:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-09-22",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-09-23",
+   "inicio": "07:30",
+   "fim": "14:30",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-09-23",
+   "inicio": "15:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-09-24",
+   "inicio": "07:30",
+   "fim": "14:30",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-09-25",
+   "inicio": "08:00",
+   "fim": "15:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Saulo",
+   "data": "2026-09-21",
+   "inicio": "09:30",
+   "fim": "16:30",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Saulo",
+   "data": "2026-09-22",
+   "inicio": "08:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Saulo",
+   "data": "2026-09-23",
+   "inicio": "09:30",
+   "fim": "16:30",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Saulo",
+   "data": "2026-09-24",
+   "inicio": "08:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Saulo",
+   "data": "2026-09-25",
+   "inicio": "10:00",
+   "fim": "16:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-09-28",
+   "inicio": "10:00",
+   "fim": "19:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-09-29",
+   "inicio": "12:00",
+   "fim": "19:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-09-30",
+   "inicio": "13:00",
+   "fim": "19:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-09-30",
+   "inicio": "09:30",
+   "fim": "12:30",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-10-01",
+   "inicio": "12:00",
+   "fim": "19:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-10-02",
+   "inicio": "10:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Diogo",
+   "data": "2026-09-28",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Diogo",
+   "data": "2026-09-29",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Diogo",
+   "data": "2026-09-30",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Diogo",
+   "data": "2026-10-01",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Diogo",
+   "data": "2026-10-02",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Luiz",
+   "data": "2026-09-28",
+   "inicio": "07:00",
+   "fim": "14:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Luiz",
+   "data": "2026-09-29",
+   "inicio": "07:00",
+   "fim": "14:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Luiz",
+   "data": "2026-09-30",
+   "inicio": "07:00",
+   "fim": "14:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Luiz",
+   "data": "2026-10-01",
+   "inicio": "07:00",
+   "fim": "14:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Luiz",
+   "data": "2026-10-02",
+   "inicio": "07:00",
+   "fim": "14:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-09-28",
+   "inicio": "07:30",
+   "fim": "14:30",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-09-28",
+   "inicio": "15:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-09-29",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-09-30",
+   "inicio": "07:30",
+   "fim": "14:30",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-09-30",
+   "inicio": "15:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-10-01",
+   "inicio": "07:30",
+   "fim": "14:30",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-10-02",
+   "inicio": "08:00",
+   "fim": "15:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Saulo",
+   "data": "2026-09-28",
+   "inicio": "09:30",
+   "fim": "16:30",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Saulo",
+   "data": "2026-09-29",
+   "inicio": "08:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Saulo",
+   "data": "2026-09-30",
+   "inicio": "09:30",
+   "fim": "16:30",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Saulo",
+   "data": "2026-10-01",
+   "inicio": "08:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Saulo",
+   "data": "2026-10-02",
+   "inicio": "10:00",
+   "fim": "16:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-10-05",
+   "inicio": "10:00",
+   "fim": "19:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-10-06",
+   "inicio": "12:00",
+   "fim": "19:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-10-07",
+   "inicio": "13:00",
+   "fim": "19:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-10-07",
+   "inicio": "09:30",
+   "fim": "12:30",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-10-08",
+   "inicio": "12:00",
+   "fim": "19:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-10-09",
+   "inicio": "10:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Diogo",
+   "data": "2026-10-05",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Diogo",
+   "data": "2026-10-06",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Diogo",
+   "data": "2026-10-07",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Diogo",
+   "data": "2026-10-08",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Diogo",
+   "data": "2026-10-09",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Luiz",
+   "data": "2026-10-05",
+   "inicio": "07:00",
+   "fim": "14:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Luiz",
+   "data": "2026-10-06",
+   "inicio": "07:00",
+   "fim": "14:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Luiz",
+   "data": "2026-10-07",
+   "inicio": "07:00",
+   "fim": "14:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Luiz",
+   "data": "2026-10-08",
+   "inicio": "07:00",
+   "fim": "14:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Luiz",
+   "data": "2026-10-09",
+   "inicio": "07:00",
+   "fim": "14:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-10-05",
+   "inicio": "07:30",
+   "fim": "14:30",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-10-05",
+   "inicio": "15:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-10-06",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-10-07",
+   "inicio": "07:30",
+   "fim": "14:30",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-10-07",
+   "inicio": "15:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-10-08",
+   "inicio": "07:30",
+   "fim": "14:30",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-10-09",
+   "inicio": "08:00",
+   "fim": "15:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Saulo",
+   "data": "2026-10-05",
+   "inicio": "09:30",
+   "fim": "16:30",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Saulo",
+   "data": "2026-10-06",
+   "inicio": "08:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Saulo",
+   "data": "2026-10-07",
+   "inicio": "09:30",
+   "fim": "16:30",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Saulo",
+   "data": "2026-10-08",
+   "inicio": "08:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Saulo",
+   "data": "2026-10-09",
+   "inicio": "10:00",
+   "fim": "16:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-10-12",
+   "inicio": "10:00",
+   "fim": "19:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-10-13",
+   "inicio": "12:00",
+   "fim": "19:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-10-14",
+   "inicio": "13:00",
+   "fim": "19:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-10-14",
+   "inicio": "09:30",
+   "fim": "12:30",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-10-15",
+   "inicio": "12:00",
+   "fim": "19:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-10-16",
+   "inicio": "10:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Diogo",
+   "data": "2026-10-12",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Diogo",
+   "data": "2026-10-13",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Diogo",
+   "data": "2026-10-14",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Diogo",
+   "data": "2026-10-15",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Diogo",
+   "data": "2026-10-16",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Luiz",
+   "data": "2026-10-12",
+   "inicio": "07:00",
+   "fim": "14:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Luiz",
+   "data": "2026-10-13",
+   "inicio": "07:00",
+   "fim": "14:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Luiz",
+   "data": "2026-10-14",
+   "inicio": "07:00",
+   "fim": "14:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Luiz",
+   "data": "2026-10-15",
+   "inicio": "07:00",
+   "fim": "14:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Luiz",
+   "data": "2026-10-16",
+   "inicio": "07:00",
+   "fim": "14:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-10-12",
+   "inicio": "07:30",
+   "fim": "14:30",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-10-12",
+   "inicio": "15:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-10-13",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-10-14",
+   "inicio": "07:30",
+   "fim": "14:30",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-10-14",
+   "inicio": "15:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-10-15",
+   "inicio": "07:30",
+   "fim": "14:30",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-10-16",
+   "inicio": "08:00",
+   "fim": "15:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Saulo",
+   "data": "2026-10-12",
+   "inicio": "09:30",
+   "fim": "16:30",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Saulo",
+   "data": "2026-10-13",
+   "inicio": "08:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Saulo",
+   "data": "2026-10-14",
+   "inicio": "09:30",
+   "fim": "16:30",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Saulo",
+   "data": "2026-10-15",
+   "inicio": "08:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Saulo",
+   "data": "2026-10-16",
+   "inicio": "10:00",
+   "fim": "16:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-10-19",
+   "inicio": "10:00",
+   "fim": "19:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-10-20",
+   "inicio": "12:00",
+   "fim": "19:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-10-21",
+   "inicio": "13:00",
+   "fim": "19:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-10-21",
+   "inicio": "09:30",
+   "fim": "12:30",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-10-22",
+   "inicio": "12:00",
+   "fim": "19:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-10-23",
+   "inicio": "10:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Diogo",
+   "data": "2026-10-19",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Diogo",
+   "data": "2026-10-20",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Diogo",
+   "data": "2026-10-21",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Diogo",
+   "data": "2026-10-22",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Diogo",
+   "data": "2026-10-23",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Luiz",
+   "data": "2026-10-19",
+   "inicio": "07:00",
+   "fim": "14:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Luiz",
+   "data": "2026-10-20",
+   "inicio": "07:00",
+   "fim": "14:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Luiz",
+   "data": "2026-10-21",
+   "inicio": "07:00",
+   "fim": "14:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Luiz",
+   "data": "2026-10-22",
+   "inicio": "07:00",
+   "fim": "14:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Luiz",
+   "data": "2026-10-23",
+   "inicio": "07:00",
+   "fim": "14:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-10-19",
+   "inicio": "07:30",
+   "fim": "14:30",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-10-19",
+   "inicio": "15:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-10-20",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-10-21",
+   "inicio": "07:30",
+   "fim": "14:30",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-10-21",
+   "inicio": "15:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-10-22",
+   "inicio": "07:30",
+   "fim": "14:30",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-10-23",
+   "inicio": "08:00",
+   "fim": "15:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Saulo",
+   "data": "2026-10-19",
+   "inicio": "09:30",
+   "fim": "16:30",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Saulo",
+   "data": "2026-10-20",
+   "inicio": "08:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Saulo",
+   "data": "2026-10-21",
+   "inicio": "09:30",
+   "fim": "16:30",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Saulo",
+   "data": "2026-10-22",
+   "inicio": "08:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Saulo",
+   "data": "2026-10-23",
+   "inicio": "10:00",
+   "fim": "16:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-10-26",
+   "inicio": "10:00",
+   "fim": "19:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-10-27",
+   "inicio": "12:00",
+   "fim": "19:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-10-28",
+   "inicio": "13:00",
+   "fim": "19:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-10-28",
+   "inicio": "09:30",
+   "fim": "12:30",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-10-29",
+   "inicio": "12:00",
+   "fim": "19:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Daniela",
+   "data": "2026-10-30",
+   "inicio": "10:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Diogo",
+   "data": "2026-10-26",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Diogo",
+   "data": "2026-10-27",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Diogo",
+   "data": "2026-10-28",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Diogo",
+   "data": "2026-10-29",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Diogo",
+   "data": "2026-10-30",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Luiz",
+   "data": "2026-10-26",
+   "inicio": "07:00",
+   "fim": "14:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Luiz",
+   "data": "2026-10-27",
+   "inicio": "07:00",
+   "fim": "14:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Luiz",
+   "data": "2026-10-28",
+   "inicio": "07:00",
+   "fim": "14:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Luiz",
+   "data": "2026-10-29",
+   "inicio": "07:00",
+   "fim": "14:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Luiz",
+   "data": "2026-10-30",
+   "inicio": "07:00",
+   "fim": "14:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-10-26",
+   "inicio": "07:30",
+   "fim": "14:30",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-10-26",
+   "inicio": "15:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-10-27",
+   "inicio": "11:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-10-28",
+   "inicio": "07:30",
+   "fim": "14:30",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-10-28",
+   "inicio": "15:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-10-29",
+   "inicio": "07:30",
+   "fim": "14:30",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Marcelo",
+   "data": "2026-10-30",
+   "inicio": "08:00",
+   "fim": "15:00",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Saulo",
+   "data": "2026-10-26",
+   "inicio": "09:30",
+   "fim": "16:30",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Saulo",
+   "data": "2026-10-27",
+   "inicio": "08:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Saulo",
+   "data": "2026-10-28",
+   "inicio": "09:30",
+   "fim": "16:30",
+   "modalidade": "P"
+  },
+  {
+   "servidor": "Saulo",
+   "data": "2026-10-29",
+   "inicio": "08:00",
+   "fim": "18:00",
+   "modalidade": "D"
+  },
+  {
+   "servidor": "Saulo",
+   "data": "2026-10-30",
+   "inicio": "10:00",
+   "fim": "16:00",
+   "modalidade": "P"
+  }
+ ]
+}

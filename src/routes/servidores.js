@@ -1,0 +1,87 @@
+const express = require('express');
+const bcrypt = require('bcryptjs');
+const db = require('../db');
+const { autenticar, exigirChefia } = require('../auth');
+const { normalizarEmail, ehEmail, numeroOuNulo, ehInteiro } = require('../validar');
+
+// Meta semanal em horas: numero finito entre 0 e 60, ou nulo (mantem/padrao).
+function metaOuErro(valor, nome) {
+  const n = numeroOuNulo(valor);
+  if (n === null) return { valor: null };
+  if (!Number.isFinite(n) || n < 0 || n > 60) return { erro: `${nome} precisa ser um numero de horas entre 0 e 60 (recebido "${valor}")` };
+  return { valor: n };
+}
+
+const router = express.Router();
+router.use(autenticar);
+
+router.get('/', async (req, res) => {
+  const { rows } = await db.query(
+    `SELECT id, nome, email, perfil, meta_presencial_semanal, meta_distancia_semanal, ativo
+       FROM servidores WHERE ativo OR $1 = 'chefia' ORDER BY nome`,
+    [req.usuario.perfil]
+  );
+  res.json(rows);
+});
+
+router.post('/', exigirChefia, async (req, res) => {
+  const { nome, senha, perfil, meta_presencial_semanal, meta_distancia_semanal } = req.body || {};
+  const email = normalizarEmail(req.body?.email);
+  if (!nome || !String(nome).trim() || !email) return res.status(400).json({ erro: 'Informe nome e email' });
+  if (!ehEmail(email)) return res.status(400).json({ erro: `Email invalido: "${email}"` });
+  const metaP = metaOuErro(meta_presencial_semanal, 'meta_presencial_semanal');
+  const metaD = metaOuErro(meta_distancia_semanal, 'meta_distancia_semanal');
+  if (metaP.erro || metaD.erro) return res.status(400).json({ erro: metaP.erro || metaD.erro });
+  const hash = await bcrypt.hash(senha || process.env.SENHA_PADRAO || 'mudar123', 10);
+  try {
+    const { rows } = await db.query(
+      `INSERT INTO servidores (nome, email, senha_hash, perfil, meta_presencial_semanal, meta_distancia_semanal)
+       VALUES ($1,$2,$3,$4,$5,$6) RETURNING id, nome, email, perfil, meta_presencial_semanal, meta_distancia_semanal, ativo`,
+      [String(nome).trim(), email, hash, perfil === 'chefia' ? 'chefia' : 'servidor', metaP.valor ?? 20, metaD.valor ?? 20]
+    );
+    res.status(201).json(rows[0]);
+  } catch (e) {
+    if (e.code === '23505') return res.status(409).json({ erro: 'Ja existe servidor com esse email' });
+    throw e;
+  }
+});
+
+router.put('/:id', exigirChefia, async (req, res) => {
+  const { nome, perfil, ativo, meta_presencial_semanal, meta_distancia_semanal } = req.body || {};
+  if (!ehInteiro(req.params.id, { min: 1 })) return res.status(400).json({ erro: 'id invalido' });
+  const email = req.body?.email === undefined ? null : normalizarEmail(req.body.email);
+  if (email !== null && !ehEmail(email)) return res.status(400).json({ erro: `Email invalido: "${email}"` });
+  if (perfil !== undefined && perfil !== null && !['servidor', 'chefia'].includes(perfil)) {
+    return res.status(400).json({ erro: 'perfil precisa ser "servidor" ou "chefia"' });
+  }
+  if (ativo !== undefined && ativo !== null && typeof ativo !== 'boolean') return res.status(400).json({ erro: 'ativo precisa ser true ou false' });
+  const metaP = metaOuErro(meta_presencial_semanal, 'meta_presencial_semanal');
+  const metaD = metaOuErro(meta_distancia_semanal, 'meta_distancia_semanal');
+  if (metaP.erro || metaD.erro) return res.status(400).json({ erro: metaP.erro || metaD.erro });
+  let rows;
+  try {
+    ({ rows } = await db.query(
+    `UPDATE servidores SET
+       nome = COALESCE($2, nome), email = COALESCE($3, email), perfil = COALESCE($4, perfil),
+       ativo = COALESCE($5, ativo), meta_presencial_semanal = COALESCE($6, meta_presencial_semanal),
+       meta_distancia_semanal = COALESCE($7, meta_distancia_semanal)
+     WHERE id = $1
+     RETURNING id, nome, email, perfil, meta_presencial_semanal, meta_distancia_semanal, ativo`,
+    [req.params.id, nome ? String(nome).trim() : null, email, perfil ?? null, ativo ?? null, metaP.valor, metaD.valor]
+    ));
+  } catch (e) {
+    if (e.code === '23505') return res.status(409).json({ erro: 'Ja existe servidor com esse email' });
+    throw e;
+  }
+  if (!rows[0]) return res.status(404).json({ erro: 'Servidor nao encontrado' });
+  res.json(rows[0]);
+});
+
+router.post('/:id/senha', exigirChefia, async (req, res) => {
+  if (!ehInteiro(req.params.id, { min: 1 })) return res.status(400).json({ erro: 'id invalido' });
+  const nova = req.body?.senha || process.env.SENHA_PADRAO || 'mudar123';
+  await db.query('UPDATE servidores SET senha_hash = $1 WHERE id = $2', [await bcrypt.hash(nova, 10), req.params.id]);
+  res.json({ ok: true, senha: nova });
+});
+
+module.exports = router;
