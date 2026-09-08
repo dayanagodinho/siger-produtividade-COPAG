@@ -5,13 +5,14 @@
   "main": "server.js",
   "type": "commonjs",
   "scripts": {
-    "start": "node server.js",
+    "start": "node scripts/migrate.js && node scripts/seed.js --so-se-vazio && node server.js",
     "dev": "node --watch server.js",
     "build": "echo 'Escala Hibrida nao tem etapa de build (HTML + JS puro).'",
     "migrate": "node scripts/migrate.js",
     "seed": "node scripts/seed.js",
     "test": "node --test \"test/unit/**/*.test.js\"",
-    "test:banco": "node --test \"test/banco/**/*.test.js\""
+    "test:banco": "node --test \"test/banco/**/*.test.js\"",
+    "start:so-servidor": "node server.js"
   },
   "engines": {
     "node": ">=20"

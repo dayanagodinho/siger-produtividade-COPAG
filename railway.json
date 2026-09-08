@@ -4,7 +4,7 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "npm run migrate && npm run seed -- --so-se-vazio && npm start",
+    "startCommand": "npm start",
     "healthcheckPath": "/api/saude",
     "healthcheckTimeout": 60,
     "restartPolicyType": "ON_FAILURE",
