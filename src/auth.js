@@ -1,5 +1,9 @@
 const jwt = require('jsonwebtoken');
-const SEGREDO = process.env.JWT_SECRET || 'dev-secret-trocar';
+// O bloco do Railway herdado do SIGAP ja tem SESSION_SECRET; serve igual.
+const SEGREDO = process.env.JWT_SECRET || process.env.SESSION_SECRET || 'dev-secret-trocar';
+if (SEGREDO === 'dev-secret-trocar' && process.env.NODE_ENV === 'production') {
+  console.error('AVISO: nem JWT_SECRET nem SESSION_SECRET definidos; a sessao esta assinada com um segredo publico.');
+}
 const COOKIE = 'escala_token';
 
 function gerarToken(servidor) {

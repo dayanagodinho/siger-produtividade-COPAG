@@ -45,8 +45,22 @@ async function entrar(quem, email, senha = 'mudar123') {
 const contar = async (tabela, where = 'TRUE', params = []) =>
   Number((await db.query(`SELECT count(*)::int AS n FROM ${tabela} WHERE ${where}`, params)).rows[0].n);
 
+// Simula o banco herdado do SIGAP: tabelas `servidores` e `feriados` no schema
+// public, com OUTRAS colunas e dados. Elas precisam sobreviver intactas.
+const SIGAP_SERVIDORES = 3;
+async function plantarSigap() {
+  await db.pool.query(`
+    DROP SCHEMA IF EXISTS ${db.SCHEMA} CASCADE;
+    DROP TABLE IF EXISTS public.servidores, public.feriados CASCADE;
+    CREATE TABLE public.servidores (id SERIAL PRIMARY KEY, matricula TEXT NOT NULL, nome TEXT NOT NULL, setor_id INT);
+    CREATE TABLE public.feriados (id SERIAL PRIMARY KEY, data DATE NOT NULL, nome TEXT NOT NULL);
+    INSERT INTO public.servidores (matricula, nome, setor_id) VALUES ('1001','Sigap Um',1),('1002','Sigap Dois',1),('1003','Sigap Tres',1);
+    INSERT INTO public.feriados (data, nome) VALUES ('2026-09-07','Independencia');
+  `);
+}
+
 test.before(async () => {
-  await db.query('DROP TABLE IF EXISTS turnos, afastamentos, feriados, config, servidores CASCADE');
+  await plantarSigap();
   await migrar();
   servidor = app.listen(0);
   await new Promise((ok) => servidor.once('listening', ok));
@@ -56,6 +70,15 @@ test.before(async () => {
 test.after(async () => {
   servidor.close();
   await db.pool.end();
+});
+
+test('/api/saude diz qual sistema esta no ar e o que este build sabe fazer', async () => {
+  const r = await chamar('/saude');
+  assert.equal(r.status, 200);
+  assert.equal(r.json.sistema, 'escala-hibrida');
+  assert.equal(r.json.schema, db.SCHEMA);
+  assert.equal(r.json.capacidades.schema_proprio, true);
+  assert.equal(r.json.situacao, undefined, 'nao e a resposta do SIGAP');
 });
 
 test('seed e idempotente: rodar tres vezes da o mesmo banco', async () => {
@@ -68,6 +91,21 @@ test('seed e idempotente: rodar tres vezes da o mesmo banco', async () => {
   assert.equal(c.pulado, true);
   assert.equal(await contar('servidores'), 7);
   assert.equal(await contar('turnos'), 218);
+});
+
+test('as tabelas do SIGAP no schema public continuam intactas depois de migrar e semear', async () => {
+  // Roda depois do teste do seed: o schema proprio ja esta semeado.
+  const { rows: s } = await db.pool.query('SELECT count(*)::int AS n, min(nome) AS nome FROM public.servidores');
+  assert.equal(s[0].n, SIGAP_SERVIDORES);
+  assert.equal(s[0].nome, 'Sigap Dois');
+  const { rows: f } = await db.pool.query('SELECT count(*)::int AS n FROM public.feriados');
+  assert.equal(f[0].n, 1);
+  const { rows: e } = await db.pool.query(`SELECT count(*)::int AS n FROM ${db.SCHEMA}.servidores`);
+  assert.equal(e[0].n, 7, 'os 7 da escala estao no schema proprio');
+  const { rows: col } = await db.pool.query(
+    "SELECT column_name FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'servidores' AND column_name = 'senha_hash'"
+  );
+  assert.equal(col.length, 0, 'nenhuma coluna da escala vazou para a tabela do SIGAP');
 });
 
 test('login ignora maiusculas no email e recusa senha errada', async () => {

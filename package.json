@@ -1,25 +1,28 @@
 {
-  "name": "siger-produtividade-copag",
-  "version": "1.1.0",
-  "private": true,
-  "description": "SIGAP - Sistema de Gestao de Atividades e Produtividade da COPAG",
-  "workspaces": [
-    "servidor",
-    "cliente"
-  ],
+  "name": "escala-hibrida",
+  "version": "1.0.0",
+  "description": "Controle de escala de trabalho híbrido (presencial / à distância / afastamento) com alerta de cobertura",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "build": "echo 'Escala Hibrida nao tem etapa de build (HTML + JS puro).'",
+    "migrate": "node scripts/migrate.js",
+    "seed": "node scripts/seed.js",
+    "test": "node --test \"test/unit/**/*.test.js\"",
+    "test:banco": "node --test \"test/banco/**/*.test.js\""
+  },
   "engines": {
     "node": ">=20"
   },
-  "scripts": {
-    "dev": "npm run dev --workspace=servidor",
-    "dev:cliente": "npm run dev --workspace=cliente",
-    "build": "npm run build --workspace=cliente && npm run build --workspace=servidor",
-    "start": "npm run start --workspace=servidor",
-    "migrar": "npm run migrar --workspace=servidor",
-    "semear": "npm run semear --workspace=servidor",
-    "importar-catalogo": "npm run importar-catalogo --workspace=servidor",
-    "criar-admin": "npm run criar-admin --workspace=servidor",
-    "teste": "npm run teste --workspace=servidor",
-    "verificar-tipos": "npm run verificar-tipos --workspace=servidor && npm run verificar-tipos --workspace=cliente"
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.6",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-async-errors": "^3.1.1",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.12.0"
   }
 }

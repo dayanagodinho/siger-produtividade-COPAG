@@ -14,7 +14,22 @@ app.use('/api/servidores', require('./src/routes/servidores'));
 app.use('/api/escala', require('./src/routes/escala'));
 app.use('/api/cobertura', require('./src/routes/cobertura'));
 
-app.get('/api/saude', (req, res) => res.json({ ok: true, versao: '1.0.0' }));
+// A saude diz QUAL sistema esta no ar e o que este build sabe fazer. O SIGAP
+// respondia {situacao:'no ar'} no mesmo endereco: pela chave `sistema` se
+// distingue um do outro sem deduzir nada.
+const { version } = require('./package.json');
+app.get('/api/saude', (req, res) => res.json({
+  ok: true,
+  sistema: 'escala-hibrida',
+  versao: version,
+  schema: require('./src/db').SCHEMA,
+  capacidades: {
+    schema_proprio: true,
+    seed_no_primeiro_boot: true,
+    validacao_de_entrada: true,
+    teto_repetir_semana: true,
+  },
+}));
 
 // Tratador de erro unico: nenhuma rota precisa repetir try/catch
 app.use((erro, req, res, next) => {
