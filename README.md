@@ -10,6 +10,15 @@ produz a média do servidor, a referência do grupo e as duas médias do setor.
 
 ---
 
+## Escala Híbrida (pasta `escala-hibrida/`)
+
+App separado, no mesmo repositório: quem está presencial, quem está à distância,
+quem está afastado, e alerta de horário sem ninguém presencial. Substitui a
+planilha `CONTROLE ESCALA HÍBRIDO 2026.xlsx`. Tem login próprio, banco próprio
+e bloco próprio no Railway — veja `escala-hibrida/README.md`.
+
+---
+
 A logo do sistema fica em `cliente/public/marca-sigap.svg`. Para trocar, basta
 substituir esse arquivo — nenhum código precisa mudar. Um `.png` ou `.jpg` também
 serve, desde que mantenha o mesmo nome de arquivo ou que a referência em
