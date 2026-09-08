@@ -48,7 +48,9 @@ Nada para criar: é o mesmo bloco e o mesmo Postgres que o SIGAP usava.
    As variáveis `ADMIN_*`, `SETOR_*` e `IMPORTAR_CATALOGO` eram do SIGAP e podem ser apagadas.
 4. Se o painel do Railway tiver um **Custom Build Command** herdado do SIGAP
    (`npm install ... && npm run build`), ele continua funcionando: o `build` aqui é um passo
-   vazio. **Root Directory** fica vazio, como já estava.
+   vazio. **Root Directory** fica vazio, como já estava. Nunca use `npm ci` no build: ele
+   apaga `node_modules`, e o Railway monta um cache em `node_modules/.cache` — dá `EBUSY`
+   e o deploy falha na construção (aconteceu em 08/09/2026).
 
 **Como saber que a versão nova está no ar:** abra `/api/saude` no domínio.
 
