@@ -40,15 +40,17 @@ Para mudar quem é chefia, edite a constante `CHEFIA` em `scripts/seed.js` antes
 Nada para criar: é o mesmo bloco e o mesmo Postgres que o SIGAP usava.
 
 1. Faça o merge da branch na `main`. O Railway constrói e sobe sozinho.
-2. O start roda `npm run migrate` (cria o schema `escala` e as tabelas) e, **só na primeira
-   subida com o schema vazio**, o seed com a escala da planilha. Nas seguintes o seed é pulado,
-   para não ressuscitar turno que a chefia apagou. Ninguém precisa abrir terminal.
+2. O `npm start` migra (cria o schema `escala` e as tabelas) e, **só na primeira subida com o
+   schema vazio**, roda o seed com a escala da planilha. Nas seguintes o seed é pulado, para não
+   ressuscitar turno que a chefia apagou. Ninguém precisa abrir terminal. (`npm run
+   start:so-servidor` sobe sem migrar, para uso local.)
 3. Variáveis: `DATABASE_URL` e `SESSION_SECRET` já existem no bloco (o Escala aceita
    `SESSION_SECRET` no lugar de `JWT_SECRET`). `SENHA_PADRAO` é opcional (padrão `mudar123`).
    As variáveis `ADMIN_*`, `SETOR_*` e `IMPORTAR_CATALOGO` eram do SIGAP e podem ser apagadas.
-4. Se o painel do Railway tiver um **Custom Build Command** herdado do SIGAP
-   (`npm install ... && npm run build`), ele continua funcionando: o `build` aqui é um passo
-   vazio. **Root Directory** fica vazio, como já estava. Nunca use `npm ci` no build: ele
+4. No painel do Railway, bloco do app, **Settings → Build → Custom Build Command**: apague o
+   que estiver lá (o SIGAP deixava `npm run build --workspace=@siger/servidor`, que quebra o
+   build com "No workspaces found"). Vazio, o Railway lê o `railway.json`. Em **Deploy →
+   Custom Start Command**, vazio ou `npm start` dão no mesmo. **Root Directory** fica vazio. Nunca use `npm ci` no build: ele
    apaga `node_modules`, e o Railway monta um cache em `node_modules/.cache` — dá `EBUSY`
    e o deploy falha na construção (aconteceu em 08/09/2026).
 
