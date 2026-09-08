@@ -1,0 +1,9 @@
+{
+  "name": "@siger/servidor",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Pacote vazio com o nome que o painel do Railway ainda chama no build (herdado do SIGAP). Existe so para `npm run build --workspace=@siger/servidor` nao quebrar. Pode ser apagado quando o Custom Build Command do painel estiver vazio.",
+  "scripts": {
+    "build": "echo 'Build do SIGAP nao existe mais; o Escala Hibrida nao tem etapa de build.'"
+  }
+}

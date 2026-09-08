@@ -47,10 +47,13 @@ Nada para criar: é o mesmo bloco e o mesmo Postgres que o SIGAP usava.
 3. Variáveis: `DATABASE_URL` e `SESSION_SECRET` já existem no bloco (o Escala aceita
    `SESSION_SECRET` no lugar de `JWT_SECRET`). `SENHA_PADRAO` é opcional (padrão `mudar123`).
    As variáveis `ADMIN_*`, `SETOR_*` e `IMPORTAR_CATALOGO` eram do SIGAP e podem ser apagadas.
-4. No painel do Railway, bloco do app, **Settings → Build → Custom Build Command**: apague o
-   que estiver lá (o SIGAP deixava `npm run build --workspace=@siger/servidor`, que quebra o
-   build com "No workspaces found"). Vazio, o Railway lê o `railway.json`. Em **Deploy →
-   Custom Start Command**, vazio ou `npm start` dão no mesmo. **Root Directory** fica vazio. Nunca use `npm ci` no build: ele
+4. O painel do Railway ainda tem gravado à mão o build do SIGAP
+   (`npm run build --workspace=@siger/servidor`), e o painel manda acima do `railway.json`.
+   Para o deploy não depender de alguém limpar esse campo, existe `compat/build-do-sigap/`:
+   um pacote vazio chamado `@siger/servidor` que atende pelo nome e não faz nada. Quando
+   alguém apagar o **Custom Build Command** em **Settings → Build**, essa pasta pode ir
+   embora. Em **Deploy → Custom Start Command**, vazio ou `npm start` dão no mesmo.
+   **Root Directory** fica vazio. Nunca use `npm ci` no build: ele
    apaga `node_modules`, e o Railway monta um cache em `node_modules/.cache` — dá `EBUSY`
    e o deploy falha na construção (aconteceu em 08/09/2026).
 
@@ -77,6 +80,7 @@ scripts/seed.js        carrega servidores e a escala inicial
 test/unit/             motor de cobertura, validação e TLS, sem banco (`npm test`)
 test/banco/            rotas de ponta a ponta contra um Postgres de teste
 legado/sigap/          o SIGAP aposentado, guardado; não roda
+compat/build-do-sigap/ pacote vazio com o nome que o painel do Railway ainda chama no build
 ```
 
 ## Testes
