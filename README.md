@@ -47,15 +47,15 @@ Nada para criar: é o mesmo bloco e o mesmo Postgres que o SIGAP usava.
 3. Variáveis: `DATABASE_URL` e `SESSION_SECRET` já existem no bloco (o Escala aceita
    `SESSION_SECRET` no lugar de `JWT_SECRET`). `SENHA_PADRAO` é opcional (padrão `mudar123`).
    As variáveis `ADMIN_*`, `SETOR_*` e `IMPORTAR_CATALOGO` eram do SIGAP e podem ser apagadas.
-4. O painel do Railway ainda tem gravado à mão o build do SIGAP
-   (`npm run build --workspace=@siger/servidor`), e o painel manda acima do `railway.json`.
-   Para o deploy não depender de alguém limpar esse campo, existe `compat/build-do-sigap/`:
-   um pacote vazio chamado `@siger/servidor` que atende pelo nome e não faz nada. Quando
-   alguém apagar o **Custom Build Command** em **Settings → Build**, essa pasta pode ir
-   embora. Em **Deploy → Custom Start Command**, vazio ou `npm start` dão no mesmo.
-   **Root Directory** fica vazio. Nunca use `npm ci` no build: ele
-   apaga `node_modules`, e o Railway monta um cache em `node_modules/.cache` — dá `EBUSY`
-   e o deploy falha na construção (aconteceu em 08/09/2026).
+4. O painel do Railway (**Settings** do bloco `sigap`) guardava dois comandos do SIGAP
+   gravados à mão, e o painel manda acima do `railway.json`: **Build → Custom Build Command**
+   (`npm run build --workspace=@siger/servidor`) e **Deploy → Custom Start Command**
+   (`npm run start --workspace=@siger/servidor`). O primeiro derrubava o build; o segundo
+   subia um pacote sem `start` e o serviço caía em `CRASHED`. Os dois foram apagados em
+   08/09/2026 e o deploy passou a ler o `railway.json`. Se algum dia voltarem a aparecer
+   preenchidos, apague-os de novo e clique em **Deploy**. **Root Directory** fica vazio.
+   Nunca use `npm ci` no build: ele apaga `node_modules`, e o Railway monta um cache em
+   `node_modules/.cache` — dá `EBUSY` e o deploy falha na construção (aconteceu em 08/09/2026).
 
 **Como saber que a versão nova está no ar:** abra `/api/saude` no domínio.
 
