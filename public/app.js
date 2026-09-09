@@ -62,6 +62,7 @@ async function api(caminho, opcoes = {}) {
   // propria chamada usa 401 para "senha atual incorreta" (Minha conta).
   if (resposta.status === 401 && estado.usuario && !opcoes.semRecarregar) { location.reload(); return; }
   const json = await resposta.json().catch(() => ({}));
+  if (resposta.status === 403 && json.codigo === 'senha_provisoria') modalSenhaObrigatoria();
   if (!resposta.ok) throw new Error(json.erro || 'Falha na comunicação com o servidor');
   if (Array.isArray(json.avisos_gerados) && json.avisos_gerados.length) mostrarImpacto(json.avisos_gerados);
   return json;
@@ -133,14 +134,67 @@ $('#form-login').addEventListener('submit', async (e) => {
   e.preventDefault();
   $('#erro-login').textContent = '';
   try {
+    estado.senhaDigitada = $('#senha').value;
     estado.usuario = await api('/auth/login', { method: 'POST', corpo: { email: $('#email').value.trim(), senha: $('#senha').value } });
-    iniciar();
+    entrarNoSistema();
   } catch (erro) {
     $('#erro-login').textContent = erro.message;
   }
 });
 
 $('#btn-sair').addEventListener('click', async () => { await api('/auth/logout', { method: 'POST' }); location.reload(); });
+
+/* ---------------- primeiro acesso: senha provisoria ----------------
+   Senha dada pela chefia (do seed, de cadastro novo ou redefinida) so
+   serve para entrar. Antes de qualquer tela, a pessoa define a sua; o
+   servidor recusa toda rota de dados (403 senha_provisoria) ate la. */
+function entrarNoSistema() {
+  if (estado.usuario?.senha_provisoria) modalSenhaObrigatoria();
+  else iniciar();
+}
+
+function modalSenhaObrigatoria() {
+  if ($('#senha-obrigatoria')) return;
+  const temAtual = Boolean(estado.senhaDigitada);
+  const fundo = document.createElement('div');
+  fundo.className = 'fundo-modal';
+  fundo.id = 'senha-obrigatoria';
+  fundo.innerHTML = `<div class="modal">
+    <div class="marca grande"><span class="selo"><img src="simbolo.svg" alt=""></span><div><strong>Olá, ${escapar(estado.usuario.nome.split(' ')[0])}</strong><small>Defina a sua senha para começar</small></div></div>
+    <p class="sub">A senha que você usou é provisória, dada pela chefia. Escolha a sua: só você vai conhecê-la, e depois ela pode ser trocada em "Minha conta".</p>
+    ${temAtual ? '' : '<label>Senha provisória (a que você usou para entrar)</label><input id="o-atual" type="password" autocomplete="current-password">'}
+    <label>Nova senha (mínimo 6 caracteres)</label><input id="o-nova" type="password" autocomplete="new-password">
+    <label>Repita a nova senha</label><input id="o-nova2" type="password" autocomplete="new-password">
+    <p class="erro"></p>
+    <div class="acoes"><button class="fantasma" data-sair>Sair</button><button class="primario" data-ok>Salvar e entrar</button></div>
+  </div>`;
+  $('#modais').appendChild(fundo);
+  fundo.querySelector('#' + (temAtual ? 'o-nova' : 'o-atual')).focus();
+  fundo.querySelector('[data-sair]').addEventListener('click', async () => { await api('/auth/logout', { method: 'POST' }); location.reload(); });
+  const salvar = async () => {
+    const erro = fundo.querySelector('.erro');
+    erro.textContent = '';
+    const nova = fundo.querySelector('#o-nova').value, nova2 = fundo.querySelector('#o-nova2').value;
+    if (nova.length < 6) { erro.textContent = 'A nova senha precisa ter ao menos 6 caracteres'; return; }
+    if (nova !== nova2) { erro.textContent = 'As duas senhas não são iguais'; return; }
+    const atual = temAtual ? estado.senhaDigitada : fundo.querySelector('#o-atual').value;
+    const botao = fundo.querySelector('[data-ok]');
+    botao.disabled = true;
+    try {
+      const r = await api('/auth/conta', { method: 'PUT', corpo: { senha_atual: atual, senha_nova: nova }, semRecarregar: true });
+      estado.usuario = { ...estado.usuario, ...r, senha_provisoria: false };
+      estado.senhaDigitada = null;
+      fundo.remove();
+      aviso('Senha definida. Bem-vindo!');
+      iniciar();
+    } catch (e) {
+      erro.textContent = e.message;
+      botao.disabled = false;
+    }
+  };
+  fundo.querySelector('[data-ok]').addEventListener('click', salvar);
+  fundo.addEventListener('keydown', (e) => { if (e.key === 'Enter') salvar(); });
+}
 
 /* ---------------- período visível ---------------- */
 function intervalo() {
@@ -895,6 +949,6 @@ const ABAS = { periodo: abaPeriodo, pessoas: abaPessoas, feriados: abaFeriados, 
 (async () => {
   try {
     estado.usuario = await api('/auth/eu');
-    if (estado.usuario) iniciar();
+    if (estado.usuario) entrarNoSistema();
   } catch { /* sem sessão: mostra o login */ }
 })();

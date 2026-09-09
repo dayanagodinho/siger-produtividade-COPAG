@@ -77,3 +77,12 @@ test('ehLogin aceita e-mail ou nome de usuario curto, e recusa lixo', () => {
   assert.equal(v.ehLogin(null), false);
   assert.equal(v.ehLogin('a'.repeat(41)), false);
 });
+
+test('loginDoNome: primeiro nome, minusculo, sem acento', () => {
+  assert.equal(v.loginDoNome('Dayana'), 'dayana');
+  assert.equal(v.loginDoNome('João Pedro'), 'joao');
+  assert.equal(v.loginDoNome('  Luís  Carlos '), 'luis');
+  assert.equal(v.loginDoNome('D\'Ávila'), 'davila');
+  assert.equal(v.loginDoNome(''), '');
+  assert.equal(v.loginDoNome(null), '');
+});

@@ -14,7 +14,7 @@ if (!process.env.DATABASE_URL_TESTE) {
 }
 process.env.DATABASE_URL = process.env.DATABASE_URL_TESTE;
 process.env.JWT_SECRET = 'segredo-de-teste';
-process.env.SENHA_PADRAO = 'mudar123';
+process.env.SENHA_PADRAO = '12345678';
 
 const db = require('../../src/db');
 const { migrar } = require('../../scripts/migrate');
@@ -35,10 +35,17 @@ async function chamar(caminho, { metodo = 'GET', corpo, como } = {}) {
   return { status: r.status, json, setCookie: r.headers.get('set-cookie') };
 }
 
-async function entrar(quem, email, senha = 'mudar123') {
+async function entrar(quem, email, senha = '12345678') {
   const r = await chamar('/auth/login', { metodo: 'POST', corpo: { email, senha } });
   assert.equal(r.status, 200, `login de ${email}: ${JSON.stringify(r.json)}`);
   cookies[quem] = r.setCookie.split(';')[0];
+  // Senha do seed e provisoria: o sistema tranca tudo ate a pessoa definir a
+  // sua. Aqui a definimos igual, so para liberar as rotas no teste.
+  if (r.json.senha_provisoria) {
+    const c = await chamar('/auth/conta', { metodo: 'PUT', como: quem, corpo: { senha_atual: senha, senha_nova: senha } });
+    assert.equal(c.status, 200, `definir senha de ${email}: ${JSON.stringify(c.json)}`);
+    cookies[quem] = c.setCookie.split(';')[0];
+  }
   return r.json;
 }
 
@@ -108,11 +115,29 @@ test('as tabelas do SIGAP no schema public continuam intactas depois de migrar e
   assert.equal(col.length, 0, 'nenhuma coluna da escala vazou para a tabela do SIGAP');
 });
 
+test('senha provisoria do seed: entra, mas nao usa nada ate definir a propria', async () => {
+  const r = await chamar('/auth/login', { metodo: 'POST', corpo: { email: 'marcelo', senha: '12345678' } });
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.equal(r.json.senha_provisoria, true);
+  cookies.marcelo = r.setCookie.split(';')[0];
+  const bloqueado = await chamar('/escala?inicio=2026-09-08&fim=2026-09-08', { como: 'marcelo' });
+  assert.equal(bloqueado.status, 403);
+  assert.equal(bloqueado.json.codigo, 'senha_provisoria');
+  const semNova = await chamar('/auth/conta', { metodo: 'PUT', como: 'marcelo', corpo: { senha_atual: '12345678', nome: 'Marcelo' } });
+  assert.equal(semNova.status, 400, 'provisoria sem senha nova e recusada');
+  const ok = await chamar('/auth/conta', { metodo: 'PUT', como: 'marcelo', corpo: { senha_atual: '12345678', senha_nova: 'marcelo2026' } });
+  assert.equal(ok.status, 200, JSON.stringify(ok.json));
+  assert.equal(ok.json.senha_provisoria, false);
+  cookies.marcelo = ok.setCookie.split(';')[0];
+  assert.equal((await chamar('/escala?inicio=2026-09-08&fim=2026-09-08', { como: 'marcelo' })).status, 200);
+  assert.equal((await chamar('/auth/login', { metodo: 'POST', corpo: { email: 'marcelo', senha: '12345678' } })).status, 401, 'a inicial parou de valer');
+});
+
 test('login ignora maiusculas no email e recusa senha errada', async () => {
-  const eu = await entrar('chefia', 'DAYANA@Setor.Local');
+  const eu = await entrar('chefia', 'DAYANA');
   assert.equal(eu.perfil, 'chefia');
-  await entrar('luiz', 'luiz@setor.local');
-  const r = await chamar('/auth/login', { metodo: 'POST', corpo: { email: 'luiz@setor.local', senha: 'x' } });
+  await entrar('luiz', 'luiz');
+  const r = await chamar('/auth/login', { metodo: 'POST', corpo: { email: 'luiz', senha: 'x' } });
   assert.equal(r.status, 401);
   assert.equal((await chamar('/servidores')).status, 401, 'sem cookie e 401');
 });
@@ -123,7 +148,7 @@ test('email duplicado por maiuscula e recusado (409), e o guardado fica em minus
   assert.equal(a.json.email, 'teste@setor.local');
   const b = await chamar('/servidores', { metodo: 'POST', como: 'chefia', corpo: { nome: 'Teste 2', email: 'TESTE@setor.local' } });
   assert.equal(b.status, 409, JSON.stringify(b.json));
-  const c = await chamar(`/servidores/${a.json.id}`, { metodo: 'PUT', como: 'chefia', corpo: { email: 'LUIZ@setor.local' } });
+  const c = await chamar(`/servidores/${a.json.id}`, { metodo: 'PUT', como: 'chefia', corpo: { email: 'LUIZ' } });
   assert.equal(c.status, 409, 'renomear para email de outro tambem e 409');
   assert.equal(await contar('servidores', "lower(email) = 'teste@setor.local'"), 1);
 });
@@ -265,9 +290,9 @@ test('config invalida gravada por fora do app nao silencia o alerta: cai no padr
 });
 
 test('trocar senha: curta e 400, certa funciona e a antiga para de valer', async () => {
-  assert.equal((await chamar('/auth/senha', { metodo: 'POST', como: 'luiz', corpo: { senha_atual: 'mudar123', senha_nova: '123' } })).status, 400);
+  assert.equal((await chamar('/auth/senha', { metodo: 'POST', como: 'luiz', corpo: { senha_atual: '12345678', senha_nova: '123' } })).status, 400);
   assert.equal((await chamar('/auth/senha', { metodo: 'POST', como: 'luiz', corpo: { senha_atual: 'errada', senha_nova: 'novasenha' } })).status, 401);
-  assert.equal((await chamar('/auth/senha', { metodo: 'POST', como: 'luiz', corpo: { senha_atual: 'mudar123', senha_nova: 'novasenha' } })).status, 200);
-  assert.equal((await chamar('/auth/login', { metodo: 'POST', corpo: { email: 'luiz@setor.local', senha: 'mudar123' } })).status, 401);
-  await entrar('luiz', 'luiz@setor.local', 'novasenha');
+  assert.equal((await chamar('/auth/senha', { metodo: 'POST', como: 'luiz', corpo: { senha_atual: '12345678', senha_nova: 'novasenha' } })).status, 200);
+  assert.equal((await chamar('/auth/login', { metodo: 'POST', corpo: { email: 'luiz', senha: '12345678' } })).status, 401);
+  await entrar('luiz', 'luiz', 'novasenha');
 });

@@ -12,6 +12,10 @@ CREATE TABLE IF NOT EXISTS servidores (
   criado_em     TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- Senha dada pela chefia (inicial ou redefinida): a pessoa entra, mas nao
+-- usa nada ate definir a propria. Vira FALSE na primeira troca.
+ALTER TABLE servidores ADD COLUMN IF NOT EXISTS senha_provisoria BOOLEAN NOT NULL DEFAULT FALSE;
+
 -- Um dia pode ter mais de um turno (ex.: 7h30-14h30 presencial + 15h-18h a distancia)
 -- Email e comparado sem diferenciar maiusculas no login; o banco precisa
 -- recusar a duplicata do mesmo jeito. Antes, "Teste@x" e "teste@x" viravam

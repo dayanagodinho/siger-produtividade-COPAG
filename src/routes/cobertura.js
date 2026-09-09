@@ -1,12 +1,12 @@
 const express = require('express');
 const db = require('../db');
-const { autenticar, exigirChefia } = require('../auth');
+const { autenticar, exigirChefia, exigirSenhaDefinitiva } = require('../auth');
 const { analisarCobertura, totalizarHoras, interpretarConfig, iso } = require('../cobertura');
 const { ehData, ehHora, ehInteiro, diasUteisOuNulo, numeroOuNulo } = require('../validar');
 const { fotografar, registrarNovas } = require('../avisos');
 
 const router = express.Router();
-router.use(autenticar);
+router.use(autenticar, exigirSenhaDefinitiva);
 
 async function lerConfig() {
   const { rows } = await db.query('SELECT chave, valor FROM config');

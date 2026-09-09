@@ -11,7 +11,7 @@ Substitui a planilha `CONTROLE ESCALA HÍBRIDO 2026.xlsx` — cuja escala já ve
 
 ## O que ele faz
 
-- **Cada servidor entra com o login que escolheu** (um nome de usuário ou um e-mail) **e a própria senha**, e lança os próprios turnos (a chefia lança os de qualquer um). Em "Minha conta" a pessoa muda o login, o nome e a senha quando quiser, confirmando a senha atual.
+- **Cada servidor entra com o primeiro nome e a senha inicial dada pela chefia**, define a própria senha no primeiro acesso e depois pode trocar o login (nome de usuário ou e-mail) **e a senha** quando quiser, e lança os próprios turnos (a chefia lança os de qualquer um). Em "Minha conta" a pessoa muda o login, o nome e a senha quando quiser, confirmando a senha atual.
 - Um dia pode ter **mais de um turno** — ex.: `07:30–14:30 presencial + 15:00–18:00 à distância`, como o Marcelo faz na planilha.
 - **Turno e afastamento se alteram clicando neles**: abre o formulário preenchido, com Salvar e Excluir.
 - **Alerta de cobertura**: o sistema varre o expediente (padrão 07:00–18:00) em faixas de 30 minutos e avisa toda faixa em que **ninguém está presencial**. Alguém precisa ficar presencial até as 18:00; ficar depois é permitido, só não é exigido. O mínimo por faixa, o horário, o tamanho da faixa e os dias com expediente são configuráveis pela chefia em "Regras".
@@ -38,7 +38,7 @@ npm start                 # http://localhost:3000
 O seed é idempotente: rodar de novo não duplica nada. Com `npm run seed -- --so-se-vazio`
 ele só age quando ainda não existe servidor nenhum (é assim que o deploy o chama).
 
-O seed cria os usuários com o e-mail `nome@setor.local` e a senha de `SENHA_PADRAO` (padrão `mudar123`). **Dayana** entra como `chefia`; os demais como `servidor`. Peça a todos que troquem a senha no primeiro acesso (botão "Trocar senha").
+O seed cria os usuários com o **primeiro nome** como login (`dayana`, `luiz`…) e a senha de `SENHA_PADRAO` (padrão `12345678`), marcada como provisória: a pessoa entra, o sistema pede uma senha nova e não libera nenhuma tela até ela definir. O mesmo vale para quem a chefia cadastra ou cuja senha a chefia redefine. **Dayana** entra como `chefia`; os demais como `servidor`.
 
 Para mudar quem é chefia, edite a constante `CHEFIA` em `scripts/seed.js` antes de rodar o seed, ou ajuste depois pela API (`PUT /api/servidores/:id` com `{"perfil":"chefia"}`).
 
@@ -52,7 +52,7 @@ Nada para criar: é o mesmo bloco e o mesmo Postgres que o SIGAP usava.
    ressuscitar turno que a chefia apagou. Ninguém precisa abrir terminal. (`npm run
    start:so-servidor` sobe sem migrar, para uso local.)
 3. Variáveis: `DATABASE_URL` e `SESSION_SECRET` já existem no bloco (o Escala aceita
-   `SESSION_SECRET` no lugar de `JWT_SECRET`). `SENHA_PADRAO` é opcional (padrão `mudar123`).
+   `SESSION_SECRET` no lugar de `JWT_SECRET`). `SENHA_PADRAO` é opcional (padrão `12345678`).
    Para o aviso por e-mail, crie `RESEND_API_KEY` e `EMAIL_REMETENTE` (remetente verificado no Resend);
    sem elas o aviso fica só no painel.
    As variáveis `ADMIN_*`, `SETOR_*` e `IMPORTAR_CATALOGO` eram do SIGAP e podem ser apagadas.

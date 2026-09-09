@@ -37,6 +37,7 @@ app.get('/api/saude', (req, res) => res.json({
     configuracoes_em_abas: true,
     minha_conta: true,
     avisos_para_chefia: true,
+    senha_provisoria_no_primeiro_acesso: true,
     email_por_resend: Boolean(process.env.RESEND_API_KEY && process.env.EMAIL_REMETENTE),
   },
 }));

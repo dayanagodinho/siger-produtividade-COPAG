@@ -1,13 +1,13 @@
 const express = require('express');
 const db = require('../db');
-const { autenticar, exigirChefia } = require('../auth');
+const { autenticar, exigirChefia, exigirSenhaDefinitiva } = require('../auth');
 const { ehInteiro } = require('../validar');
 const { iso } = require('../cobertura');
 
 // Avisos de horario descoberto, so para a chefia. Sao gravados por
 // src/avisos.js quando uma mudanca abre faixa sem presencial.
 const router = express.Router();
-router.use(autenticar, exigirChefia);
+router.use(autenticar, exigirSenhaDefinitiva, exigirChefia);
 
 const SQL = `
   SELECT a.id, a.criado_em, a.data, a.mensagem, a.origem, a.lido, s.nome AS autor

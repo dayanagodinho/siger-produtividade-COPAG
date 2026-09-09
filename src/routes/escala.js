@@ -1,6 +1,6 @@
 const express = require('express');
 const db = require('../db');
-const { autenticar, podeEditar, exigirChefia } = require('../auth');
+const { autenticar, podeEditar, exigirChefia, exigirSenhaDefinitiva } = require('../auth');
 const { paraMinutos, iso } = require('../cobertura');
 const { ehData, ehHora, ehInteiro } = require('../validar');
 const { fotografar, registrarNovas } = require('../avisos');
@@ -13,7 +13,7 @@ const maior = (a, b) => (a > b ? a : b);
 const MAX_SEMANAS_REPLICAR = 53;
 
 const router = express.Router();
-router.use(autenticar);
+router.use(autenticar, exigirSenhaDefinitiva);
 
 const SQL_TURNOS = `
   SELECT t.id, t.servidor_id, s.nome, t.data, to_char(t.inicio,'HH24:MI') AS inicio,

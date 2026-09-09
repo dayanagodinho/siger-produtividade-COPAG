@@ -2,6 +2,10 @@ require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const db = require('../src/db');
+const bcrypt = require('bcryptjs');
+const { loginDoNome } = require('../src/validar');
+
+const SENHA_INICIAL = process.env.SENHA_PADRAO || '12345678';
 
 // Feriados nacionais de 2026 (lei 662/1949, 6.802/1980, 14.759/2023) e os dois
 // pontos facultativos que o servico publico costuma observar. A chefia pode
@@ -41,6 +45,32 @@ const AJUSTES = [
     aplicar: async (c) => {
       for (const [data, descricao] of FERIADOS_2026) {
         await c.query('INSERT INTO feriados (data, descricao) VALUES ($1,$2) ON CONFLICT (data) DO NOTHING', [data, descricao]);
+      }
+    },
+  },
+  {
+    chave: 'ajuste.login_por_nome_e_senha_inicial',
+    // A chefia decidiu: entra-se com o primeiro nome e a senha inicial
+    // 12345678, e o sistema exige trocar no primeiro acesso. Quem ainda
+    // tinha o login nome@setor.local do seed ganha o primeiro nome; quem
+    // ainda estava com a senha antiga (mudar123) recebe a inicial nova e a
+    // marca de provisoria. Senha que a pessoa ja tinha trocado fica como esta.
+    aplicar: async (c) => {
+      const { rows } = await c.query("SELECT id, nome, email, senha_hash FROM servidores WHERE email LIKE '%@setor.local'");
+      const hash = await bcrypt.hash(SENHA_INICIAL, 10);
+      for (const s of rows) {
+        const login = loginDoNome(s.nome);
+        const ocupado = login && (await c.query('SELECT 1 FROM servidores WHERE lower(email) = $1 AND id <> $2', [login, s.id])).rows.length > 0;
+        const senhaAntiga = await bcrypt.compare('mudar123', s.senha_hash);
+        await c.query(
+          `UPDATE servidores
+              SET email = CASE WHEN $2 THEN email ELSE $3 END,
+                  senha_hash = CASE WHEN $4 THEN $5 ELSE senha_hash END,
+                  senha_provisoria = $4
+            WHERE id = $1`,
+          [s.id, ocupado || !login, login, senhaAntiga, hash]
+        );
+        console.log(`Login de ${s.nome}: ${ocupado || !login ? s.email + ' (mantido)' : login}${senhaAntiga ? ', senha inicial provisoria' : ''}`);
       }
     },
   },

@@ -8,7 +8,7 @@ const COOKIE = 'escala_token';
 
 function gerarToken(servidor) {
   return jwt.sign(
-    { id: servidor.id, nome: servidor.nome, perfil: servidor.perfil },
+    { id: servidor.id, nome: servidor.nome, perfil: servidor.perfil, provisoria: Boolean(servidor.senha_provisoria) },
     SEGREDO,
     { expiresIn: '30d' }
   );
@@ -38,6 +38,13 @@ function autenticar(req, res, next) {
   }
 }
 
+// Senha dada pela chefia: a pessoa entra, ve o pedido de senha nova e mais
+// nada. Toda rota de dados passa por aqui; so /api/auth fica de fora.
+function exigirSenhaDefinitiva(req, res, next) {
+  if (req.usuario?.provisoria) return res.status(403).json({ erro: 'Defina a sua senha antes de continuar', codigo: 'senha_provisoria' });
+  next();
+}
+
 function exigirChefia(req, res, next) {
   if (req.usuario?.perfil !== 'chefia') {
     return res.status(403).json({ erro: 'Acao permitida apenas a chefia' });
@@ -50,4 +57,4 @@ function podeEditar(usuario, servidorId) {
   return usuario.perfil === 'chefia' || Number(usuario.id) === Number(servidorId);
 }
 
-module.exports = { gerarToken, definirCookie, limparCookie, autenticar, exigirChefia, podeEditar, COOKIE };
+module.exports = { gerarToken, definirCookie, limparCookie, autenticar, exigirChefia, exigirSenhaDefinitiva, podeEditar, COOKIE };

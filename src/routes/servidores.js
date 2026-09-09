@@ -1,7 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const db = require('../db');
-const { autenticar, exigirChefia } = require('../auth');
+const { autenticar, exigirChefia, exigirSenhaDefinitiva } = require('../auth');
 const { normalizarEmail, ehLogin, numeroOuNulo, ehInteiro } = require('../validar');
 
 // Meta semanal em horas: numero finito entre 0 e 60, ou nulo (mantem/padrao).
@@ -13,7 +13,7 @@ function metaOuErro(valor, nome) {
 }
 
 const router = express.Router();
-router.use(autenticar);
+router.use(autenticar, exigirSenhaDefinitiva);
 
 router.get('/', async (req, res) => {
   const { rows } = await db.query(
@@ -32,11 +32,11 @@ router.post('/', exigirChefia, async (req, res) => {
   const metaP = metaOuErro(meta_presencial_semanal, 'meta_presencial_semanal');
   const metaD = metaOuErro(meta_distancia_semanal, 'meta_distancia_semanal');
   if (metaP.erro || metaD.erro) return res.status(400).json({ erro: metaP.erro || metaD.erro });
-  const hash = await bcrypt.hash(senha || process.env.SENHA_PADRAO || 'mudar123', 10);
+  const hash = await bcrypt.hash(senha || process.env.SENHA_PADRAO || '12345678', 10);
   try {
     const { rows } = await db.query(
-      `INSERT INTO servidores (nome, email, senha_hash, perfil, meta_presencial_semanal, meta_distancia_semanal)
-       VALUES ($1,$2,$3,$4,$5,$6) RETURNING id, nome, email, perfil, meta_presencial_semanal, meta_distancia_semanal, ativo`,
+      `INSERT INTO servidores (nome, email, senha_hash, perfil, meta_presencial_semanal, meta_distancia_semanal, senha_provisoria)
+       VALUES ($1,$2,$3,$4,$5,$6,TRUE) RETURNING id, nome, email, perfil, meta_presencial_semanal, meta_distancia_semanal, ativo`,
       [String(nome).trim(), email, hash, perfil === 'chefia' ? 'chefia' : 'servidor', metaP.valor ?? 20, metaD.valor ?? 20]
     );
     res.status(201).json(rows[0]);
@@ -93,8 +93,8 @@ router.put('/:id', exigirChefia, async (req, res) => {
 
 router.post('/:id/senha', exigirChefia, async (req, res) => {
   if (!ehInteiro(req.params.id, { min: 1 })) return res.status(400).json({ erro: 'id invalido' });
-  const nova = req.body?.senha || process.env.SENHA_PADRAO || 'mudar123';
-  await db.query('UPDATE servidores SET senha_hash = $1 WHERE id = $2', [await bcrypt.hash(nova, 10), req.params.id]);
+  const nova = req.body?.senha || process.env.SENHA_PADRAO || '12345678';
+  await db.query('UPDATE servidores SET senha_hash = $1, senha_provisoria = TRUE WHERE id = $2', [await bcrypt.hash(nova, 10), req.params.id]);
   res.json({ ok: true, senha: nova });
 });
 

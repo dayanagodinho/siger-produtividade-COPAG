@@ -3,14 +3,16 @@ const fs = require('fs');
 const path = require('path');
 const bcrypt = require('bcryptjs');
 const db = require('../src/db');
+const { loginDoNome } = require('../src/validar');
 
 // Carrega os servidores e a escala importados da planilha CONTROLE ESCALA HIBRIDO 2026.
 const dados = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'db', 'seed-escala.json'), 'utf8'));
-const SENHA = process.env.SENHA_PADRAO || 'mudar123';
+const SENHA = process.env.SENHA_PADRAO || '12345678';
 const CHEFIA = ['Dayana']; // ajuste se a chefia for outra pessoa
 
+// O login e o primeiro nome ("dayana"); a funcao mantem o nome antigo porque o teste de banco a importa.
 function email(nome) {
-  return `${nome.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '.')}@setor.local`;
+  return loginDoNome(nome);
 }
 
 /**
@@ -34,7 +36,7 @@ async function semear({ soSeVazio = false } = {}) {
   for (const nome of dados.servidores) {
     const perfil = CHEFIA.includes(nome) ? 'chefia' : 'servidor';
     const { rows } = await db.query(
-      `INSERT INTO servidores (nome, email, senha_hash, perfil) VALUES ($1,$2,$3,$4)
+      `INSERT INTO servidores (nome, email, senha_hash, perfil, senha_provisoria) VALUES ($1,$2,$3,$4,TRUE)
        ON CONFLICT (email) DO UPDATE SET nome = EXCLUDED.nome RETURNING id`,
       [nome, email(nome), hash, perfil]
     );
@@ -58,8 +60,8 @@ async function semear({ soSeVazio = false } = {}) {
   }
 
   console.log(`${ids.size} servidores e ${inseridos} turnos carregados.`);
-  console.log(`Senha inicial de todos: ${SENHA} (peca para cada um trocar no primeiro acesso).`);
-  console.log('Emails gerados:', [...ids.keys()].map(email).join(', '));
+  console.log(`Senha inicial de todos: ${SENHA} (o sistema exige trocar no primeiro acesso).`);
+  console.log('Logins:', [...ids.keys()].map(email).join(', '));
   return { pulado: false, servidores: ids.size, turnos: inseridos };
 }
 

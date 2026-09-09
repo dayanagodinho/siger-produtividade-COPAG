@@ -49,6 +49,13 @@ function ehLogin(login) {
   return ehEmail(l) || /^[a-z0-9][a-z0-9._-]{2,39}$/.test(l);
 }
 
+// Login inicial a partir do nome: o primeiro nome, em minusculas e sem
+// acento ("Joao Pedro" -> "joao"). E o que a pessoa digita para entrar.
+function loginDoNome(nome) {
+  const primeiro = String(nome || '').trim().split(/\s+/)[0] || '';
+  return primeiro.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+}
+
 // Lista "1,2,3,4,5" -> [1,2,3,4,5]; qualquer item fora de 0..6 invalida tudo.
 function diasUteisOuNulo(texto) {
   const partes = String(texto ?? '').split(',').map((p) => p.trim()).filter(Boolean);
@@ -58,4 +65,4 @@ function diasUteisOuNulo(texto) {
   return [...new Set(dias)].sort();
 }
 
-module.exports = { ehData, ehHora, numeroOuNulo, ehInteiro, normalizarEmail, ehEmail, ehLogin, diasUteisOuNulo };
+module.exports = { ehData, ehHora, numeroOuNulo, ehInteiro, normalizarEmail, ehEmail, ehLogin, loginDoNome, diasUteisOuNulo };
