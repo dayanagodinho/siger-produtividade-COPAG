@@ -2,6 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const db = require('../db');
 const { gerarToken, definirCookie, limparCookie, autenticar } = require('../auth');
+const { normalizarEmail, ehLogin } = require('../validar');
 
 const router = express.Router();
 
@@ -29,6 +30,41 @@ router.get('/eu', autenticar, async (req, res) => {
   );
   if (!rows[0]) return res.status(401).json({ erro: 'Usuario nao encontrado' });
   res.json(rows[0]);
+});
+
+/**
+ * "Minha conta": cada pessoa escolhe como entra (e-mail ou nome de usuario),
+ * o proprio nome e a senha. Tudo exige a senha atual, para que uma aba
+ * esquecida aberta nao sirva para tomar a conta.
+ */
+router.put('/conta', autenticar, async (req, res) => {
+  const { senha_atual, senha_nova, nome } = req.body || {};
+  const login = req.body?.login === undefined ? undefined : normalizarEmail(req.body.login);
+  const { rows } = await db.query('SELECT * FROM servidores WHERE id = $1', [req.usuario.id]);
+  const atual = rows[0];
+  if (!atual) return res.status(401).json({ erro: 'Usuario nao encontrado' });
+  if (!(await bcrypt.compare(senha_atual || '', atual.senha_hash))) return res.status(401).json({ erro: 'Senha atual incorreta' });
+  if (login !== undefined && !ehLogin(login)) {
+    return res.status(400).json({ erro: `Login invalido: "${login}". Use um e-mail ou um nome de usuario (letras, numeros, ponto), com 3 a 40 caracteres` });
+  }
+  if (nome !== undefined && !String(nome).trim()) return res.status(400).json({ erro: 'O nome nao pode ficar vazio' });
+  if (senha_nova !== undefined && senha_nova !== '' && senha_nova.length < 6) {
+    return res.status(400).json({ erro: 'A nova senha precisa ter ao menos 6 caracteres' });
+  }
+  const hash = senha_nova ? await bcrypt.hash(senha_nova, 10) : atual.senha_hash;
+  try {
+    const r = await db.query(
+      `UPDATE servidores SET email = COALESCE($2, email), nome = COALESCE($3, nome), senha_hash = $4
+        WHERE id = $1 RETURNING id, nome, email, perfil`,
+      [atual.id, login ?? null, nome ? String(nome).trim() : null, hash]
+    );
+    // O cookie carrega o nome; renova para a tela nao mostrar o antigo.
+    definirCookie(res, gerarToken(r.rows[0]));
+    res.json(r.rows[0]);
+  } catch (e) {
+    if (e.code === '23505') return res.status(409).json({ erro: 'Esse login ja esta em uso por outra pessoa' });
+    throw e;
+  }
 });
 
 router.post('/senha', autenticar, async (req, res) => {

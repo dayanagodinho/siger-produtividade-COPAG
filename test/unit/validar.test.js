@@ -63,3 +63,17 @@ test('diasUteisOuNulo', () => {
   assert.equal(v.diasUteisOuNulo(''), null);
   assert.equal(v.diasUteisOuNulo(null), null);
 });
+
+test('ehLogin aceita e-mail ou nome de usuario curto, e recusa lixo', () => {
+  assert.equal(v.ehLogin('dayana@setor.local'), true);
+  assert.equal(v.ehLogin('CleliaDayana@Gmail.com'), true);
+  assert.equal(v.ehLogin('dayana'), true);
+  assert.equal(v.ehLogin('dayana.godinho'), true);
+  assert.equal(v.ehLogin('  Dayana_2026 '), true);
+  assert.equal(v.ehLogin('da'), false, 'curto demais');
+  assert.equal(v.ehLogin('dayana godinho'), false, 'espaco no meio');
+  assert.equal(v.ehLogin('.dayana'), false, 'nao comeca com ponto');
+  assert.equal(v.ehLogin(''), false);
+  assert.equal(v.ehLogin(null), false);
+  assert.equal(v.ehLogin('a'.repeat(41)), false);
+});

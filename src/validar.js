@@ -41,6 +41,14 @@ function ehEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizarEmail(email));
 }
 
+// O que a pessoa digita para entrar: um e-mail OU um nome de usuario curto
+// (letras, numeros, ponto, hifen e sublinhado, de 3 a 40 caracteres). Cada
+// um escolhe o seu; o banco guarda em minusculas e compara sem diferenciar.
+function ehLogin(login) {
+  const l = normalizarEmail(login);
+  return ehEmail(l) || /^[a-z0-9][a-z0-9._-]{2,39}$/.test(l);
+}
+
 // Lista "1,2,3,4,5" -> [1,2,3,4,5]; qualquer item fora de 0..6 invalida tudo.
 function diasUteisOuNulo(texto) {
   const partes = String(texto ?? '').split(',').map((p) => p.trim()).filter(Boolean);
@@ -50,4 +58,4 @@ function diasUteisOuNulo(texto) {
   return [...new Set(dias)].sort();
 }
 
-module.exports = { ehData, ehHora, numeroOuNulo, ehInteiro, normalizarEmail, ehEmail, diasUteisOuNulo };
+module.exports = { ehData, ehHora, numeroOuNulo, ehInteiro, normalizarEmail, ehEmail, ehLogin, diasUteisOuNulo };

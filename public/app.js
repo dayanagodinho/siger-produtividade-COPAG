@@ -58,7 +58,9 @@ async function api(caminho, opcoes = {}) {
     ...opcoes,
     body: opcoes.corpo ? JSON.stringify(opcoes.corpo) : undefined,
   });
-  if (resposta.status === 401 && estado.usuario) { location.reload(); return; }
+  // 401 com sessao aberta = sessao caiu: volta para o login. Exceto quando a
+  // propria chamada usa 401 para "senha atual incorreta" (Minha conta).
+  if (resposta.status === 401 && estado.usuario && !opcoes.semRecarregar) { location.reload(); return; }
   const json = await resposta.json().catch(() => ({}));
   if (!resposta.ok) throw new Error(json.erro || 'Falha na comunicação com o servidor');
   return json;
@@ -583,13 +585,26 @@ $('#btn-replicar').addEventListener('click', () => {
     }, { rotuloOk: 'Repetir' });
 });
 
-$('#btn-senha').addEventListener('click', () => {
-  abrirModal(`<h2>Trocar senha</h2>
-    <label>Senha atual</label><input id="s-atual" type="password" autocomplete="current-password">
-    <label>Nova senha (mínimo 6 caracteres)</label><input id="s-nova" type="password" autocomplete="new-password">`,
+/* ---- minha conta: cada pessoa escolhe como entra, o nome e a senha ---- */
+$('#btn-conta').addEventListener('click', () => {
+  const u = estado.usuario;
+  abrirModal(`<h2>Minha conta</h2>
+    <p class="sub">Escolha como você entra no sistema e a sua senha. Qualquer mudança pede a senha atual.</p>
+    <label>Nome</label><input id="u-nome" type="text" value="${escapar(u.nome)}">
+    <label>Login (usuário ou e-mail para entrar)</label><input id="u-login" type="text" value="${escapar(u.email)}" autocapitalize="none" spellcheck="false" placeholder="ex.: dayana ou nome@email.com">
+    <label>Senha atual (obrigatória)</label><input id="u-atual" type="password" autocomplete="current-password">
+    <div class="dupla"><div><label>Nova senha (opcional)</label><input id="u-nova" type="password" autocomplete="new-password"></div>
+      <div><label>Repita a nova senha</label><input id="u-nova2" type="password" autocomplete="new-password"></div></div>
+    <p class="nota">O login pode ser um nome de usuário (letras, números, ponto; 3 a 40 caracteres) ou um e-mail. Maiúsculas e minúsculas não fazem diferença. A nova senha precisa ter ao menos 6 caracteres.</p>`,
     async (f) => {
-      await api('/auth/senha', { method: 'POST', corpo: { senha_atual: f.querySelector('#s-atual').value, senha_nova: f.querySelector('#s-nova').value } });
-      aviso('Senha alterada');
+      const nova = f.querySelector('#u-nova').value, nova2 = f.querySelector('#u-nova2').value;
+      if (nova !== nova2) throw new Error('As duas senhas novas não são iguais');
+      const corpo = { nome: f.querySelector('#u-nome').value.trim(), login: f.querySelector('#u-login').value.trim(), senha_atual: f.querySelector('#u-atual').value };
+      if (nova) corpo.senha_nova = nova;
+      const r = await api('/auth/conta', { method: 'PUT', corpo, semRecarregar: true });
+      estado.usuario = { ...estado.usuario, ...r };
+      $('#quem').textContent = `${estado.usuario.nome}${ehChefia() ? ' · chefia' : ''}`;
+      aviso(nova ? 'Conta e senha atualizadas' : 'Conta atualizada');
     });
 });
 
@@ -675,7 +690,7 @@ function modalPessoa(s, depois) {
   const nova = !s.id;
   const f = abrirModal(`<h2>${nova ? 'Nova pessoa' : 'Editar pessoa'}</h2>
     <label>Nome</label><input id="s-nome" type="text" value="${escapar(s.nome || '')}">
-    <label>E-mail (usado para entrar)</label><input id="s-email" type="email" value="${escapar(s.email || '')}" placeholder="nome@setor.local">
+    <label>Login (usuário ou e-mail para entrar)</label><input id="s-email" type="text" value="${escapar(s.email || '')}" autocapitalize="none" spellcheck="false" placeholder="ex.: fernanda ou nome@email.com">
     ${nova ? '<label>Senha inicial (vazio = mudar123)</label><input id="s-senha" type="text" autocomplete="off">' : ''}
     <label>Perfil</label>
     <div class="opcoes"><label><input type="radio" name="s-perfil" value="servidor" ${(s.perfil || 'servidor') === 'servidor' ? 'checked' : ''}><span>Servidor</span></label>

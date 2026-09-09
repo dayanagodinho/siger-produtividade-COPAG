@@ -34,6 +34,7 @@ app.get('/api/saude', (req, res) => res.json({
     tema_escuro: true,
     periodo_hibrido: true,
     configuracoes_em_abas: true,
+    minha_conta: true,
   },
 }));
 

@@ -2,7 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const db = require('../db');
 const { autenticar, exigirChefia } = require('../auth');
-const { normalizarEmail, ehEmail, numeroOuNulo, ehInteiro } = require('../validar');
+const { normalizarEmail, ehLogin, numeroOuNulo, ehInteiro } = require('../validar');
 
 // Meta semanal em horas: numero finito entre 0 e 60, ou nulo (mantem/padrao).
 function metaOuErro(valor, nome) {
@@ -27,8 +27,8 @@ router.get('/', async (req, res) => {
 router.post('/', exigirChefia, async (req, res) => {
   const { nome, senha, perfil, meta_presencial_semanal, meta_distancia_semanal } = req.body || {};
   const email = normalizarEmail(req.body?.email);
-  if (!nome || !String(nome).trim() || !email) return res.status(400).json({ erro: 'Informe nome e email' });
-  if (!ehEmail(email)) return res.status(400).json({ erro: `Email invalido: "${email}"` });
+  if (!nome || !String(nome).trim() || !email) return res.status(400).json({ erro: 'Informe nome e login (e-mail ou usuario)' });
+  if (!ehLogin(email)) return res.status(400).json({ erro: `Login invalido: "${email}". Use um e-mail ou um nome de usuario (letras, numeros, ponto), com 3 a 40 caracteres` });
   const metaP = metaOuErro(meta_presencial_semanal, 'meta_presencial_semanal');
   const metaD = metaOuErro(meta_distancia_semanal, 'meta_distancia_semanal');
   if (metaP.erro || metaD.erro) return res.status(400).json({ erro: metaP.erro || metaD.erro });
@@ -50,7 +50,7 @@ router.put('/:id', exigirChefia, async (req, res) => {
   const { nome, perfil, ativo, meta_presencial_semanal, meta_distancia_semanal } = req.body || {};
   if (!ehInteiro(req.params.id, { min: 1 })) return res.status(400).json({ erro: 'id invalido' });
   const email = req.body?.email === undefined ? null : normalizarEmail(req.body.email);
-  if (email !== null && !ehEmail(email)) return res.status(400).json({ erro: `Email invalido: "${email}"` });
+  if (email !== null && !ehLogin(email)) return res.status(400).json({ erro: `Login invalido: "${email}". Use um e-mail ou um nome de usuario (letras, numeros, ponto), com 3 a 40 caracteres` });
   if (perfil !== undefined && perfil !== null && !['servidor', 'chefia'].includes(perfil)) {
     return res.status(400).json({ erro: 'perfil precisa ser "servidor" ou "chefia"' });
   }

@@ -11,7 +11,7 @@ Substitui a planilha `CONTROLE ESCALA HÍBRIDO 2026.xlsx` — cuja escala já ve
 
 ## O que ele faz
 
-- **Cada servidor entra com e-mail e senha** e lança os próprios turnos (a chefia lança os de qualquer um).
+- **Cada servidor entra com o login que escolheu** (um nome de usuário ou um e-mail) **e a própria senha**, e lança os próprios turnos (a chefia lança os de qualquer um). Em "Minha conta" a pessoa muda o login, o nome e a senha quando quiser, confirmando a senha atual.
 - Um dia pode ter **mais de um turno** — ex.: `07:30–14:30 presencial + 15:00–18:00 à distância`, como o Marcelo faz na planilha.
 - **Turno e afastamento se alteram clicando neles**: abre o formulário preenchido, com Salvar e Excluir.
 - **Alerta de cobertura**: o sistema varre o expediente (padrão 07:00–18:00) em faixas de 30 minutos e avisa toda faixa em que **ninguém está presencial**. Alguém precisa ficar presencial até as 18:00; ficar depois é permitido, só não é exigido. O mínimo por faixa, o horário, o tamanho da faixa e os dias com expediente são configuráveis pela chefia em "Regras".
@@ -108,6 +108,7 @@ e-mail duplicado com maiúscula, "repetir semana" até `abc` e até 2099.
 | POST | `/api/auth/login` | entra (e-mail + senha) |
 | POST | `/api/auth/logout` | sai |
 | GET | `/api/auth/eu` | dados de quem está logado |
+| PUT | `/api/auth/conta` | muda o próprio login, nome e senha (exige a senha atual) |
 | POST | `/api/auth/senha` | troca a própria senha |
 | GET | `/api/servidores` | lista servidores |
 | POST/PUT | `/api/servidores` | cadastra/edita (só chefia) |
@@ -133,7 +134,7 @@ e-mail duplicado com maiúscula, "repetir semana" até `abc` e até 2099.
 - Entrada inválida (data fora de `YYYY-MM-DD`, hora fora de `HH:MM`, meta que não é número)
   volta como erro 400 dizendo o que veio errado e o formato esperado — nunca "Erro interno".
 - Turnos sobrepostos da mesma pessoa no mesmo dia são recusados (erro 409).
-- E-mail é guardado e comparado em minúsculas; `Teste@x` e `teste@x` são a mesma conta.
+- O login (e-mail ou nome de usuário) é guardado e comparado em minúsculas; `Teste@x` e `teste@x` são a mesma conta.
 - "Repetir semana" vai no máximo até 53 semanas depois da semana base.
 - Se alguma regra de cobertura no banco estiver inválida, a análise usa o padrão (07:00–18:00,
   1 pessoa, faixas de 30 min, segunda a sexta) e **avisa no alerta** em vez de mostrar
