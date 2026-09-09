@@ -670,7 +670,7 @@ async function abaPessoas(p) {
       <div class="cresce"><strong>${escapar(s.nome)}</strong>${s.perfil === 'chefia' ? '<span class="badge">chefia</span>' : ''}${s.ativo === false ? '<span class="badge cinza">fora do acompanhamento</span>' : ''}
         <small>${escapar(s.email)} · metas ${paraHoras(s.meta_presencial_semanal ?? 20)}h presencial + ${paraHoras(s.meta_distancia_semanal ?? 20)}h à distância</small></div>
       <button class="pequeno" data-editar="${s.id}">${icone('lapis')} Editar</button>
-      <button class="pequeno" data-ativo="${s.id}|${s.ativo === false ? 'true' : 'false'}">${s.ativo === false ? 'Incluir' : 'Tirar'}</button>
+      ${Number(s.id) === Number(estado.usuario.id) ? '' : `<button class="pequeno" data-ativo="${s.id}|${s.ativo === false ? 'true' : 'false'}">${s.ativo === false ? 'Incluir' : 'Tirar'}</button>`}
     </div>`).join('');
   p.corpo.innerHTML = `<p class="sub">Quem está no acompanhamento aparece na escala e conta para a cobertura. Tirar alguém não apaga nada: a pessoa some das visões e volta quando for incluída de novo.</p>
     <div class="acoes" style="margin:0 0 10px;justify-content:flex-start"><button class="primario" data-nova>${icone('mais')} Nova pessoa</button></div>
@@ -688,13 +688,15 @@ async function abaPessoas(p) {
 
 function modalPessoa(s, depois) {
   const nova = !s.id;
+  const proprio = !nova && Number(s.id) === Number(estado.usuario.id);
   const f = abrirModal(`<h2>${nova ? 'Nova pessoa' : 'Editar pessoa'}</h2>
     <label>Nome</label><input id="s-nome" type="text" value="${escapar(s.nome || '')}">
     <label>Login (usuário ou e-mail para entrar)</label><input id="s-email" type="text" value="${escapar(s.email || '')}" autocapitalize="none" spellcheck="false" placeholder="ex.: fernanda ou nome@email.com">
     ${nova ? '<label>Senha inicial (vazio = mudar123)</label><input id="s-senha" type="text" autocomplete="off">' : ''}
     <label>Perfil</label>
-    <div class="opcoes"><label><input type="radio" name="s-perfil" value="servidor" ${(s.perfil || 'servidor') === 'servidor' ? 'checked' : ''}><span>Servidor</span></label>
-      <label><input type="radio" name="s-perfil" value="chefia" ${s.perfil === 'chefia' ? 'checked' : ''}><span>Chefia</span></label></div>
+    ${proprio ? `<p class="nota" style="margin:0 0 6px">Você é chefia. Ninguém tira a própria chefia: para passar o comando, promova a outra pessoa primeiro.</p>` : ''}
+    <div class="opcoes"><label><input type="radio" name="s-perfil" value="servidor" ${(s.perfil || 'servidor') === 'servidor' ? 'checked' : ''} ${proprio ? 'disabled' : ''}><span>Servidor</span></label>
+      <label><input type="radio" name="s-perfil" value="chefia" ${s.perfil === 'chefia' ? 'checked' : ''} ${proprio ? 'disabled' : ''}><span>Chefia</span></label></div>
     <div class="dupla"><div><label>Meta semanal presencial (h)</label><input id="s-mp" type="number" min="0" max="60" step="0.5" value="${Number(s.meta_presencial_semanal ?? 20)}"></div>
       <div><label>Meta semanal à distância (h)</label><input id="s-md" type="number" min="0" max="60" step="0.5" value="${Number(s.meta_distancia_semanal ?? 20)}"></div></div>
     ${nova ? '' : '<p class="nota">Esqueceu a senha? <a href="#" data-redefinir>Redefinir para a senha padrão</a>.</p>'}`,

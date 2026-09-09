@@ -58,6 +58,20 @@ router.put('/:id', exigirChefia, async (req, res) => {
   const metaP = metaOuErro(meta_presencial_semanal, 'meta_presencial_semanal');
   const metaD = metaOuErro(meta_distancia_semanal, 'meta_distancia_semanal');
   if (metaP.erro || metaD.erro) return res.status(400).json({ erro: metaP.erro || metaD.erro });
+
+  // Ninguem tira a propria chefia nem se tira do acompanhamento, e a ultima
+  // chefia nao pode ser rebaixada: sem chefia, ninguem abre Configuracoes e
+  // o sistema fica trancado por fora. Aconteceu em 09/09/2026.
+  const proprio = Number(req.params.id) === Number(req.usuario.id);
+  if (proprio && (perfil === 'servidor' || ativo === false)) {
+    return res.status(409).json({ erro: 'Voce nao pode tirar a propria chefia nem se tirar do acompanhamento. Peca a outra chefia' });
+  }
+  if (perfil === 'servidor' || ativo === false) {
+    const { rows: chefias } = await db.query("SELECT id FROM servidores WHERE perfil = 'chefia' AND ativo");
+    if (chefias.length === 1 && Number(chefias[0].id) === Number(req.params.id)) {
+      return res.status(409).json({ erro: 'Essa e a unica chefia ativa. Promova outra pessoa a chefia antes' });
+    }
+  }
   let rows;
   try {
     ({ rows } = await db.query(
