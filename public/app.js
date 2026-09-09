@@ -509,12 +509,19 @@ function desenharDia() {
     const editavel = podeEditar(s.id);
     const blocos = af
       ? `<div class="bloco A${editavel ? '' : ' fixo'}" style="left:0;right:0" ${editavel ? `data-editar-af="${af.id}"` : ''} title="${escapar(af.tipo)} de ${dataBr(af.data_inicio)} a ${dataBr(af.data_fim)}${editavel ? ' — clique para alterar' : ''}">${icone('ferias')} ${escapar(af.tipo)} · ${dataBr(af.data_inicio)} a ${dataBr(af.data_fim)}</div>`
-      : turnosDe(s.id, data).map((t) => {
+      : turnosDe(s.id, data).map((t, idx, lista) => {
+          // Entre este turno e o seguinte, se sobrar 30 min ou mais, marca o intervalo
+          let intervalo = '';
+          const seguinte = lista[idx + 1];
+          if (seguinte && emMinutos(seguinte.inicio) - emMinutos(t.fim) >= 30) {
+            const ie = pos(emMinutos(t.fim)), id = pos(emMinutos(seguinte.inicio));
+            intervalo = `<div class="intervalo" style="left:${ie}%;width:${id - ie}%" title="Intervalo ${t.fim}–${seguinte.inicio}"><span>intervalo ${t.fim}–${seguinte.inicio}</span></div>`;
+          }
           const e = Math.max(0, pos(emMinutos(t.inicio)));
           const d = Math.min(100, pos(emMinutos(t.fim)));
           const rotulo = t.modalidade === 'P' ? 'presencial' : 'à distância';
           return `<div class="bloco ${t.modalidade}${editavel ? '' : ' fixo'}" style="left:${e}%;width:${Math.max(d - e, 2)}%" ${editavel ? `data-editar-turno="${t.id}"` : ''}
-                    title="${t.inicio}–${t.fim} ${rotulo}${t.observacao ? ' — ' + escapar(t.observacao) : ''}${editavel ? ' (clique para alterar)' : ''}">${t.inicio}–${t.fim}</div>`;
+                    title="${t.inicio}–${t.fim} ${rotulo}${t.observacao ? ' — ' + escapar(t.observacao) : ''}${editavel ? ' (clique para alterar)' : ''}">${t.inicio}–${t.fim}</div>${intervalo}`;
         }).join('');
     const acao = editavel && !af ? `<button class="mais" data-novo="${s.id}|${data}">${icone('mais')}</button>` : '';
     return `${separador}<div class="rotulo${af ? ' afastado' : ''}"><span>${escapar(s.nome)}</span>${acao}</div><div class="faixa${af ? ' afastado' : ''}">${grade.join('')}${blocos}</div>`;
@@ -735,35 +742,74 @@ function opcoesServidores(selecionado) {
 
 function modalTurno(t) {
   const editando = Boolean(t.id);
-  const v = (campo) => f.querySelector(campo).value;
   let f;
+  const v = (campo) => f.querySelector(campo).value;
+  // Ao criar, o formulario aceita varios horarios do mesmo dia de uma vez
+  // (ex.: 08:00-14:00 presencial e 16:00-19:00 a distancia): cada linha vira
+  // um turno, e o espaco entre elas aparece como intervalo na linha do tempo.
+  const linhaHorario = (h) => `<div class="horario-linha">
+      <input class="h-ini" type="time" value="${h.inicio}" step="900" title="Início">
+      <span class="ate">até</span>
+      <input class="h-fim" type="time" value="${h.fim}" step="900" title="Fim">
+      <div class="opcoes">
+        <label><input type="radio" name="m-mod-${h.n}" value="P" ${h.modalidade !== 'D' ? 'checked' : ''}><span>Presencial</span></label>
+        <label><input type="radio" name="m-mod-${h.n}" value="D" ${h.modalidade === 'D' ? 'checked' : ''}><span>À distância</span></label>
+      </div>
+      ${editando ? '' : '<button type="button" class="fantasma pequeno" data-tirar title="Tirar este horário">✕</button>'}
+    </div>`;
+  let n = 0;
+  const proximo = (ultimoFim) => {
+    const [h] = ultimoFim.split(':').map(Number);
+    const ini = Math.min(h + 2, 21), fimH = Math.min(ini + 3, 23);
+    return { inicio: `${String(ini).padStart(2, '0')}:00`, fim: `${String(fimH).padStart(2, '0')}:00` };
+  };
   f = abrirModal(`<h2>${editando ? 'Alterar turno' : 'Novo turno'}</h2>
-    <p class="sub">${editando ? `Lançado para ${escapar(t.nome || '')} em ${dataBonita(t.data)}.` : 'Um dia pode ter mais de um turno, por exemplo manhã presencial e tarde à distância.'}</p>
+    <p class="sub">${editando ? `Lançado para ${escapar(t.nome || '')} em ${dataBonita(t.data)}.` : 'Um dia pode ter mais de um horário, por exemplo 08:00–14:00 presencial e 16:00–19:00 à distância. O espaço entre eles aparece como intervalo.'}</p>
     <label>Servidor</label><select id="m-servidor">${opcoesServidores(t.servidor_id)}</select>
     <label>Data</label><input id="m-data" type="date" value="${t.data}">
-    <div class="dupla"><div><label>Início</label><input id="m-inicio" type="time" value="${t.inicio || '08:00'}" step="900"></div>
-      <div><label>Fim</label><input id="m-fim" type="time" value="${t.fim || '14:00'}" step="900"></div></div>
-    <label>Modalidade</label>
-    <div class="opcoes">
-      <label><input type="radio" name="m-mod" value="P" ${(t.modalidade || 'P') === 'P' ? 'checked' : ''}><span>Presencial</span></label>
-      <label><input type="radio" name="m-mod" value="D" ${t.modalidade === 'D' ? 'checked' : ''}><span>À distância</span></label>
-    </div>
+    <label>Horário${editando ? '' : 's'}</label>
+    <div id="m-horarios">${linhaHorario({ n: n++, inicio: t.inicio || '08:00', fim: t.fim || '14:00', modalidade: t.modalidade || 'P' })}</div>
+    ${editando ? '' : `<button type="button" class="pequeno" id="m-mais" style="margin-top:8px">${icone('mais')} Outro horário no mesmo dia</button>`}
     <label>Observação (opcional)</label><input id="m-obs" type="text" value="${escapar(t.observacao || '')}" placeholder="ex.: reunião de equipe">`,
     async () => {
-      const corpo = {
-        servidor_id: Number(v('#m-servidor')),
-        data: v('#m-data'),
-        inicio: v('#m-inicio'),
-        fim: v('#m-fim'),
-        modalidade: f.querySelector('input[name="m-mod"]:checked').value,
-        observacao: v('#m-obs') || null,
-      };
-      if (editando) { await api(`/escala/turnos/${t.id}`, { method: 'PUT', corpo }); aviso('Turno alterado'); }
-      else { await api('/escala/turnos', { method: 'POST', corpo }); aviso('Turno lançado'); }
+      const linhas = [...f.querySelectorAll('.horario-linha')].map((l) => ({
+        inicio: l.querySelector('.h-ini').value,
+        fim: l.querySelector('.h-fim').value,
+        modalidade: l.querySelector('input[type="radio"]:checked').value,
+      }));
+      const base = { servidor_id: Number(v('#m-servidor')), data: v('#m-data'), observacao: v('#m-obs') || null };
+      if (editando) {
+        await api(`/escala/turnos/${t.id}`, { method: 'PUT', corpo: { ...base, ...linhas[0] } });
+        aviso('Turno alterado');
+        return;
+      }
+      // Confere sobreposicao entre as proprias linhas antes de gravar qualquer uma
+      const ordenadas = [...linhas].sort((x, y) => x.inicio.localeCompare(y.inicio));
+      for (let i = 1; i < ordenadas.length; i++) {
+        if (ordenadas[i].inicio < ordenadas[i - 1].fim) throw new Error(`Os horários ${ordenadas[i - 1].inicio}–${ordenadas[i - 1].fim} e ${ordenadas[i].inicio}–${ordenadas[i].fim} se sobrepõem`);
+      }
+      let gravados = 0;
+      try {
+        for (const h of linhas) { await api('/escala/turnos', { method: 'POST', corpo: { ...base, ...h } }); gravados++; }
+      } catch (erro) {
+        if (gravados) { await carregar(); throw new Error(`${gravados} horário(s) gravado(s); o seguinte falhou: ${erro.message}`); }
+        throw erro;
+      }
+      aviso(gravados === 1 ? 'Turno lançado' : `${gravados} horários lançados`);
     },
     editando ? { extra: { rotulo: 'Excluir', classe: 'perigo', acao: async () => {
       await api(`/escala/turnos/${t.id}`, { method: 'DELETE' }); aviso('Turno removido');
     } } } : {});
+  const caixa = f.querySelector('#m-horarios');
+  const ligarTirar = () => caixa.querySelectorAll('[data-tirar]').forEach((b) => { b.onclick = () => { if (caixa.children.length > 1) b.closest('.horario-linha').remove(); }; });
+  ligarTirar();
+  f.querySelector('#m-mais')?.addEventListener('click', () => {
+    const ultima = caixa.lastElementChild;
+    const p = proximo(ultima.querySelector('.h-fim').value || '14:00');
+    caixa.insertAdjacentHTML('beforeend', linhaHorario({ n: n++, ...p, modalidade: ultima.querySelector('input[type="radio"]:checked').value === 'P' ? 'D' : 'P' }));
+    ligarTirar();
+    caixa.lastElementChild.querySelector('.h-ini').focus();
+  });
 }
 
 function modalAfastamento(a) {

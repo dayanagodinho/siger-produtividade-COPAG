@@ -248,6 +248,14 @@ tfoot td { background: var(--cartao-2); font-size: 12px; }
 .cob-dia .cob { position: absolute; top: 0; bottom: 0; left: 0; right: 0; }
 .cob-dia .fora { position: absolute; top: 0; bottom: 0; border-radius: 6px; background: repeating-linear-gradient(135deg, var(--borda) 0 2px, transparent 2px 8px); opacity: .5; }
 
+/* ---------- Vários horários no dia ---------- */
+.horario-linha { display: grid; grid-template-columns: 1fr auto 1fr auto auto; gap: 6px; align-items: center; margin-bottom: 6px; }
+.horario-linha .ate { font-size: 12px; color: var(--suave); }
+.horario-linha .opcoes span { padding: 5px 9px; font-size: 12px; }
+.faixa .intervalo { position: absolute; top: 9px; bottom: 9px; border-top: 2px dashed var(--borda-forte); border-bottom: 2px dashed var(--borda-forte); display: flex; align-items: center; justify-content: center; pointer-events: none; }
+.faixa .intervalo span { font-size: 10px; color: var(--suave); background: var(--cartao-2); padding: 0 4px; white-space: nowrap; overflow: hidden; max-width: 100%; }
+@media (max-width: 900px) { .horario-linha { grid-template-columns: 1fr auto 1fr; } .horario-linha .opcoes { grid-column: 1 / -1; } }
+
 /* ---------- Afastados no fim da lista ---------- */
 .trilho .separador { grid-column: 1 / -1; display: flex; align-items: center; gap: 6px; margin-top: 10px; padding: 4px 6px; border-top: 2px dashed var(--borda-forte); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--afastamento-texto); }
 .trilho .rotulo.afastado { color: var(--suave); }
