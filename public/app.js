@@ -73,6 +73,7 @@ function aplicarTema(tema) {
   try { localStorage.setItem('escala-tema', tema); } catch { /* sem armazenamento: só nesta visita */ }
   $$('.btn-tema use').forEach((u) => u.setAttribute('href', tema === 'escuro' ? '#i-sol' : '#i-lua'));
   $$('.btn-tema').forEach((b) => { b.title = tema === 'escuro' ? 'Mudar para o tema claro' : 'Mudar para o tema escuro'; });
+  $$('.btn-tema .tema-rotulo').forEach((r) => { r.textContent = tema === 'escuro' ? 'Tema claro' : 'Tema escuro'; });
 }
 $$('.btn-tema').forEach((b) => b.addEventListener('click', () => {
   aplicarTema(document.documentElement.dataset.tema === 'escuro' ? 'claro' : 'escuro');
@@ -130,7 +131,7 @@ async function iniciar() {
   $('#app').classList.remove('oculto');
   estado.servidores = await api('/servidores');
   $('#quem').textContent = `${estado.usuario.nome}${ehChefia() ? ' · chefia' : ''}`;
-  if (ehChefia()) { $('#btn-config').classList.remove('oculto'); $('#btn-feriados').classList.remove('oculto'); }
+  if (ehChefia()) $('#btn-config').classList.remove('oculto');
   await carregar();
   // Aberto num sábado ou domingo: já cai no próximo dia com expediente.
   if (!temExpediente(estado.referencia)) { estado.referencia = proximoDiaUtil(estado.referencia, 1); await carregar(); }
@@ -169,6 +170,13 @@ const afastamentoDe = (servidorId, data) => estado.dados.afastamentos
 const diaCobertura = (data) => estado.cobertura?.dias.find((d) => d.data === data);
 const feriadoEm = (data) => estado.dados.feriados.find((f) => f.data === data);
 const servidoresAtivos = () => estado.servidores.filter((s) => s.ativo !== false);
+function textoPeriodo() {
+  const c = estado.cobertura?.config || {};
+  if (!c.periodo_inicio && !c.periodo_fim) return '';
+  if (c.periodo_inicio && c.periodo_fim) return `Período híbrido de ${dataBr(c.periodo_inicio)} a ${dataBr(c.periodo_fim)}.`;
+  if (c.periodo_inicio) return `Período híbrido desde ${dataBr(c.periodo_inicio)}.`;
+  return `Período híbrido até ${dataBr(c.periodo_fim)}.`;
+}
 
 /* ---------------- barra de cobertura ----------------
    Azul = faixa com alguém presencial (mais forte com 2 ou mais); listrado
@@ -176,7 +184,7 @@ const servidoresAtivos = () => estado.servidores.filter((s) => s.ativo !== false
    e no mês, só muda a altura. */
 function barraCobertura(dia, { alta = false } = {}) {
   if (!dia) return '';
-  if (!dia.util) return `<div class="cob-vazia">${dia.feriado ? `Feriado: ${escapar(dia.feriado)}` : 'Sem expediente'}</div>`;
+  if (!dia.util) return `<div class="cob-vazia">${dia.feriado ? `Feriado: ${escapar(dia.feriado)}` : (dia.fora_periodo ? 'Fora do período híbrido' : 'Sem expediente')}</div>`;
   let anteriorFalta = false;
   const faixas = dia.faixas.map((f) => {
     const primeira = f.descoberto && !anteriorFalta;
@@ -213,7 +221,7 @@ function desenharAlerta() {
     : '';
   if (!dias.length) {
     el.className = avisos ? 'ruim' : 'bom';
-    el.innerHTML = `${icone('ok')}<div><h3>Cobertura em ordem</h3>Todos os dias com expediente do período têm ao menos ${min} pessoa(s) presencial(is) das ${escapar(cfg.cobertura_inicio)} às ${escapar(cfg.cobertura_fim)}.${avisos}</div>`;
+    el.innerHTML = `${icone('ok')}<div><h3>Cobertura em ordem</h3>Todos os dias com expediente têm ao menos ${min} pessoa(s) presencial(is) das ${escapar(cfg.cobertura_inicio)} às ${escapar(cfg.cobertura_fim)}. ${textoPeriodo()}${avisos}</div>`;
     return;
   }
   el.className = 'ruim';
@@ -222,7 +230,7 @@ function desenharAlerta() {
     return `<span class="dia-link" data-dia="${d.data}">${dataBonita(d.data)} <b>${faixas}</b></span>`;
   }).join('');
   el.innerHTML = `${icone('alerta')}<div><h3>${dias.length} dia(s) com horário descoberto</h3>
-    <div>Alguém precisa estar presencial das ${escapar(cfg.cobertura_inicio)} às ${escapar(cfg.cobertura_fim)}. Clique no dia para ver quem está e ajustar.</div>
+    <div>Alguém precisa estar presencial das ${escapar(cfg.cobertura_inicio)} às ${escapar(cfg.cobertura_fim)}. ${textoPeriodo()} Clique no dia para ver quem está e ajustar.</div>
     <div class="dias">${itens}${dias.length > 15 ? `<span class="dia-link" style="cursor:default">…e mais ${dias.length - 15}</span>` : ''}</div>${avisos}</div>`;
   el.querySelectorAll('.dia-link[data-dia]').forEach((s) => s.addEventListener('click', () => irParaDia(s.dataset.dia)));
 }
@@ -288,7 +296,7 @@ function desenharDia() {
          <div style="position:absolute;top:0;bottom:0;left:${pos(abre)}%;width:${pos(fecha) - pos(abre)}%">${barraCobertura(dia, { alta: true })}</div>
          ${fim > fecha ? `<div class="fora" style="left:${pos(fecha)}%;right:0"></div>` : ''}
        </div>`
-    : `<div class="cob-vazia">${feriado ? `Feriado: ${escapar(feriado.descricao)} — sem exigência de cobertura.` : 'Sem expediente neste dia.'}</div>`;
+    : `<div class="cob-vazia">${feriado ? `Feriado: ${escapar(feriado.descricao)} — sem exigência de cobertura.` : (dia?.fora_periodo ? 'Fora do período híbrido — sem exigência de cobertura.' : 'Sem expediente neste dia.')}</div>`;
 
   const afastados = estado.dados.afastamentos.filter((a) => a.data_inicio <= data && a.data_fim >= data);
   const listaAfastados = afastados.length ? `
@@ -327,7 +335,7 @@ function desenharSemana() {
   const cabecalho = dias.map((d) => {
     const c = diaCobertura(d);
     const f = feriadoEm(d);
-    return `<th class="${classeDia(d)}"><div class="dia-cab"><b>${dataBonita(d)}</b>${f ? `<span class="feriado-nome">${escapar(f.descricao)}</span>` : (c ? barraCobertura(c) : '')}</div></th>`;
+    return `<th class="${classeDia(d)}"><div class="dia-cab"><b>${dataBonita(d)}</b>${f ? `<span class="feriado-nome">${escapar(f.descricao)}</span>` : (c?.fora_periodo ? '<span class="fora-periodo">fora do período</span>' : (c ? barraCobertura(c) : ''))}</div></th>`;
   }).join('');
 
   const corpo = servidoresAtivos().map((s) => {
@@ -354,7 +362,7 @@ function desenharSemana() {
 
   const rodape = dias.map((d) => {
     const c = diaCobertura(d);
-    if (!c || !c.util) return `<td class="${classeDia(d)}"><span class="vazio">${c?.feriado ? 'feriado' : '—'}</span></td>`;
+    if (!c || !c.util) return `<td class="${classeDia(d)}"><span class="vazio">${c?.feriado ? 'feriado' : (c?.fora_periodo ? 'fora do período' : '—')}</span></td>`;
     if (!c.lacunas.length) return `<td class="${classeDia(d)}"><span class="cob-ok" style="margin:0">${icone('ok')} coberto</span></td>`;
     return `<td class="${classeDia(d)}">${c.lacunas.map((l) => `<span class="lacuna" style="margin:1px 0">${icone('alerta')} ${l.inicio}–${l.fim}</span>`).join('<br>')}</td>`;
   }).join('');
@@ -390,8 +398,8 @@ function desenharMes() {
     const falha = c?.util && c.lacunas.length;
     const marca = c?.util
       ? (falha ? `<span class="marca-dia falha">${c.lacunas.length} lacuna(s)</span>` : `<span class="marca-dia ok">ok</span>`)
-      : (c?.feriado ? `<span class="marca-dia feriado">feriado</span>` : '');
-    celulas.push(`<div class="dia ${fora ? 'fora' : ''} ${c?.feriado ? 'feriado' : ''} ${falha ? 'falha' : ''} ${data === hoje ? 'hoje' : ''}" data-ir="${data}" title="${c?.feriado ? escapar(c.feriado) : 'Abrir a linha do tempo'}">
+      : (c?.feriado ? `<span class="marca-dia feriado">feriado</span>` : (c?.fora_periodo ? `<span class="marca-dia periodo">fora do período</span>` : ''));
+    celulas.push(`<div class="dia ${fora ? 'fora' : ''} ${c?.feriado ? 'feriado' : ''} ${c?.fora_periodo ? 'fora-periodo' : ''} ${falha ? 'falha' : ''} ${data === hoje ? 'hoje' : ''}" data-ir="${data}" title="${c?.feriado ? escapar(c.feriado) : 'Abrir a linha do tempo'}">
       <div class="num"><span>${d.getDate()}</span>${marca}</div>
       ${c?.util ? barraCobertura(c) : `<div style="height:19px"></div>`}
       <div class="miudo">
@@ -585,60 +593,171 @@ $('#btn-senha').addEventListener('click', () => {
     });
 });
 
-$('#btn-config').addEventListener('click', async () => {
+$('#btn-config').addEventListener('click', () => modalConfiguracoes('periodo'));
+
+/* ---------------- configurações (chefia) ----------------
+   Um painel com abas: período híbrido, pessoas no acompanhamento, feriados
+   e regras de cobertura. Cada aba desenha o próprio conteúdo e cuida dos
+   próprios botões; salvar recarrega a escala por trás. */
+const ABAS_CONFIG = [['periodo', 'Período híbrido'], ['pessoas', 'Pessoas'], ['feriados', 'Feriados'], ['regras', 'Regras de cobertura']];
+
+function modalConfiguracoes(abaInicial = 'periodo') {
+  const fundo = document.createElement('div');
+  fundo.className = 'fundo-modal';
+  fundo.innerHTML = `<div class="modal larga">
+    <div class="painel-topo"><h2>${icone('engrenagem')} Configurações</h2><button class="fantasma" data-fechar title="Fechar">✕</button></div>
+    <nav class="abas painel-abas">${ABAS_CONFIG.map(([id, rotulo]) => `<button data-aba="${id}">${rotulo}</button>`).join('')}</nav>
+    <div class="painel-corpo"></div>
+    <p class="erro"></p>
+  </div>`;
+  $('#modais').appendChild(fundo);
+  const aoTeclar = (e) => { if (e.key === 'Escape' && $('#modais').lastElementChild === fundo) fechar(); };
+  const fechar = () => { fundo.remove(); document.removeEventListener('keydown', aoTeclar); };
+  document.addEventListener('keydown', aoTeclar);
+  fundo.querySelector('[data-fechar]').addEventListener('click', fechar);
+  fundo.addEventListener('click', (e) => { if (e.target === fundo) fechar(); });
+
+  const painel = { fundo, corpo: fundo.querySelector('.painel-corpo'), erro: fundo.querySelector('.erro'), ano: estado.referencia.getFullYear() };
+  painel.mostrar = async (aba) => {
+    fundo.querySelectorAll('[data-aba]').forEach((b) => b.classList.toggle('ativa', b.dataset.aba === aba));
+    painel.erro.textContent = '';
+    painel.corpo.innerHTML = '<p class="vazio">Carregando…</p>';
+    try { await ABAS[aba](painel); } catch (erro) { painel.erro.textContent = erro.message; }
+  };
+  fundo.querySelectorAll('[data-aba]').forEach((b) => b.addEventListener('click', () => painel.mostrar(b.dataset.aba)));
+  painel.mostrar(abaInicial);
+}
+
+// Roda uma gravação; sucesso recarrega a escala e redesenha a aba, erro fica no painel.
+async function tentar(painel, acao, depois) {
+  painel.erro.textContent = '';
+  // A aba redesenha antes da escala: a aba Pessoas recarrega a lista de
+  // servidores, e a escala precisa dessa lista nova para esconder quem saiu.
+  try { await acao(); if (depois) await depois(); await carregar(); } catch (erro) { painel.erro.textContent = erro.message; }
+}
+
+async function abaPeriodo(p) {
   const c = await api('/cobertura/config');
-  abrirModal(`<h2>Regras de cobertura</h2>
-    <p class="sub">O alerta avisa toda faixa do expediente em que ninguém está presencial.</p>
-    <div class="dupla"><div><label>Expediente começa</label><input id="c-ini" type="time" value="${escapar(c.cobertura_inicio)}"></div>
-      <div><label>Alguém presencial até</label><input id="c-fim" type="time" value="${escapar(c.cobertura_fim)}"></div></div>
-    <label>Mínimo de pessoas presenciais em cada faixa</label><input id="c-min" type="number" min="1" max="100" value="${escapar(c.minimo_presencial)}">
-    <label>Tamanho da faixa analisada (minutos)</label><input id="c-gran" type="number" min="5" max="240" step="5" value="${escapar(c.granularidade_min)}">
-    <label>Dias com expediente (0=domingo … 6=sábado)</label><input id="c-dias" type="text" value="${escapar(c.dias_uteis)}">
-    <p class="nota">Ficar depois do horário final é permitido; só não é exigido. Sábado e domingo ficam fora da escala enquanto não estiverem na lista de dias.</p>`,
-    async (f) => {
-      await api('/cobertura/config', { method: 'PUT', corpo: {
-        cobertura_inicio: f.querySelector('#c-ini').value,
-        cobertura_fim: f.querySelector('#c-fim').value,
-        minimo_presencial: f.querySelector('#c-min').value,
-        granularidade_min: f.querySelector('#c-gran').value,
-        dias_uteis: f.querySelector('#c-dias').value,
-      }});
-      aviso('Regras atualizadas');
+  p.corpo.innerHTML = `<p class="sub">Entre essas datas vale a escala híbrida e o alerta de cobertura. Antes do início e depois do fim, os dias aparecem como "fora do período" e não geram alerta.</p>
+    <div class="dupla"><div><label>Início do período híbrido</label><input id="p-ini" type="date" value="${escapar(c.periodo_inicio || '')}"></div>
+      <div><label>Fim do período (vazio = ainda sem fim)</label><input id="p-fim" type="date" value="${escapar(c.periodo_fim || '')}"></div></div>
+    <div class="acoes"><button class="primario" data-salvar>Salvar período</button></div>`;
+  p.corpo.querySelector('[data-salvar]').addEventListener('click', () => tentar(p, async () => {
+    await api('/cobertura/config', { method: 'PUT', corpo: { periodo_inicio: p.corpo.querySelector('#p-ini').value, periodo_fim: p.corpo.querySelector('#p-fim').value } });
+    aviso('Período salvo');
+  }, () => p.mostrar('periodo')));
+}
+
+async function abaPessoas(p) {
+  const lista = await api('/servidores');
+  estado.servidores = lista;
+  const itens = lista.map((s) => `<div class="item ${s.ativo === false ? 'inativo' : ''}">
+      <div class="cresce"><strong>${escapar(s.nome)}</strong>${s.perfil === 'chefia' ? '<span class="badge">chefia</span>' : ''}${s.ativo === false ? '<span class="badge cinza">fora do acompanhamento</span>' : ''}
+        <small>${escapar(s.email)} · metas ${paraHoras(s.meta_presencial_semanal ?? 20)}h presencial + ${paraHoras(s.meta_distancia_semanal ?? 20)}h à distância</small></div>
+      <button class="pequeno" data-editar="${s.id}">${icone('lapis')} Editar</button>
+      <button class="pequeno" data-ativo="${s.id}|${s.ativo === false ? 'true' : 'false'}">${s.ativo === false ? 'Incluir' : 'Tirar'}</button>
+    </div>`).join('');
+  p.corpo.innerHTML = `<p class="sub">Quem está no acompanhamento aparece na escala e conta para a cobertura. Tirar alguém não apaga nada: a pessoa some das visões e volta quando for incluída de novo.</p>
+    <div class="acoes" style="margin:0 0 10px;justify-content:flex-start"><button class="primario" data-nova>${icone('mais')} Nova pessoa</button></div>
+    <div class="lista">${itens}</div>`;
+  p.corpo.querySelector('[data-nova]').addEventListener('click', () => modalPessoa({}, () => p.mostrar('pessoas')));
+  p.corpo.querySelectorAll('[data-editar]').forEach((b) => b.addEventListener('click', () => modalPessoa(lista.find((s) => Number(s.id) === Number(b.dataset.editar)), () => p.mostrar('pessoas'))));
+  p.corpo.querySelectorAll('[data-ativo]').forEach((b) => b.addEventListener('click', () => {
+    const [id, ativo] = b.dataset.ativo.split('|');
+    tentar(p, async () => {
+      await api(`/servidores/${id}`, { method: 'PUT', corpo: { ativo: ativo === 'true' } });
+      aviso(ativo === 'true' ? 'Pessoa incluída no acompanhamento' : 'Pessoa tirada do acompanhamento');
+    }, () => p.mostrar('pessoas'));
+  }));
+}
+
+function modalPessoa(s, depois) {
+  const nova = !s.id;
+  const f = abrirModal(`<h2>${nova ? 'Nova pessoa' : 'Editar pessoa'}</h2>
+    <label>Nome</label><input id="s-nome" type="text" value="${escapar(s.nome || '')}">
+    <label>E-mail (usado para entrar)</label><input id="s-email" type="email" value="${escapar(s.email || '')}" placeholder="nome@setor.local">
+    ${nova ? '<label>Senha inicial (vazio = mudar123)</label><input id="s-senha" type="text" autocomplete="off">' : ''}
+    <label>Perfil</label>
+    <div class="opcoes"><label><input type="radio" name="s-perfil" value="servidor" ${(s.perfil || 'servidor') === 'servidor' ? 'checked' : ''}><span>Servidor</span></label>
+      <label><input type="radio" name="s-perfil" value="chefia" ${s.perfil === 'chefia' ? 'checked' : ''}><span>Chefia</span></label></div>
+    <div class="dupla"><div><label>Meta semanal presencial (h)</label><input id="s-mp" type="number" min="0" max="60" step="0.5" value="${Number(s.meta_presencial_semanal ?? 20)}"></div>
+      <div><label>Meta semanal à distância (h)</label><input id="s-md" type="number" min="0" max="60" step="0.5" value="${Number(s.meta_distancia_semanal ?? 20)}"></div></div>
+    ${nova ? '' : '<p class="nota">Esqueceu a senha? <a href="#" data-redefinir>Redefinir para a senha padrão</a>.</p>'}`,
+    async (m) => {
+      const corpo = {
+        nome: m.querySelector('#s-nome').value,
+        email: m.querySelector('#s-email').value,
+        perfil: m.querySelector('input[name="s-perfil"]:checked').value,
+        meta_presencial_semanal: m.querySelector('#s-mp').value,
+        meta_distancia_semanal: m.querySelector('#s-md').value,
+      };
+      if (nova) {
+        const senha = m.querySelector('#s-senha').value;
+        if (senha) corpo.senha = senha;
+        await api('/servidores', { method: 'POST', corpo });
+        aviso('Pessoa cadastrada');
+      } else {
+        await api(`/servidores/${s.id}`, { method: 'PUT', corpo });
+        aviso('Pessoa atualizada');
+      }
+      if (depois) depois();
     });
-});
+  const link = f.querySelector('[data-redefinir]');
+  if (link) link.addEventListener('click', async (e) => {
+    e.preventDefault();
+    if (!confirm(`Redefinir a senha de ${s.nome} para a senha padrão?`)) return;
+    try { const r = await api(`/servidores/${s.id}/senha`, { method: 'POST', corpo: {} }); aviso(`Senha redefinida para ${r.senha}`); }
+    catch (erro) { f.querySelector('.erro').textContent = erro.message; }
+  });
+}
 
-/* ---- feriados: lista do ano, com inclusão e remoção (só chefia) ---- */
-$('#btn-feriados').addEventListener('click', () => modalFeriados(estado.referencia.getFullYear()));
-
-async function modalFeriados(ano) {
+async function abaFeriados(p) {
+  const ano = p.ano;
   const lista = await api(`/escala/feriados?ano=${ano}`);
   const itens = lista.length
     ? lista.map((f) => `<div class="item"><span class="data">${dataBonita(f.data)}</span><div class="cresce">${escapar(f.descricao)}</div>
         <button class="pequeno perigo" data-apagar-feriado="${f.data}" title="Remover">✕</button></div>`).join('')
     : '<p class="vazio">Nenhum feriado cadastrado neste ano.</p>';
-  const fundo = abrirModal(`<h2>Feriados de ${ano}</h2>
-    <p class="sub">Em feriado não há exigência de cobertura e as horas não contam. Os nacionais de 2026 já vieram carregados; apague o que não valer para o setor e inclua os locais.</p>
-    <div style="display:flex;gap:6px;margin:6px 0 10px"><button class="pequeno" data-ano="${ano - 1}">‹ ${ano - 1}</button><span class="espaco"></span><button class="pequeno" data-ano="${ano + 1}">${ano + 1} ›</button></div>
+  p.corpo.innerHTML = `<p class="sub">Em feriado não há exigência de cobertura e as horas não contam. Os nacionais de 2026 já vieram carregados; apague o que não valer para o setor e inclua os locais.</p>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><button class="pequeno" data-ano="${ano - 1}">‹ ${ano - 1}</button><strong style="flex:1;text-align:center">${ano}</strong><button class="pequeno" data-ano="${ano + 1}">${ano + 1} ›</button></div>
     <div class="lista">${itens}</div>
     <div class="dupla" style="margin-top:14px"><div><label>Novo feriado</label><input id="f-data" type="date" value="${ano}-01-01"></div>
-      <div><label>Descrição</label><input id="f-desc" type="text" placeholder="ex.: Aniversário da cidade"></div></div>`,
-    async (f) => {
-      const data = f.querySelector('#f-data').value, descricao = f.querySelector('#f-desc').value.trim();
-      await api('/escala/feriados', { method: 'POST', corpo: { data, descricao } });
-      aviso('Feriado incluído');
-    }, { rotuloOk: 'Incluir feriado' });
-  fundo.querySelectorAll('[data-apagar-feriado]').forEach((b) => b.addEventListener('click', async () => {
+      <div><label>Descrição</label><input id="f-desc" type="text" placeholder="ex.: Aniversário da cidade"></div></div>
+    <div class="acoes"><button class="primario" data-incluir>Incluir feriado</button></div>`;
+  p.corpo.querySelector('[data-incluir]').addEventListener('click', () => tentar(p, async () => {
+    await api('/escala/feriados', { method: 'POST', corpo: { data: p.corpo.querySelector('#f-data').value, descricao: p.corpo.querySelector('#f-desc').value.trim() } });
+    aviso('Feriado incluído');
+  }, () => p.mostrar('feriados')));
+  p.corpo.querySelectorAll('[data-apagar-feriado]').forEach((b) => b.addEventListener('click', () => {
     if (!confirm('Remover este feriado? O dia volta a exigir cobertura.')) return;
-    try {
-      await api(`/escala/feriados/${b.dataset.apagarFeriado}`, { method: 'DELETE' });
-      aviso('Feriado removido');
-      fundo.remove();
-      await carregar();
-      modalFeriados(ano);
-    } catch (erro) { fundo.querySelector('.erro').textContent = erro.message; }
+    tentar(p, async () => { await api(`/escala/feriados/${b.dataset.apagarFeriado}`, { method: 'DELETE' }); aviso('Feriado removido'); }, () => p.mostrar('feriados'));
   }));
-  fundo.querySelectorAll('[data-ano]').forEach((b) => b.addEventListener('click', () => { fundo.remove(); modalFeriados(Number(b.dataset.ano)); }));
+  p.corpo.querySelectorAll('[data-ano]').forEach((b) => b.addEventListener('click', () => { p.ano = Number(b.dataset.ano); p.mostrar('feriados'); }));
 }
+
+async function abaRegras(p) {
+  const c = await api('/cobertura/config');
+  p.corpo.innerHTML = `<p class="sub">O alerta avisa toda faixa do expediente em que ninguém está presencial. Ficar depois do horário final é permitido; só não é exigido.</p>
+    <div class="dupla"><div><label>Expediente começa</label><input id="c-ini" type="time" value="${escapar(c.cobertura_inicio)}"></div>
+      <div><label>Alguém presencial até</label><input id="c-fim" type="time" value="${escapar(c.cobertura_fim)}"></div></div>
+    <div class="dupla"><div><label>Mínimo de pessoas presenciais por faixa</label><input id="c-min" type="number" min="1" max="100" value="${escapar(c.minimo_presencial)}"></div>
+      <div><label>Tamanho da faixa analisada (minutos)</label><input id="c-gran" type="number" min="5" max="240" step="5" value="${escapar(c.granularidade_min)}"></div></div>
+    <label>Dias com expediente (0=domingo … 6=sábado)</label><input id="c-dias" type="text" value="${escapar(c.dias_uteis)}">
+    <p class="nota">Sábado e domingo ficam fora da escala enquanto não estiverem nessa lista.</p>
+    <div class="acoes"><button class="primario" data-salvar>Salvar regras</button></div>`;
+  p.corpo.querySelector('[data-salvar]').addEventListener('click', () => tentar(p, async () => {
+    await api('/cobertura/config', { method: 'PUT', corpo: {
+      cobertura_inicio: p.corpo.querySelector('#c-ini').value,
+      cobertura_fim: p.corpo.querySelector('#c-fim').value,
+      minimo_presencial: p.corpo.querySelector('#c-min').value,
+      granularidade_min: p.corpo.querySelector('#c-gran').value,
+      dias_uteis: p.corpo.querySelector('#c-dias').value,
+    }});
+    aviso('Regras atualizadas');
+  }, () => p.mostrar('regras')));
+}
+
+const ABAS = { periodo: abaPeriodo, pessoas: abaPessoas, feriados: abaFeriados, regras: abaRegras };
 
 /* ---------------- entrada ---------------- */
 (async () => {

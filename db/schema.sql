@@ -59,5 +59,7 @@ INSERT INTO config (chave, valor) VALUES
   ('cobertura_fim', '18:00'),
   ('minimo_presencial', '1'),
   ('granularidade_min', '30'),
-  ('dias_uteis', '1,2,3,4,5')
+  ('dias_uteis', '1,2,3,4,5'),
+  ('periodo_inicio', '2026-09-09'),
+  ('periodo_fim', '')
 ON CONFLICT (chave) DO NOTHING;

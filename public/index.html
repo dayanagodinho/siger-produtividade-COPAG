@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<title>Escala Híbrida</title>
+<title>Escala Híbrida · COPAG - SEPIN</title>
 <link rel="stylesheet" href="styles.css">
 <script>
   // Aplica o tema guardado antes da primeira pintura, para a tela nao piscar.
@@ -38,7 +38,7 @@
   <form class="caixa" id="form-login">
     <div class="marca grande">
       <span class="selo">EH</span>
-      <div><strong>Escala Híbrida</strong><small>Presencial, à distância e afastamentos</small></div>
+      <div><strong>Escala Híbrida</strong><small>COPAG - SEPIN · presencial, à distância e afastamentos</small></div>
     </div>
     <label for="email">E-mail</label>
     <input id="email" type="email" autocomplete="username" placeholder="nome@setor.local" required>
@@ -46,7 +46,7 @@
     <input id="senha" type="password" autocomplete="current-password" required>
     <button class="primario" type="submit">Entrar</button>
     <p class="erro" id="erro-login"></p>
-    <button type="button" class="btn-tema fantasma" title="Alternar tema claro/escuro"><svg class="ic"><use href="#i-lua"/></svg><span>Tema</span></button>
+    <button type="button" class="btn-tema fantasma" title="Alternar tema claro/escuro"><svg class="ic"><use href="#i-lua"/></svg><span class="tema-rotulo">Tema escuro</span></button>
   </form>
 </section>
 
@@ -54,7 +54,7 @@
   <header class="topo">
     <div class="marca">
       <span class="selo">EH</span>
-      <div><strong>Escala Híbrida</strong><small id="quem"></small></div>
+      <div><strong>Escala Híbrida <span class="setor">· COPAG - SEPIN</span></strong><small id="quem"></small></div>
     </div>
     <nav class="abas" aria-label="Visão">
       <button data-visao="dia">Dia</button>
@@ -63,9 +63,8 @@
     </nav>
     <div class="espaco"></div>
     <div class="menu">
-      <button id="btn-feriados" class="oculto fantasma" title="Feriados"><svg class="ic"><use href="#i-calendario"/></svg><span>Feriados</span></button>
-      <button id="btn-config" class="oculto fantasma" title="Regras de cobertura"><svg class="ic"><use href="#i-engrenagem"/></svg><span>Regras</span></button>
-      <button class="btn-tema fantasma" title="Alternar tema claro/escuro"><svg class="ic"><use href="#i-lua"/></svg></button>
+      <button id="btn-config" class="oculto fantasma" title="Período híbrido, pessoas, feriados e regras"><svg class="ic"><use href="#i-engrenagem"/></svg><span>Configurações</span></button>
+      <button class="btn-tema fantasma" title="Alternar tema claro/escuro"><svg class="ic"><use href="#i-lua"/></svg><span class="tema-rotulo">Tema escuro</span></button>
       <button id="btn-senha" class="fantasma">Senha</button>
       <button id="btn-sair" class="fantasma">Sair</button>
     </div>

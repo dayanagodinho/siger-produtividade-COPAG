@@ -67,6 +67,8 @@ const REGRAS = {
   minimo_presencial: [(v) => ehInteiro(v, { min: 1, max: 100 }), 'inteiro entre 1 e 100'],
   granularidade_min: [(v) => ehInteiro(v, { min: 5, max: 240 }), 'inteiro entre 5 e 240 (minutos)'],
   dias_uteis: [(v) => Boolean(diasUteisOuNulo(v)), 'lista de dias da semana de 0 (domingo) a 6 (sabado), separados por virgula'],
+  periodo_inicio: [(v) => v === '' || v === null || ehData(v), 'data no formato YYYY-MM-DD, ou vazio'],
+  periodo_fim: [(v) => v === '' || v === null || ehData(v), 'data no formato YYYY-MM-DD, ou vazio'],
 };
 
 router.put('/config', exigirChefia, async (req, res) => {
@@ -77,12 +79,15 @@ router.put('/config', exigirChefia, async (req, res) => {
     if (!REGRAS[chave]) continue;
     const [valida, esperado] = REGRAS[chave];
     if (!valida(valor)) erros.push(`${chave}: esperado ${esperado}, recebido "${valor}"`);
-    else novo[chave] = chave === 'dias_uteis' ? diasUteisOuNulo(valor).join(',') : String(valor).trim();
+    else novo[chave] = chave === 'dias_uteis' ? diasUteisOuNulo(valor).join(',') : String(valor ?? '').trim();
   }
   const junto = { ...atual, ...novo };
   if (!erros.length && ehHora(junto.cobertura_inicio) && ehHora(junto.cobertura_fim)
       && numeroOuNulo(junto.cobertura_fim.replace(':', '')) <= numeroOuNulo(junto.cobertura_inicio.replace(':', ''))) {
     erros.push(`cobertura_fim (${junto.cobertura_fim}) precisa ser depois de cobertura_inicio (${junto.cobertura_inicio})`);
+  }
+  if (!erros.length && junto.periodo_inicio && junto.periodo_fim && junto.periodo_fim < junto.periodo_inicio) {
+    erros.push(`periodo_fim (${junto.periodo_fim}) precisa ser igual ou depois de periodo_inicio (${junto.periodo_inicio})`);
   }
   if (erros.length) return res.status(400).json({ erro: `Regra recusada: ${erros.join('; ')}`, erros });
   for (const [chave, valor] of Object.entries(novo)) {

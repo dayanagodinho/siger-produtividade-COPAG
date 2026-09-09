@@ -109,3 +109,23 @@ test('totalizarHoras com lixo dentro: hora quebrada nao contamina a soma dos out
   assert.ok(!Number.isNaN(r.total));
   assert.equal(JSON.stringify(r).includes('null'), false);
 });
+
+test('dia antes do inicio ou depois do fim do periodo hibrido nao e util e nao gera lacuna', () => {
+  const config = { ...CONFIG, periodo_inicio: '2026-09-09', periodo_fim: '2026-09-10' };
+  const dias = analisarCobertura({ inicio: '2026-09-08', fim: '2026-09-11', turnos: [], afastamentos: [], feriados: [], config });
+  assert.deepEqual(dias.map((d) => [d.data, d.util, d.fora_periodo]), [
+    ['2026-09-08', false, true], ['2026-09-09', true, false], ['2026-09-10', true, false], ['2026-09-11', false, true],
+  ]);
+  assert.equal(dias[0].lacunas.length, 0);
+  assert.equal(dias[1].lacunas.length, 1);
+});
+
+test('periodo com data invalida ou invertida cai no padrao (sem limite) e avisa', () => {
+  const r = interpretarConfig({ ...CONFIG, periodo_inicio: 'ontem', periodo_fim: '2026-09-10' });
+  assert.equal(r.periodoInicio, null);
+  assert.equal(r.periodoFim, '2026-09-10');
+  assert.equal(r.avisos.length, 1);
+  const inv = interpretarConfig({ ...CONFIG, periodo_inicio: '2026-09-10', periodo_fim: '2026-09-01' });
+  assert.equal(inv.periodoFim, null);
+  assert.equal(inv.avisos.length, 1);
+});

@@ -1,4 +1,4 @@
-# Escala Híbrida
+# Escala Híbrida — COPAG - SEPIN
 
 > Este repositório era do SIGAP (produtividade). O SIGAP foi aposentado e o código
 > dele está guardado em `legado/sigap/`, sem rodar. O bloco do Railway e o Postgres
@@ -17,11 +17,12 @@ Substitui a planilha `CONTROLE ESCALA HÍBRIDO 2026.xlsx` — cuja escala já ve
 - **Alerta de cobertura**: o sistema varre o expediente (padrão 07:00–18:00) em faixas de 30 minutos e avisa toda faixa em que **ninguém está presencial**. Alguém precisa ficar presencial até as 18:00; ficar depois é permitido, só não é exigido. O mínimo por faixa, o horário, o tamanho da faixa e os dias com expediente são configuráveis pela chefia em "Regras".
 - **Barra de cobertura do dia**: azul onde há alguém presencial (mais forte com duas ou mais pessoas), listrado com borda vermelha onde não há ninguém. A mesma barra aparece, menor, no cabeçalho de cada dia da semana e em cada dia do mês.
 - **Férias e afastamentos** (férias, licença, capacitação, folga): nos dias marcados a pessoa deixa de contar para a cobertura, e o alerta recalcula na hora — é assim que aparece quem precisa cobrir.
-- **Feriados**: os nacionais de 2026 já vêm carregados na primeira subida; a chefia inclui os locais e apaga os que não valem para o setor, em "Feriados". Em feriado não há exigência de cobertura e as horas não contam.
+- **Configurações** (só chefia), em quatro abas: **Período híbrido** (início e fim; começou em 09/09/2026, e dias fora dele não geram alerta), **Pessoas** (quem entra no acompanhamento, cadastro, perfil, metas e redefinição de senha; tirar alguém não apaga nada), **Feriados** e **Regras de cobertura**.
+- **Feriados**: os nacionais de 2026 já vêm carregados na primeira subida; a chefia inclui os locais e apaga os que não valem para o setor. Em feriado não há exigência de cobertura e as horas não contam.
 - **Fim de semana não entra na escala**: a semana mostra segunda a sexta, o mês só os dias com expediente, e as setas do dia pulam sábado e domingo.
 - **Três visões**: linha do tempo do dia, grade da semana (parecida com a planilha, com totais P/D por pessoa contra a meta de 20h+20h) e calendário do mês com a cobertura de cada dia.
 - **Repetir semana**: copia a escala de uma semana para as seguintes, que é o padrão da planilha antiga.
-- **Tema claro ou escuro**, à escolha de cada pessoa (botão de sol/lua), lembrado no navegador.
+- **Tema claro ou escuro**, à escolha de cada pessoa (botão "Tema escuro" / "Tema claro" no cabeçalho e na tela de entrada), lembrado no navegador.
 
 ## Rodando na sua máquina
 
@@ -119,7 +120,7 @@ e-mail duplicado com maiúscula, "repetir semana" até `abc` e até 2099.
 | GET | `/api/escala/feriados?ano=` | feriados do ano |
 | POST/DELETE | `/api/escala/feriados` | cadastra/remove feriado (só chefia) |
 | GET | `/api/cobertura?inicio=&fim=` | análise de cobertura + horas por servidor |
-| GET/PUT | `/api/cobertura/config` | regras de cobertura (PUT só chefia) |
+| GET/PUT | `/api/cobertura/config` | regras de cobertura e período híbrido (PUT só chefia) |
 
 ## Regras de permissão
 

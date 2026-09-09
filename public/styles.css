@@ -101,6 +101,7 @@ label { display: block; font-size: 12px; font-weight: 600; color: var(--suave); 
   background: linear-gradient(135deg, var(--presencial), var(--distancia)); color: #fff; font-weight: 800; font-size: 13px; letter-spacing: .02em;
 }
 .marca strong { display: block; font-size: 15px; }
+.marca .setor { color: var(--suave); font-weight: 500; }
 .marca small { display: block; color: var(--suave); font-size: 12px; }
 .marca.grande { margin-bottom: 18px; }
 .marca.grande .selo { width: 44px; height: 44px; font-size: 16px; border-radius: 13px; }
@@ -277,11 +278,24 @@ tfoot td { background: var(--cartao-2); font-size: 12px; }
 #aviso.ver { opacity: 1; transform: translate(-50%, 0); }
 .oculto { display: none !important; }
 
+/* ---------- Configurações ---------- */
+.modal.larga { max-width: 760px; }
+.painel-topo { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.painel-topo h2 { display: flex; align-items: center; gap: 8px; margin: 0; }
+.painel-abas { margin-bottom: 14px; flex-wrap: wrap; }
+.painel-corpo .acoes { margin-top: 14px; }
+.badge { display: inline-block; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; padding: 1px 7px; border-radius: 999px; background: var(--presencial-fraco); color: var(--presencial-texto); margin-left: 6px; vertical-align: 1px; }
+.badge.cinza { background: var(--cartao); color: var(--suave); border: 1px solid var(--borda); }
+.item.inativo { opacity: .6; }
+.mes .dia.fora-periodo { background: var(--cartao-2); opacity: .55; }
+.mes .dia .marca-dia.periodo { background: var(--cartao); color: var(--suave); border: 1px solid var(--borda); }
+th .fora-periodo { color: var(--suave); font-weight: 500; font-size: 11px; }
+
 @media (max-width: 760px) {
   main { padding: 12px 12px 40px; }
   header.topo { padding: 8px 12px; gap: 10px; }
   .marca small { display: none; }
-  .menu button span, .acoes-barra button span { display: none; }
+  .menu button span:not(.tema-rotulo), .acoes-barra button span { display: none; }
   .barra .periodo { font-size: 15px; width: 100%; order: 3; }
   .mes .dia { min-height: 70px; padding: 5px; }
   .mes .dia .miudo { display: none; }

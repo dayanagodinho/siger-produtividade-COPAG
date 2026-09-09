@@ -1,4 +1,4 @@
-const { ehHora, ehInteiro, diasUteisOuNulo } = require('./validar');
+const { ehHora, ehInteiro, ehData, diasUteisOuNulo } = require('./validar');
 
 // Motor de analise de cobertura: descobre as faixas de horario em que o
 // atendimento presencial fica sem ninguem (ou abaixo do minimo exigido).
@@ -44,6 +44,9 @@ const CONFIG_PADRAO = Object.freeze({
   minimo_presencial: '1',
   granularidade_min: '30',
   dias_uteis: '1,2,3,4,5',
+  // Periodo em que vale a escala hibrida. Vazio = sem limite daquele lado.
+  periodo_inicio: '',
+  periodo_fim: '',
 });
 
 /**
@@ -71,6 +74,9 @@ function interpretarConfig(config) {
   if (!ehInteiro(c.minimo_presencial, { min: 1, max: 100 })) usarPadrao('minimo_presencial', 'nao e inteiro entre 1 e 100');
   if (!ehInteiro(c.granularidade_min, { min: 5, max: 240 })) usarPadrao('granularidade_min', 'nao e inteiro entre 5 e 240');
   if (!diasUteisOuNulo(c.dias_uteis)) usarPadrao('dias_uteis', 'nao e lista de dias 0..6');
+  if (c.periodo_inicio && !ehData(c.periodo_inicio)) usarPadrao('periodo_inicio', 'nao e data YYYY-MM-DD');
+  if (c.periodo_fim && !ehData(c.periodo_fim)) usarPadrao('periodo_fim', 'nao e data YYYY-MM-DD');
+  if (c.periodo_inicio && c.periodo_fim && c.periodo_fim < c.periodo_inicio) usarPadrao('periodo_fim', 'vem antes do inicio do periodo');
 
   return {
     abre: paraMinutos(c.cobertura_inicio),
@@ -78,13 +84,15 @@ function interpretarConfig(config) {
     minimo: Number(c.minimo_presencial),
     passo: Number(c.granularidade_min),
     diasUteis: diasUteisOuNulo(c.dias_uteis),
+    periodoInicio: c.periodo_inicio || null,
+    periodoFim: c.periodo_fim || null,
     config: c,
     avisos,
   };
 }
 
 function analisarCobertura({ inicio, fim, turnos, afastamentos, feriados, config }) {
-  const { abre, fecha, minimo, passo, diasUteis } = interpretarConfig(config);
+  const { abre, fecha, minimo, passo, diasUteis, periodoInicio, periodoFim } = interpretarConfig(config);
   const mapaFeriados = new Map((feriados || []).map((f) => [iso(f.data), f.descricao]));
 
   const turnosPorDia = new Map();
@@ -103,12 +111,14 @@ function analisarCobertura({ inicio, fim, turnos, afastamentos, feriados, config
 
   for (const dia of listarDias(inicio, fim)) {
     const feriado = mapaFeriados.get(dia);
-    const util = diasUteis.includes(diaDaSemana(dia)) && !feriado;
+    // Fora do periodo hibrido nao ha escala a cobrir: o dia nao gera lacuna.
+    const foraPeriodo = Boolean((periodoInicio && dia < periodoInicio) || (periodoFim && dia > periodoFim));
+    const util = diasUteis.includes(diaDaSemana(dia)) && !feriado && !foraPeriodo;
     const doDia = (turnosPorDia.get(dia) || []).filter((t) => !afastadoEm(t.servidor_id, dia));
     const presenciais = doDia.filter((t) => t.modalidade === 'P');
 
     if (!util) {
-      resultado.push({ data: dia, util: false, feriado: feriado || null, lacunas: [], faixas: [], presentes: [] });
+      resultado.push({ data: dia, util: false, feriado: feriado || null, fora_periodo: foraPeriodo, lacunas: [], faixas: [], presentes: [] });
       continue;
     }
 
@@ -143,7 +153,7 @@ function analisarCobertura({ inicio, fim, turnos, afastamentos, feriados, config
       ([id, nome]) => ({ servidor_id: id, nome })
     );
 
-    resultado.push({ data: dia, util: true, feriado: null, minimo, lacunas, faixas, presentes });
+    resultado.push({ data: dia, util: true, feriado: null, fora_periodo: false, minimo, lacunas, faixas, presentes });
   }
 
   return resultado;

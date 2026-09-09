@@ -32,6 +32,8 @@ app.get('/api/saude', (req, res) => res.json({
     feriados_nacionais_2026: true,
     expediente_ate_18h: true,
     tema_escuro: true,
+    periodo_hibrido: true,
+    configuracoes_em_abas: true,
   },
 }));
 
