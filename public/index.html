@@ -4,7 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<title>Escala Híbrida · COPAG - SEPIN</title>
+<title>SEPIN - COPAG · Escala Híbrida</title>
+<link rel="icon" type="image/svg+xml" href="icone.svg">
 <link rel="stylesheet" href="styles.css">
 <script>
   // Aplica o tema guardado antes da primeira pintura, para a tela nao piscar.
@@ -37,8 +38,8 @@
 <section id="login">
   <form class="caixa" id="form-login">
     <div class="marca grande">
-      <span class="selo">EH</span>
-      <div><strong>Escala Híbrida</strong><small>COPAG - SEPIN · presencial, à distância e afastamentos</small></div>
+      <span class="selo"><img src="simbolo.svg" alt=""></span>
+      <div><strong>SEPIN - COPAG</strong><small>Escala Híbrida · presencial, à distância e afastamentos</small></div>
     </div>
     <label for="email">Usuário ou e-mail</label>
     <input id="email" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="seu usuário ou e-mail" required>
@@ -50,25 +51,31 @@
   </form>
 </section>
 
-<div id="app" class="oculto">
-  <header class="topo">
+<div id="app" class="oculto aplicacao">
+  <aside class="lateral">
     <div class="marca">
-      <span class="selo">EH</span>
-      <div><strong>Escala Híbrida <span class="setor">· COPAG - SEPIN</span></strong><small id="quem"></small></div>
+      <span class="selo"><img src="simbolo.svg" alt=""></span>
+      <div><strong>SEPIN - COPAG</strong><small>Escala Híbrida</small></div>
     </div>
-    <nav class="abas" aria-label="Visão">
-      <button data-visao="dia">Dia</button>
-      <button data-visao="semana" class="ativa">Semana</button>
-      <button data-visao="mes">Mês</button>
+    <nav class="menu-lateral" aria-label="Menu">
+      <span class="grupo">Visões</span>
+      <button data-visao="dia"><svg class="ic"><use href="#i-calendario"/></svg><span>Dia</span></button>
+      <button data-visao="semana" class="ativa"><svg class="ic"><use href="#i-calendario"/></svg><span>Semana</span></button>
+      <button data-visao="mes"><svg class="ic"><use href="#i-calendario"/></svg><span>Mês</span></button>
+      <span class="grupo">Lançar</span>
+      <button id="btn-turno"><svg class="ic"><use href="#i-mais"/></svg><span>Turno</span></button>
+      <button id="btn-afastamento"><svg class="ic"><use href="#i-palmeira"/></svg><span>Férias / afastamento</span></button>
+      <button id="btn-replicar"><svg class="ic"><use href="#i-repetir"/></svg><span>Repetir semana</span></button>
+      <span class="grupo">Sistema</span>
+      <button id="btn-config" class="oculto" title="Período híbrido, pessoas, feriados e regras"><svg class="ic"><use href="#i-engrenagem"/></svg><span>Configurações</span></button>
+      <button id="btn-conta" title="Meu login, meu nome e minha senha"><svg class="ic"><use href="#i-lapis"/></svg><span>Minha conta</span></button>
+      <button class="btn-tema" title="Alternar tema claro/escuro"><svg class="ic"><use href="#i-lua"/></svg><span class="tema-rotulo">Tema escuro</span></button>
     </nav>
-    <div class="espaco"></div>
-    <div class="menu">
-      <button id="btn-config" class="oculto fantasma" title="Período híbrido, pessoas, feriados e regras"><svg class="ic"><use href="#i-engrenagem"/></svg><span>Configurações</span></button>
-      <button class="btn-tema fantasma" title="Alternar tema claro/escuro"><svg class="ic"><use href="#i-lua"/></svg><span class="tema-rotulo">Tema escuro</span></button>
-      <button id="btn-conta" class="fantasma" title="Meu login, meu nome e minha senha">Minha conta</button>
-      <button id="btn-sair" class="fantasma">Sair</button>
+    <div class="rodape-lateral">
+      <span id="quem"></span>
+      <button id="btn-sair" class="fantasma pequeno">Sair</button>
     </div>
-  </header>
+  </aside>
 
   <main>
     <div class="barra">
@@ -78,12 +85,6 @@
         <button id="prox" title="Próximo"><svg class="ic"><use href="#i-seta-d"/></svg></button>
       </div>
       <h2 class="periodo" id="periodo"></h2>
-      <div class="espaco"></div>
-      <div class="acoes-barra">
-        <button id="btn-turno" class="primario"><svg class="ic"><use href="#i-mais"/></svg><span>Turno</span></button>
-        <button id="btn-afastamento"><svg class="ic"><use href="#i-palmeira"/></svg><span>Férias / afastamento</span></button>
-        <button id="btn-replicar"><svg class="ic"><use href="#i-repetir"/></svg><span>Repetir semana</span></button>
-      </div>
     </div>
 
     <div class="legenda">

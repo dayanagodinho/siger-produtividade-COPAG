@@ -140,8 +140,8 @@ async function iniciar() {
 }
 
 /* ---------------- navegação ---------------- */
-$$('.abas button').forEach((b) => b.addEventListener('click', () => {
-  $$('.abas button').forEach((x) => x.classList.remove('ativa'));
+$$('[data-visao]').forEach((b) => b.addEventListener('click', () => {
+  $$('[data-visao]').forEach((x) => x.classList.remove('ativa'));
   b.classList.add('ativa');
   estado.visao = b.dataset.visao;
   carregar();
@@ -240,7 +240,7 @@ function desenharAlerta() {
 function irParaDia(data) {
   estado.referencia = deIso(data);
   estado.visao = 'dia';
-  $$('.abas button').forEach((x) => x.classList.toggle('ativa', x.dataset.visao === 'dia'));
+  $$('[data-visao]').forEach((x) => x.classList.toggle('ativa', x.dataset.visao === 'dia'));
   carregar();
 }
 

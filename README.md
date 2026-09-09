@@ -1,4 +1,4 @@
-# Escala Híbrida — COPAG - SEPIN
+# SEPIN - COPAG · Escala Híbrida
 
 > Este repositório era do SIGAP (produtividade). O SIGAP foi aposentado e o código
 > dele está guardado em `legado/sigap/`, sem rodar. O bloco do Railway e o Postgres
@@ -80,7 +80,7 @@ src/cobertura.js       motor que encontra as faixas sem presencial
 src/validar.js         checagem de data, hora, número e e-mail antes do banco
 src/auth.js            login por cookie assinado (JWT) e regras de permissão
 src/routes/            auth, servidores, escala, cobertura
-public/                interface (HTML + CSS + JavaScript puro, sem build)
+public/                interface (HTML + CSS + JavaScript puro, sem build); simbolo.svg e icone.svg são o símbolo da COPAG, o mesmo do SIGAP
 scripts/migrate.js     cria/atualiza as tabelas e aplica ajustes de dados uma vez só (18h, feriados de 2026)
 scripts/seed.js        carrega servidores e a escala inicial
 test/unit/             motor de cobertura, validação e TLS, sem banco (`npm test`)

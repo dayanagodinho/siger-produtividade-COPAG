@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 156 132" role="img" aria-label="COPAG - SEPIN">
+  <!-- Versao reduzida do simbolo, para a aba do navegador. -->
+  <path d="M 22 62 A 40 40 0 0 1 62 22" fill="none" stroke="#1E4034" stroke-width="9" stroke-linecap="round"/>
+  <circle cx="79" cy="25.5" r="5.6" fill="#1E4034"/>
+  <circle cx="92.5" cy="35.5" r="5.0" fill="#2A5745"/>
+  <circle cx="99.6" cy="50.5" r="4.2" fill="#3A7460"/>
+  <circle cx="99.5" cy="66.5" r="3.4" fill="#5C9080"/>
+  <path d="M 52 96 L 52 62 L 66 55 L 66 96 Z" fill="#2F6B55"/>
+  <path d="M 74 96 L 74 44 L 90 35 L 90 96 Z" fill="#1E4034"/>
+  <path d="M 16 102 C 46 118 70 120 76 108 C 50 114 34 109 16 102 Z" fill="#1E4034"/>
+  <path d="M 80 108 C 86 120 110 118 140 102 C 122 109 106 114 80 108 Z" fill="#2F6B55"/>
+</svg>
