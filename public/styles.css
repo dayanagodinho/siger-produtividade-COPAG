@@ -248,6 +248,15 @@ tfoot td { background: var(--cartao-2); font-size: 12px; }
 .cob-dia .cob { position: absolute; top: 0; bottom: 0; left: 0; right: 0; }
 .cob-dia .fora { position: absolute; top: 0; bottom: 0; border-radius: 6px; background: repeating-linear-gradient(135deg, var(--borda) 0 2px, transparent 2px 8px); opacity: .5; }
 
+/* ---------- Afastados no fim da lista ---------- */
+.trilho .separador { grid-column: 1 / -1; display: flex; align-items: center; gap: 6px; margin-top: 10px; padding: 4px 6px; border-top: 2px dashed var(--borda-forte); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--afastamento-texto); }
+.trilho .rotulo.afastado { color: var(--suave); }
+.trilho .faixa.afastado { background: color-mix(in srgb, var(--afastamento-fraco) 40%, var(--cartao-2)); }
+tr.separador td { padding: 10px 8px 6px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--afastamento-texto); background: color-mix(in srgb, var(--afastamento-fraco) 40%, var(--cartao)); border-top: 2px dashed var(--borda-forte); }
+tr.separador td .ic { vertical-align: -3px; margin-right: 4px; }
+tr.afastado td { background: color-mix(in srgb, var(--afastamento-fraco) 25%, var(--cartao)); }
+tr.afastado td.nome { color: var(--suave); }
+
 /* ---------- Calendário mensal ---------- */
 .mes { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
 .mes .cab { text-align: center; font-size: 12px; color: var(--suave); font-weight: 600; padding: 4px; }

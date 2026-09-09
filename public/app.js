@@ -274,6 +274,15 @@ const afastamentoDe = (servidorId, data) => estado.dados.afastamentos
 const diaCobertura = (data) => estado.cobertura?.dias.find((d) => d.data === data);
 const feriadoEm = (data) => estado.dados.feriados.find((f) => f.data === data);
 const servidoresAtivos = () => estado.servidores.filter((s) => s.ativo !== false);
+
+// Ordem das pessoas nas visoes: quem esta fica em cima, quem esta afastado
+// vai para o fim (quanto mais dias afastado no periodo, mais para baixo).
+// Sem isso, ferias no meio da lista cortavam a leitura de quem esta.
+function ordenarPorPresenca(dias) {
+  const lista = servidoresAtivos().map((s) => ({ s, fora: dias.filter((d) => afastamentoDe(s.id, d)).length }));
+  lista.sort((x, y) => x.fora - y.fora || x.s.nome.localeCompare(y.s.nome));
+  return lista;
+}
 function textoPeriodo() {
   const c = estado.cobertura?.config || {};
   if (!c.periodo_inicio && !c.periodo_fim) return '';
@@ -493,7 +502,9 @@ function desenharDia() {
   for (let m = ini + 60; m < fim; m += 60) grade.push(`<div class="grade${m === fecha ? ' fecha' : ''}" style="left:${pos(m)}%"></div>`);
   if (fecha % 60 !== 0) grade.push(`<div class="grade fecha" style="left:${pos(fecha)}%"></div>`);
 
-  const linhas = servidoresAtivos().map((s) => {
+  const ordenados = ordenarPorPresenca([data]);
+  const linhas = ordenados.map(({ s, fora }, i) => {
+    const separador = fora && (i === 0 || !ordenados[i - 1].fora) ? `<div class="separador">${icone('ferias')} Afastados neste dia</div>` : '';
     const af = afastamentoDe(s.id, data);
     const editavel = podeEditar(s.id);
     const blocos = af
@@ -506,7 +517,7 @@ function desenharDia() {
                     title="${t.inicio}–${t.fim} ${rotulo}${t.observacao ? ' — ' + escapar(t.observacao) : ''}${editavel ? ' (clique para alterar)' : ''}">${t.inicio}–${t.fim}</div>`;
         }).join('');
     const acao = editavel && !af ? `<button class="mais" data-novo="${s.id}|${data}">${icone('mais')}</button>` : '';
-    return `<div class="rotulo"><span>${escapar(s.nome)}</span>${acao}</div><div class="faixa">${grade.join('')}${blocos}</div>`;
+    return `${separador}<div class="rotulo${af ? ' afastado' : ''}"><span>${escapar(s.nome)}</span>${acao}</div><div class="faixa${af ? ' afastado' : ''}">${grade.join('')}${blocos}</div>`;
   }).join('');
 
   const reguas = [];
@@ -562,7 +573,10 @@ function desenharSemana() {
     return `<th class="${classeDia(d)}"><div class="dia-cab"><b>${dataBonita(d)}</b>${f ? `<span class="feriado-nome">${escapar(f.descricao)}</span>` : (c?.fora_periodo ? '<span class="fora-periodo">fora do período</span>' : (c ? barraCobertura(c) : ''))}</div></th>`;
   }).join('');
 
-  const corpo = servidoresAtivos().map((s) => {
+  const ordenados = ordenarPorPresenca(dias);
+  const corpo = ordenados.map(({ s, fora }, i) => {
+    const semanaToda = fora === dias.length;
+    const separador = semanaToda && (i === 0 || ordenados[i - 1].fora !== dias.length) ? `<tr class="separador"><td colspan="${dias.length + 4}">${icone('ferias')} Afastados a semana toda</td></tr>` : '';
     let hp = 0, hd = 0;
     const editavel = podeEditar(s.id);
     const celulas = dias.map((d) => {
@@ -578,7 +592,7 @@ function desenharSemana() {
       return `<td class="celula ${classeDia(d)}">${chips}${mais}</td>`;
     }).join('');
     const metaP = Number(s.meta_presencial_semanal ?? 20), metaD = Number(s.meta_distancia_semanal ?? 20);
-    return `<tr><td class="nome">${escapar(s.nome)}</td>${celulas}
+    return `${separador}<tr class="${semanaToda ? 'afastado' : (fora ? 'parcial' : '')}"><td class="nome">${escapar(s.nome)}${fora && !semanaToda ? ` <small class="meta">(${fora} dia${fora > 1 ? 's' : ''} fora)</small>` : ''}</td>${celulas}
       <td class="total"><span class="${hp < metaP ? 'abaixo' : ''}">${paraHoras(hp)}</span> <span class="meta">/ ${paraHoras(metaP)}</span></td>
       <td class="total"><span class="${hd < metaD ? 'abaixo' : ''}">${paraHoras(hd)}</span> <span class="meta">/ ${paraHoras(metaD)}</span></td>
       <td class="total"><strong>${paraHoras(hp + hd)}</strong></td></tr>`;
