@@ -289,19 +289,24 @@ test('config invalida gravada por fora do app nao silencia o alerta: cai no padr
   await db.query(`UPDATE config SET valor = '30' WHERE chave = 'granularidade_min'`);
 });
 
-test('mural: chefia escreve, todos leem, servidor nao escreve, vencido some', async () => {
+test('mural: todos escrevem; so quem escreveu ou a chefia altera e apaga; vencido some', async () => {
   const vazio = await chamar('/mural', { metodo: 'POST', como: 'chefia', corpo: { texto: '   ' } });
   assert.equal(vazio.status, 400);
-  const novo = await chamar('/mural', { metodo: 'POST', como: 'chefia', corpo: { texto: 'Sexta encerra as 14h', fixado: true } });
-  assert.equal(novo.status, 201, JSON.stringify(novo.json));
+  const daChefia = await chamar('/mural', { metodo: 'POST', como: 'chefia', corpo: { texto: 'Sexta encerra as 14h', fixado: true } });
+  assert.equal(daChefia.status, 201, JSON.stringify(daChefia.json));
+  assert.equal(daChefia.json.fixado, true);
+  const doLuiz = await chamar('/mural', { metodo: 'POST', como: 'luiz', corpo: { texto: 'Alguem cobre minha tarde?', fixado: true } });
+  assert.equal(doLuiz.status, 201, 'servidor tambem escreve');
+  assert.equal(doLuiz.json.fixado, false, 'servidor nao fixa no topo');
   const vencido = await chamar('/mural', { metodo: 'POST', como: 'chefia', corpo: { texto: 'antigo', valido_ate: '2020-01-01' } });
   assert.equal(vencido.status, 201);
-  assert.equal((await chamar('/mural', { metodo: 'POST', como: 'luiz', corpo: { texto: 'nao posso' } })).status, 403);
   const lista = await chamar('/mural', { como: 'luiz' });
-  assert.equal(lista.status, 200);
-  assert.ok(lista.json.some((m) => m.id === novo.json.id), 'servidor le o recado');
-  assert.ok(!lista.json.some((m) => m.id === vencido.json.id), 'vencido nao aparece');
-  assert.equal((await chamar(`/mural/${novo.json.id}`, { metodo: 'DELETE', como: 'chefia' })).status, 200);
+  assert.ok(lista.json.some((x) => x.id === daChefia.json.id), 'servidor le o recado da chefia');
+  assert.ok(!lista.json.some((x) => x.id === vencido.json.id), 'vencido nao aparece');
+  assert.equal((await chamar(`/mural/${daChefia.json.id}`, { metodo: 'DELETE', como: 'luiz' })).status, 403, 'nao apaga o da chefia');
+  assert.equal((await chamar(`/mural/${doLuiz.json.id}`, { metodo: 'PUT', como: 'luiz', corpo: { texto: 'Alguem cobre minha tarde de sexta?' } })).status, 200, 'altera o proprio');
+  assert.equal((await chamar(`/mural/${doLuiz.json.id}`, { metodo: 'DELETE', como: 'luiz' })).status, 200, 'apaga o proprio');
+  assert.equal((await chamar(`/mural/${daChefia.json.id}`, { metodo: 'DELETE', como: 'chefia' })).status, 200);
 });
 
 test('trocar senha: curta e 400, certa funciona e a antiga para de valer', async () => {

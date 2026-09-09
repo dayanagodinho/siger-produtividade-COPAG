@@ -519,13 +519,13 @@ function desenharInicio() {
   const itensMural = mural.length ? mural.map((m) => `<div class="item mural-item ${m.fixado ? 'fixado' : ''}">
       <div class="cresce"><div class="mural-texto">${escapar(m.texto).replace(/\n/g, '<br>')}</div>
         <small>${escapar(m.autor || 'chefia')} · ${dataBr(m.criado_em.slice(0, 10))}${m.valido_ate ? ' · até ' + dataBr(m.valido_ate) : ''}${m.fixado ? ' · fixado' : ''}</small></div>
-      ${ehChefia() ? `<button class="pequeno" data-editar-mural="${m.id}">${icone('lapis')}</button>` : ''}
+      ${(ehChefia() || Number(m.autor_id) === Number(estado.usuario.id)) ? `<button class="pequeno" data-editar-mural="${m.id}" title="Alterar ou apagar">${icone('lapis')}</button>` : ''}
     </div>`).join('') : '<p class="vazio">Nenhum recado no mural.</p>';
   const cartaoMural = `<div class="cartao">
     <h2>${icone('alerta')} Mural</h2>
-    <p class="sub">Recados da chefia para todo o setor. Somem quando vencem.</p>
+    <p class="sub">Recados do setor: qualquer pessoa escreve, todo mundo lê. Somem quando vencem.</p>
     <div class="lista">${itensMural}</div>
-    ${ehChefia() ? `<div class="acoes" style="justify-content:flex-start"><button class="primario" data-novo-mural>${icone('mais')} Novo recado</button></div>` : ''}
+    <div class="acoes" style="justify-content:flex-start"><button class="primario" data-novo-mural>${icone('mais')} Novo recado</button></div>
   </div>`;
 
   // Próximos dias: furos, feriados e afastamentos que começam
@@ -581,10 +581,10 @@ function desenharInicio() {
 function modalMural(m) {
   const editando = Boolean(m.id);
   abrirModal(`<h2>${editando ? 'Alterar recado' : 'Novo recado no mural'}</h2>
-    <p class="sub">Todo mundo vê na tela inicial. Com validade, o recado some sozinho no dia seguinte.</p>
+    <p class="sub">Todo mundo vê na tela inicial. Com validade, o recado some sozinho no dia seguinte.${ehChefia() ? '' : ' Só a chefia fixa recado no topo.'}</p>
     <label>Mensagem</label><textarea id="mu-texto" rows="4" style="width:100%">${escapar(m.texto || '')}</textarea>
     <div class="dupla"><div><label>Válido até (opcional)</label><input id="mu-ate" type="date" value="${m.valido_ate || ''}"></div>
-      <div><label>Destaque</label><label style="display:flex;align-items:center;gap:8px;margin-top:0;font-weight:500;color:var(--texto);min-height:36px"><input id="mu-fixado" type="checkbox" ${m.fixado ? 'checked' : ''}> Fixar no topo</label></div></div>`,
+      <div><label>Destaque</label><label style="display:flex;align-items:center;gap:8px;margin-top:0;font-weight:500;color:var(--texto);min-height:36px"><input id="mu-fixado" type="checkbox" ${m.fixado ? 'checked' : ''} ${ehChefia() ? '' : 'disabled'}> Fixar no topo</label></div></div>`,
     async (f) => {
       const corpo = { texto: f.querySelector('#mu-texto').value.trim(), valido_ate: f.querySelector('#mu-ate').value || null, fixado: f.querySelector('#mu-fixado').checked };
       if (editando) { await api(`/mural/${m.id}`, { method: 'PUT', corpo }); aviso('Recado alterado'); }
@@ -632,7 +632,7 @@ function desenharDia() {
           const d = Math.min(100, pos(emMinutos(t.fim)));
           const rotulo = t.modalidade === 'P' ? 'presencial' : 'à distância';
           return `<div class="bloco ${t.modalidade}${editavel ? '' : ' fixo'}" style="left:${e}%;width:${Math.max(d - e, 2)}%" ${editavel ? `data-editar-turno="${t.id}"` : ''}
-                    title="${t.inicio}–${t.fim} ${rotulo}${t.observacao ? ' — ' + escapar(t.observacao) : ''}${editavel ? ' (clique para alterar)' : ''}">${t.inicio}–${t.fim}</div>${intervalo}`;
+                    title="${t.inicio}–${t.fim} ${rotulo}${t.observacao ? ' — ' + escapar(t.observacao) : ''}${editavel ? ' (clique para alterar)' : ''}"><span class="bloco-texto">${t.inicio}–${t.fim}${editavel ? ' ✎' : ''}</span>${editavel ? `<button class="bloco-x" data-apagar="${t.id}" title="Remover este horário">✕</button>` : ''}</div>${intervalo}`;
         }).join('');
     const acao = editavel && !af ? `<button class="mais" data-novo="${s.id}|${data}">${icone('mais')}</button>` : '';
     return `${separador}<div class="rotulo${af ? ' afastado' : ''}"><span>${escapar(s.nome)}</span>${acao}</div><div class="faixa${af ? ' afastado' : ''}">${grade.join('')}${blocos}</div>`;
@@ -666,7 +666,7 @@ function desenharDia() {
     ${cartaoContarDia(data)}
     <div class="cartao">
       <h2>${icone('calendario')} Linha do tempo — ${dataBonita(data)}${feriado ? ` <span class="chip A fixo">${escapar(feriado.descricao)}</span>` : ''}</h2>
-      <p class="sub">Expediente das ${escapar(cfg.cobertura_inicio)} às ${escapar(cfg.cobertura_fim)}: alguém precisa estar presencial em todas as faixas até as ${escapar(cfg.cobertura_fim)}. Ficar depois disso é permitido, mas não é exigido.</p>
+      <p class="sub">Expediente das ${escapar(cfg.cobertura_inicio)} às ${escapar(cfg.cobertura_fim)}: alguém precisa estar presencial em todas as faixas até as ${escapar(cfg.cobertura_fim)}. Clique num bloco para alterar o horário, no ✕ para remover, no + ao lado do nome para lançar outro.</p>
       <div class="rolagem"><div class="trilho">
         <div class="rotulo"><small>Horário</small></div><div class="reguas">${reguas.join('')}</div>
         <div class="rotulo"><span>Cobertura presencial</span></div>${cobertura}
@@ -960,24 +960,49 @@ $('#btn-afastamento').addEventListener('click', () => {
 
 $('#btn-replicar').addEventListener('click', () => {
   const seg = iso(segundaDa(estado.referencia));
-  const ate = iso(somaDias(segundaDa(estado.referencia), 7 * 8 - 3));
-  abrirModal(`<h2>Repetir semana</h2>
-    <p class="sub">Copia os turnos de uma semana para as semanas seguintes, como na planilha antiga.</p>
+  const ate = iso(somaDias(segundaDa(estado.referencia), 7 * 4 + 4));
+  abrirModal(`<h2>Copiar semana para as seguintes</h2>
+    <p class="sub">Isto <strong>cria turnos novos</strong> nas semanas seguintes, copiando a semana base. Alterar um dia na grade nunca copia nada: só esta ação copia.</p>
     <label>Servidor</label><select id="r-servidor">${opcoesServidores(estado.usuario.id)}</select>
     <label>Semana base (segunda-feira)</label><input id="r-base" type="date" value="${seg}">
-    <label>Repetir até</label><input id="r-ate" type="date" value="${ate}">
+    <label>Copiar até</label><input id="r-ate" type="date" value="${ate}">
     <label style="display:flex;align-items:center;gap:8px;margin-top:14px;font-weight:500;color:var(--texto)">
-      <input id="r-substituir" type="checkbox"> Apagar o que já existir nos dias copiados</label>`,
+      <input id="r-substituir" type="checkbox"> Apagar o que já existir nos dias copiados</label>
+    <p class="nota">Depois de copiar aparece um botão "Desfazer" que remove exatamente os turnos criados.</p>`,
     async (f) => {
+      const base = f.querySelector('#r-base').value, fim = f.querySelector('#r-ate').value;
+      const semanas = Math.floor((Date.parse(`${fim}T12:00:00Z`) - Date.parse(`${base}T12:00:00Z`)) / (7 * 86400000));
+      if (!(semanas >= 1)) throw new Error('"Copiar até" precisa ser pelo menos uma semana depois da semana base');
+      const nome = f.querySelector('#r-servidor').selectedOptions[0].textContent;
+      if (!confirm(`Copiar a semana de ${dataBr(base)} de ${nome} para as ${semanas} semana(s) seguintes, até ${dataBr(fim)}?`)) throw new Error('Cópia cancelada');
       const r = await api('/escala/replicar', { method: 'POST', corpo: {
         servidor_id: Number(f.querySelector('#r-servidor').value),
-        semana_base: f.querySelector('#r-base').value,
-        ate: f.querySelector('#r-ate').value,
+        semana_base: base,
+        ate: fim,
         substituir: f.querySelector('#r-substituir').checked,
       }});
       aviso(`${r.criados} turno(s) criado(s)`);
-    }, { rotuloOk: 'Repetir' });
+      if (r.ids?.length) mostrarDesfazer(r.ids, r.criados, r.semanas);
+    }, { rotuloOk: 'Copiar semana' });
 });
+
+// Depois de copiar uma semana, um botao remove exatamente o que foi criado.
+function mostrarDesfazer(ids, criados, semanas) {
+  const el = $('#impacto');
+  el.innerHTML = `${icone('repetir')}<div style="flex:1"><h3>${criados} turno(s) copiado(s) em ${semanas} semana(s)</h3><div>Se não era isso, desfaça agora: os turnos criados são removidos e nada mais muda.</div></div>
+    <button class="perigo" data-desfazer>Desfazer cópia</button><button class="fantasma pequeno fechar" data-fechar-impacto title="Fechar">✕</button>`;
+  el.classList.remove('oculto');
+  el.querySelector('[data-fechar-impacto]').addEventListener('click', () => el.classList.add('oculto'));
+  el.querySelector('[data-desfazer]').addEventListener('click', async (ev) => {
+    ev.currentTarget.disabled = true;
+    let removidos = 0;
+    for (const id of ids) { try { await api(`/escala/turnos/${id}`, { method: 'DELETE' }); removidos++; } catch { /* ja removido a mao */ } }
+    el.classList.add('oculto');
+    aviso(`${removidos} turno(s) removido(s)`);
+    carregar();
+  });
+  el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
 
 /* ---- minha conta: cada pessoa escolhe como entra, o nome e a senha ---- */
 $('#btn-conta').addEventListener('click', () => {

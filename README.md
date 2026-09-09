@@ -21,9 +21,9 @@ Substitui a planilha `CONTROLE ESCALA HÍBRIDO 2026.xlsx` — cuja escala já ve
 - **Feriados**: os nacionais de 2026 já vêm carregados na primeira subida; a chefia inclui os locais e apaga os que não valem para o setor. Em feriado não há exigência de cobertura e as horas não contam.
 - **Aviso à chefia a cada furo**: toda mudança (turno, afastamento, feriado, regra) é comparada antes e depois; se abriu faixa sem ninguém presencial, quem mudou vê o alerta na hora e a chefia recebe um aviso no menu ("Avisos", com contador) e, se o Railway tiver `RESEND_API_KEY` e `EMAIL_REMETENTE`, um e-mail para cada chefia cujo login é um e-mail.
 - **Fim de semana não entra na escala**: a semana mostra segunda a sexta, o mês só os dias com expediente, e as setas do dia pulam sábado e domingo.
-- **Tela inicial**: saudação, quem está hoje (presencial, à distância, afastados, sem lançamento) com a barra de cobertura, o **mural** de recados da chefia (com validade e destaque), os próximos 7 dias (furos, feriados e afastamentos que começam) e, para a chefia, os avisos pendentes; para os demais, um lembrete se a semana ainda não foi lançada.
+- **Tela inicial**: saudação, quem está hoje (presencial, à distância, afastados, sem lançamento) com a barra de cobertura, o **mural** de recados do setor (qualquer pessoa escreve; alterar e apagar é de quem escreveu ou da chefia; validade opcional; só a chefia fixa no topo), os próximos 7 dias (furos, feriados e afastamentos que começam) e, para a chefia, os avisos pendentes; para os demais, um lembrete se a semana ainda não foi lançada.
 - **Três visões**: linha do tempo do dia, grade da semana (parecida com a planilha, com totais P/D por pessoa contra a meta de 20h+20h) e calendário do mês com a cobertura de cada dia.
-- **Repetir semana**: copia a escala de uma semana para as seguintes, que é o padrão da planilha antiga.
+- **Copiar semana**: cria, nas semanas seguintes, cópias dos turnos da semana base (padrão da planilha antiga). Pede confirmação com a contagem de semanas e deixa um botão "Desfazer cópia" que remove exatamente o que criou. Alterar um dia na grade nunca copia nada.
 - **Tema claro ou escuro**, à escolha de cada pessoa (botão "Tema escuro" / "Tema claro" no cabeçalho e na tela de entrada), lembrado no navegador.
 
 ## Rodando na sua máquina
@@ -129,7 +129,7 @@ e-mail duplicado com maiúscula, "repetir semana" até `abc` e até 2099.
 | GET | `/api/cobertura?inicio=&fim=` | análise de cobertura + horas por servidor |
 | GET/PUT | `/api/cobertura/config` | regras de cobertura e período híbrido (PUT só chefia) |
 | GET | `/api/mural` | recados válidos do mural |
-| POST/PUT/DELETE | `/api/mural`, `/api/mural/:id` | escreve, altera e apaga recado (só chefia) |
+| POST/PUT/DELETE | `/api/mural`, `/api/mural/:id` | escreve recado (todos); altera e apaga (quem escreveu ou chefia) |
 | GET | `/api/avisos` | avisos pendentes (`?todos=1` inclui os lidos); só chefia |
 | GET | `/api/avisos/contagem` | quantos avisos pendentes |
 | POST | `/api/avisos/:id/lido`, `/api/avisos/lidos` | marca como lido |

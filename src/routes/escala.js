@@ -163,6 +163,7 @@ router.post('/replicar', async (req, res) => {
 
   const antes = await fotografar(semana_base, ate);
   let criados = 0;
+  const ids = [];
   const cliente = await db.pool.connect();
   try {
     await cliente.query('BEGIN');
@@ -184,10 +185,11 @@ router.post('/replicar', async (req, res) => {
           [alvo, dataStr, t.inicio, t.fim]
         );
         if (conflito.rows.length) continue;
-        await cliente.query(
-          `INSERT INTO turnos (servidor_id, data, inicio, fim, modalidade, observacao) VALUES ($1,$2,$3,$4,$5,$6)`,
+        const novo = await cliente.query(
+          `INSERT INTO turnos (servidor_id, data, inicio, fim, modalidade, observacao) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id`,
           [alvo, dataStr, t.inicio, t.fim, t.modalidade, t.observacao]
         );
+        ids.push(novo.rows[0].id);
         criados++;
       }
     }
@@ -199,7 +201,7 @@ router.post('/replicar', async (req, res) => {
     cliente.release();
   }
   const avisos = await registrarNovas(antes, await fotografar(semana_base, ate), { autor: req.usuario, origem: `semana de ${semana_base} repetida até ${ate} por ${req.usuario.nome}${substituir ? ', substituindo o que havia' : ''}` });
-  res.json({ ok: true, criados, semanas, avisos_gerados: avisos });
+  res.json({ ok: true, criados, semanas, ids, avisos_gerados: avisos });
 });
 
 router.post('/afastamentos', async (req, res) => {
