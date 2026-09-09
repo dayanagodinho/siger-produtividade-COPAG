@@ -28,6 +28,10 @@ app.get('/api/saude', (req, res) => res.json({
     seed_no_primeiro_boot: true,
     validacao_de_entrada: true,
     teto_repetir_semana: true,
+    editar_turno_e_afastamento: true,
+    feriados_nacionais_2026: true,
+    expediente_ate_18h: true,
+    tema_escuro: true,
   },
 }));
 
