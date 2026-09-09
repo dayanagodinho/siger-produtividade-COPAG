@@ -3,54 +3,96 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
 <title>Escala Híbrida</title>
 <link rel="stylesheet" href="styles.css">
+<script>
+  // Aplica o tema guardado antes da primeira pintura, para a tela nao piscar.
+  (function () {
+    try {
+      var t = localStorage.getItem('escala-tema');
+      if (t !== 'claro' && t !== 'escuro') t = matchMedia('(prefers-color-scheme: dark)').matches ? 'escuro' : 'claro';
+      document.documentElement.dataset.tema = t;
+    } catch (e) { document.documentElement.dataset.tema = 'claro'; }
+  })();
+</script>
 </head>
 <body>
 
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-sol" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+  <symbol id="i-lua" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></symbol>
+  <symbol id="i-alerta" viewBox="0 0 24 24"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></symbol>
+  <symbol id="i-ok" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-mais" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-palmeira" viewBox="0 0 24 24"><path d="M12 22V9M12 9c-3-3-7-3-9-1 3 0 6 1 9 1zM12 9c3-3 7-3 9-1-3 0-6 1-9 1zM12 9c-1-4 1-7 4-7-1 2-2 4-4 7zM12 9c1-4-1-7-4-7 1 2 2 4 4 7z"/></symbol>
+  <symbol id="i-calendario" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></symbol>
+  <symbol id="i-seta-e" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+  <symbol id="i-seta-d" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+  <symbol id="i-engrenagem" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></symbol>
+  <symbol id="i-repetir" viewBox="0 0 24 24"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></symbol>
+  <symbol id="i-lapis" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></symbol>
+</svg>
+
 <section id="login">
   <form class="caixa" id="form-login">
-    <h1>Escala Híbrida</h1>
-    <p class="sub">Controle de trabalho presencial, à distância e afastamentos.</p>
+    <div class="marca grande">
+      <span class="selo">EH</span>
+      <div><strong>Escala Híbrida</strong><small>Presencial, à distância e afastamentos</small></div>
+    </div>
     <label for="email">E-mail</label>
-    <input id="email" type="email" autocomplete="username" required>
+    <input id="email" type="email" autocomplete="username" placeholder="nome@setor.local" required>
     <label for="senha">Senha</label>
     <input id="senha" type="password" autocomplete="current-password" required>
     <button class="primario" type="submit">Entrar</button>
     <p class="erro" id="erro-login"></p>
+    <button type="button" class="btn-tema fantasma" title="Alternar tema claro/escuro"><svg class="ic"><use href="#i-lua"/></svg><span>Tema</span></button>
   </form>
 </section>
 
 <div id="app" class="oculto">
   <header class="topo">
-    <h1>Escala Híbrida</h1>
-    <div class="abas">
-      <button data-visao="dia">Diário</button>
-      <button data-visao="semana" class="ativa">Semanal</button>
-      <button data-visao="mes">Mensal</button>
+    <div class="marca">
+      <span class="selo">EH</span>
+      <div><strong>Escala Híbrida</strong><small id="quem"></small></div>
     </div>
+    <nav class="abas" aria-label="Visão">
+      <button data-visao="dia">Dia</button>
+      <button data-visao="semana" class="ativa">Semana</button>
+      <button data-visao="mes">Mês</button>
+    </nav>
     <div class="espaco"></div>
-    <span id="quem" style="font-size:13px;color:var(--suave)"></span>
-    <button id="btn-config" class="oculto">Configurações</button>
-    <button id="btn-senha">Trocar senha</button>
-    <button id="btn-sair">Sair</button>
+    <div class="menu">
+      <button id="btn-feriados" class="oculto fantasma" title="Feriados"><svg class="ic"><use href="#i-calendario"/></svg><span>Feriados</span></button>
+      <button id="btn-config" class="oculto fantasma" title="Regras de cobertura"><svg class="ic"><use href="#i-engrenagem"/></svg><span>Regras</span></button>
+      <button class="btn-tema fantasma" title="Alternar tema claro/escuro"><svg class="ic"><use href="#i-lua"/></svg></button>
+      <button id="btn-senha" class="fantasma">Senha</button>
+      <button id="btn-sair" class="fantasma">Sair</button>
+    </div>
   </header>
 
   <main>
     <div class="barra">
-      <button id="ant">◀</button>
-      <button id="hoje">Hoje</button>
-      <button id="prox">▶</button>
-      <span class="periodo" id="periodo"></span>
-      <div class="espaco"></div>
-      <div class="legenda">
-        <span><span class="ponto" style="background:var(--presencial)"></span>Presencial</span>
-        <span><span class="ponto" style="background:var(--distancia)"></span>À distância</span>
-        <span><span class="ponto" style="background:var(--afastamento)"></span>Afastamento</span>
-        <span><span class="ponto" style="background:#fca5a5"></span>Sem cobertura</span>
+      <div class="nav">
+        <button id="ant" title="Anterior"><svg class="ic"><use href="#i-seta-e"/></svg></button>
+        <button id="hoje">Hoje</button>
+        <button id="prox" title="Próximo"><svg class="ic"><use href="#i-seta-d"/></svg></button>
       </div>
-      <button id="btn-afastamento">Registrar afastamento</button>
-      <button id="btn-replicar">Repetir semana</button>
+      <h2 class="periodo" id="periodo"></h2>
+      <div class="espaco"></div>
+      <div class="acoes-barra">
+        <button id="btn-turno" class="primario"><svg class="ic"><use href="#i-mais"/></svg><span>Turno</span></button>
+        <button id="btn-afastamento"><svg class="ic"><use href="#i-palmeira"/></svg><span>Férias / afastamento</span></button>
+        <button id="btn-replicar"><svg class="ic"><use href="#i-repetir"/></svg><span>Repetir semana</span></button>
+      </div>
+    </div>
+
+    <div class="legenda">
+      <span><i class="ponto P"></i>Presencial</span>
+      <span><i class="ponto D"></i>À distância</span>
+      <span><i class="ponto A"></i>Afastamento</span>
+      <span><i class="ponto cob"></i>Coberto</span>
+      <span><i class="ponto falta"></i>Sem ninguém presencial</span>
     </div>
 
     <div id="alerta"></div>
@@ -58,7 +100,7 @@
   </main>
 </div>
 
-<div id="aviso"></div>
+<div id="aviso" role="status"></div>
 <div id="modais"></div>
 <script src="app.js"></script>
 </body>

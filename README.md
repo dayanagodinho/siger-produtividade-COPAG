@@ -13,10 +13,15 @@ Substitui a planilha `CONTROLE ESCALA HÍBRIDO 2026.xlsx` — cuja escala já ve
 
 - **Cada servidor entra com e-mail e senha** e lança os próprios turnos (a chefia lança os de qualquer um).
 - Um dia pode ter **mais de um turno** — ex.: `07:30–14:30 presencial + 15:00–18:00 à distância`, como o Marcelo faz na planilha.
-- **Alerta de cobertura**: o sistema varre o expediente (padrão 07:00–19:00) em faixas de 30 minutos e avisa toda faixa em que **ninguém está presencial**. O mínimo por faixa, o horário do expediente, o tamanho da faixa e os dias úteis são configuráveis pela chefia.
-- **Afastamento** (férias, licença, capacitação, folga): nos dias marcados a pessoa deixa de contar para a cobertura, e o alerta recalcula na hora — é assim que aparece quem precisa cobrir.
-- **Três visões**: linha do tempo do dia, grade da semana (parecida com a planilha, com totais P/D por pessoa contra a meta de 20h+20h) e calendário do mês com marcação dos dias com lacuna.
+- **Turno e afastamento se alteram clicando neles**: abre o formulário preenchido, com Salvar e Excluir.
+- **Alerta de cobertura**: o sistema varre o expediente (padrão 07:00–18:00) em faixas de 30 minutos e avisa toda faixa em que **ninguém está presencial**. Alguém precisa ficar presencial até as 18:00; ficar depois é permitido, só não é exigido. O mínimo por faixa, o horário, o tamanho da faixa e os dias com expediente são configuráveis pela chefia em "Regras".
+- **Barra de cobertura do dia**: azul onde há alguém presencial (mais forte com duas ou mais pessoas), listrado com borda vermelha onde não há ninguém. A mesma barra aparece, menor, no cabeçalho de cada dia da semana e em cada dia do mês.
+- **Férias e afastamentos** (férias, licença, capacitação, folga): nos dias marcados a pessoa deixa de contar para a cobertura, e o alerta recalcula na hora — é assim que aparece quem precisa cobrir.
+- **Feriados**: os nacionais de 2026 já vêm carregados na primeira subida; a chefia inclui os locais e apaga os que não valem para o setor, em "Feriados". Em feriado não há exigência de cobertura e as horas não contam.
+- **Fim de semana não entra na escala**: a semana mostra segunda a sexta, o mês só os dias com expediente, e as setas do dia pulam sábado e domingo.
+- **Três visões**: linha do tempo do dia, grade da semana (parecida com a planilha, com totais P/D por pessoa contra a meta de 20h+20h) e calendário do mês com a cobertura de cada dia.
 - **Repetir semana**: copia a escala de uma semana para as seguintes, que é o padrão da planilha antiga.
+- **Tema claro ou escuro**, à escolha de cada pessoa (botão de sol/lua), lembrado no navegador.
 
 ## Rodando na sua máquina
 
@@ -75,7 +80,7 @@ src/validar.js         checagem de data, hora, número e e-mail antes do banco
 src/auth.js            login por cookie assinado (JWT) e regras de permissão
 src/routes/            auth, servidores, escala, cobertura
 public/                interface (HTML + CSS + JavaScript puro, sem build)
-scripts/migrate.js     cria/atualiza as tabelas
+scripts/migrate.js     cria/atualiza as tabelas e aplica ajustes de dados uma vez só (18h, feriados de 2026)
 scripts/seed.js        carrega servidores e a escala inicial
 test/unit/             motor de cobertura, validação e TLS, sem banco (`npm test`)
 test/banco/            rotas de ponta a ponta contra um Postgres de teste
@@ -107,10 +112,12 @@ e-mail duplicado com maiúscula, "repetir semana" até `abc` e até 2099.
 | POST/PUT | `/api/servidores` | cadastra/edita (só chefia) |
 | GET | `/api/escala?inicio=&fim=` | turnos, afastamentos e feriados do período |
 | POST | `/api/escala/turnos` | lança turno |
+| PUT | `/api/escala/turnos/:id` | altera turno |
 | DELETE | `/api/escala/turnos/:id` | remove turno |
 | POST | `/api/escala/replicar` | repete a semana base nas seguintes |
-| POST/DELETE | `/api/escala/afastamentos` | registra/remove afastamento |
-| POST/DELETE | `/api/escala/feriados` | cadastra feriado (só chefia) |
+| POST/PUT/DELETE | `/api/escala/afastamentos` | registra/altera/remove afastamento |
+| GET | `/api/escala/feriados?ano=` | feriados do ano |
+| POST/DELETE | `/api/escala/feriados` | cadastra/remove feriado (só chefia) |
 | GET | `/api/cobertura?inicio=&fim=` | análise de cobertura + horas por servidor |
 | GET/PUT | `/api/cobertura/config` | regras de cobertura (PUT só chefia) |
 
@@ -127,7 +134,7 @@ e-mail duplicado com maiúscula, "repetir semana" até `abc` e até 2099.
 - Turnos sobrepostos da mesma pessoa no mesmo dia são recusados (erro 409).
 - E-mail é guardado e comparado em minúsculas; `Teste@x` e `teste@x` são a mesma conta.
 - "Repetir semana" vai no máximo até 53 semanas depois da semana base.
-- Se alguma regra de cobertura no banco estiver inválida, a análise usa o padrão (07:00–19:00,
+- Se alguma regra de cobertura no banco estiver inválida, a análise usa o padrão (07:00–18:00,
   1 pessoa, faixas de 30 min, segunda a sexta) e **avisa no alerta** em vez de mostrar
   "cobertura em ordem" com zero dias úteis.
 - Sábado e domingo não entram na checagem de cobertura; para excluir um feriado, cadastre-o em `/api/escala/feriados`.

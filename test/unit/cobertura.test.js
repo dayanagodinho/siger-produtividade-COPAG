@@ -5,16 +5,16 @@ const { analisarCobertura, totalizarHoras, interpretarConfig, CONFIG_PADRAO } = 
 const CONFIG = { ...CONFIG_PADRAO };
 const turno = (servidor_id, nome, data, inicio, fim, modalidade = 'P') => ({ servidor_id, nome, data, inicio, fim, modalidade });
 
-test('dia util sem ninguem presencial e uma lacuna inteira 07:00-19:00', () => {
+test('dia util sem ninguem presencial e uma lacuna inteira 07:00-18:00', () => {
   const [dia] = analisarCobertura({ inicio: '2026-09-08', fim: '2026-09-08', turnos: [], afastamentos: [], feriados: [], config: CONFIG });
   assert.equal(dia.util, true);
-  assert.deepEqual(dia.lacunas, [{ inicio: '07:00', fim: '19:00', quantidade: 0 }]);
+  assert.deepEqual(dia.lacunas, [{ inicio: '07:00', fim: '18:00', quantidade: 0 }]);
 });
 
 test('faixas descobertas consecutivas viram um intervalo so; as cobertas somem', () => {
-  const turnos = [turno(1, 'Ana', '2026-09-08', '08:00', '12:00'), turno(2, 'Bia', '2026-09-08', '14:00', '18:00')];
+  const turnos = [turno(1, 'Ana', '2026-09-08', '08:00', '12:00'), turno(2, 'Bia', '2026-09-08', '14:00', '17:00')];
   const [dia] = analisarCobertura({ inicio: '2026-09-08', fim: '2026-09-08', turnos, afastamentos: [], feriados: [], config: CONFIG });
-  assert.deepEqual(dia.lacunas.map((l) => `${l.inicio}-${l.fim}`), ['07:00-08:00', '12:00-14:00', '18:00-19:00']);
+  assert.deepEqual(dia.lacunas.map((l) => `${l.inicio}-${l.fim}`), ['07:00-08:00', '12:00-14:00', '17:00-18:00']);
   assert.deepEqual(dia.presentes.map((p) => p.nome), ['Ana', 'Bia']);
 });
 
@@ -47,7 +47,7 @@ test('fim de semana e feriado nao sao dias uteis e nao geram lacuna', () => {
 test('minimo 2: uma pessoa so ainda e descoberto, com quantidade 1', () => {
   const turnos = [turno(1, 'Ana', '2026-09-08', '07:00', '19:00')];
   const [dia] = analisarCobertura({ inicio: '2026-09-08', fim: '2026-09-08', turnos, afastamentos: [], feriados: [], config: { ...CONFIG, minimo_presencial: '2' } });
-  assert.deepEqual(dia.lacunas, [{ inicio: '07:00', fim: '19:00', quantidade: 1 }]);
+  assert.deepEqual(dia.lacunas, [{ inicio: '07:00', fim: '18:00', quantidade: 1 }]);
 });
 
 test('config com lixo cai no padrao E avisa — nunca "cobertura em ordem" com zero dias uteis', () => {
@@ -68,7 +68,7 @@ test('config com lixo cai no padrao E avisa — nunca "cobertura em ordem" com z
 test('config com inicio depois do fim cai no padrao', () => {
   const r = interpretarConfig({ ...CONFIG, cobertura_inicio: '19:00', cobertura_fim: '07:00' });
   assert.equal(r.abre, 7 * 60);
-  assert.equal(r.fecha, 19 * 60);
+  assert.equal(r.fecha, 18 * 60);
   assert.ok(r.avisos.length >= 1);
 });
 

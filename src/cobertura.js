@@ -40,7 +40,7 @@ function listarDias(inicio, fim) {
  */
 const CONFIG_PADRAO = Object.freeze({
   cobertura_inicio: '07:00',
-  cobertura_fim: '19:00',
+  cobertura_fim: '18:00',
   minimo_presencial: '1',
   granularidade_min: '30',
   dias_uteis: '1,2,3,4,5',

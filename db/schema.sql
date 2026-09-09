@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS config (
 
 INSERT INTO config (chave, valor) VALUES
   ('cobertura_inicio', '07:00'),
-  ('cobertura_fim', '19:00'),
+  ('cobertura_fim', '18:00'),
   ('minimo_presencial', '1'),
   ('granularidade_min', '30'),
   ('dias_uteis', '1,2,3,4,5')
