@@ -15,8 +15,8 @@ async function lerConfig() {
 
 router.get('/', async (req, res) => {
   const { inicio, fim } = req.query;
-  if (!ehData(inicio) || !ehData(fim)) return res.status(400).json({ erro: 'Informe inicio e fim no formato YYYY-MM-DD' });
-  if (fim < inicio) return res.status(400).json({ erro: 'O fim deve ser igual ou posterior ao inicio' });
+  if (!ehData(inicio) || !ehData(fim)) return res.status(400).json({ erro: 'Informe início e fim no formato YYYY-MM-DD' });
+  if (fim < inicio) return res.status(400).json({ erro: 'O fim deve ser igual ou posterior ao início' });
   const [config, turnos, afastamentos, feriados] = await Promise.all([
     lerConfig(),
     db.query(
@@ -67,7 +67,7 @@ const REGRAS = {
   cobertura_fim: [(v) => ehHora(v), 'hora no formato HH:MM'],
   minimo_presencial: [(v) => ehInteiro(v, { min: 1, max: 100 }), 'inteiro entre 1 e 100'],
   granularidade_min: [(v) => ehInteiro(v, { min: 5, max: 240 }), 'inteiro entre 5 e 240 (minutos)'],
-  dias_uteis: [(v) => Boolean(diasUteisOuNulo(v)), 'lista de dias da semana de 0 (domingo) a 6 (sabado), separados por virgula'],
+  dias_uteis: [(v) => Boolean(diasUteisOuNulo(v)), 'lista de dias da semana de 0 (domingo) a 6 (sábado), separados por vírgula'],
   periodo_inicio: [(v) => v === '' || v === null || ehData(v), 'data no formato YYYY-MM-DD, ou vazio'],
   periodo_fim: [(v) => v === '' || v === null || ehData(v), 'data no formato YYYY-MM-DD, ou vazio'],
 };

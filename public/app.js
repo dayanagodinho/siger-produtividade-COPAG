@@ -347,6 +347,59 @@ function cartaoContarSemana(dias) {
   </div>`;
 }
 
+/* ---------------- cobertura do setor no dia ----------------
+   Um retrato do setor por faixa de meia hora: quantas pessoas presenciais
+   (azul) e quantas a distancia (verde) em cada horario, a linha do minimo
+   exigido e as faixas descobertas listradas. Responde "como fica o setor
+   as 14h?" sem precisar ler a linha do tempo pessoa por pessoa. */
+function cartaoCoberturaSetor(data) {
+  const dia = diaCobertura(data);
+  const cfg = estado.cobertura?.config || {};
+  if (!dia) return '';
+  if (!dia.util) return '';
+  const minimo = Number(dia.minimo || cfg.minimo_presencial || 1);
+  const total = Math.max(1, servidoresAtivos().length);
+  const turnosD = estado.dados.turnos.filter((t) => t.data === data && t.modalidade === 'D' && !afastamentoDe(t.servidor_id, data));
+  const faixas = dia.faixas.map((f) => {
+    const m = emMinutos(f.inicio);
+    const dist = turnosD.filter((t) => emMinutos(t.inicio) <= m && emMinutos(t.fim) > m);
+    return { ...f, distancia: dist.length, nomesD: dist.map((t) => t.nome) };
+  });
+  const presenciais = faixas.map((f) => f.quantidade);
+  const minP = Math.min(...presenciais), maxP = Math.max(...presenciais);
+  const maxD = Math.max(0, ...faixas.map((f) => f.distancia));
+  const pessoasDia = new Set(estado.dados.turnos.filter((t) => t.data === data && !afastamentoDe(t.servidor_id, data)).map((t) => t.servidor_id)).size;
+  const alturaMin = Math.min(100, (minimo / total) * 100);
+
+  const colunas = faixas.map((f) => {
+    const p = (f.quantidade / total) * 100, d = (f.distancia / total) * 100;
+    const titulo = `${f.inicio}–${f.fim}: ${f.quantidade} presencial(is)${f.pessoas.length ? ' (' + f.pessoas.join(', ') + ')' : ''}; ${f.distancia} à distância${f.nomesD.length ? ' (' + f.nomesD.join(', ') + ')' : ''}${f.descoberto ? ' — ABAIXO DO MÍNIMO' : ''}`;
+    return `<div class="col${f.descoberto ? ' falta' : ''}" title="${escapar(titulo)}">
+      <span class="n">${f.quantidade}</span>
+      <div class="barra-d" style="height:${d}%"></div>
+      <div class="barra-p" style="height:${p}%"></div>
+    </div>`;
+  }).join('');
+  const eixo = faixas.map((f) => `<div>${emMinutos(f.inicio) % 60 === 0 ? f.inicio.slice(0, 2) + 'h' : ''}</div>`).join('');
+  const fimEixo = cfg.cobertura_fim ? `<div class="fim-eixo">${escapar(cfg.cobertura_fim.slice(0, 2))}h</div>` : '';
+
+  return `<div class="cartao">
+    <h2>${icone('calendario')} Cobertura do setor — ${dataBonita(data)}</h2>
+    <p class="sub">Cada coluna é uma faixa de ${escapar(cfg.granularidade_min || 30)} minutos. Azul: pessoas presenciais; verde: à distância. A linha tracejada é o mínimo exigido (${minimo}). Passe o mouse para ver quem está.</p>
+    <div class="setor-stats">
+      <div><b>${minP}–${maxP}</b><small>presenciais ao longo do dia</small></div>
+      <div><b>${maxD}</b><small>à distância no pico</small></div>
+      <div><b>${pessoasDia}/${total}</b><small>pessoas trabalhando hoje</small></div>
+      <div class="${dia.lacunas.length ? 'ruim' : 'bom'}"><b>${dia.lacunas.length}</b><small>faixa(s) descoberta(s)</small></div>
+    </div>
+    <div class="rolagem"><div class="setor-grafico-caixa">
+      <div class="setor-grafico" style="grid-template-columns:repeat(${faixas.length},1fr)">${colunas}<div class="linha-min" style="bottom:${alturaMin}%"></div></div>
+      <div class="setor-eixo" style="grid-template-columns:repeat(${faixas.length},1fr)">${eixo}${fimEixo}</div>
+    </div></div>
+    ${pilulasLacunas(dia)}
+  </div>`;
+}
+
 /* ---------------- barra de cobertura ----------------
    Azul = faixa com alguém presencial (mais forte com 2 ou mais); listrado
    com borda vermelha = ninguém presencial. É a mesma peça no dia, na semana
@@ -480,6 +533,7 @@ function desenharDia() {
     </div>` : '';
 
   $('#conteudo').innerHTML = `
+    ${cartaoCoberturaSetor(data)}
     ${cartaoContarDia(data)}
     <div class="cartao">
       <h2>${icone('calendario')} Linha do tempo — ${dataBonita(data)}${feriado ? ` <span class="chip A fixo">${escapar(feriado.descricao)}</span>` : ''}</h2>

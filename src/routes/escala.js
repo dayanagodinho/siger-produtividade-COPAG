@@ -5,7 +5,7 @@ const { paraMinutos, iso } = require('../cobertura');
 const { ehData, ehHora, ehInteiro } = require('../validar');
 const { fotografar, registrarNovas } = require('../avisos');
 
-const rotulo = (m) => (m === 'P' ? 'presencial' : 'a distancia');
+const rotulo = (m) => (m === 'P' ? 'presencial' : 'à distância');
 const menor = (a, b) => (a < b ? a : b);
 const maior = (a, b) => (a > b ? a : b);
 
@@ -30,8 +30,8 @@ const SQL_AFAST = `
 
 router.get('/', async (req, res) => {
   const { inicio, fim } = req.query;
-  if (!ehData(inicio) || !ehData(fim)) return res.status(400).json({ erro: 'Informe inicio e fim no formato YYYY-MM-DD' });
-  if (fim < inicio) return res.status(400).json({ erro: 'O fim deve ser igual ou posterior ao inicio' });
+  if (!ehData(inicio) || !ehData(fim)) return res.status(400).json({ erro: 'Informe início e fim no formato YYYY-MM-DD' });
+  if (fim < inicio) return res.status(400).json({ erro: 'O fim deve ser igual ou posterior ao início' });
   const [turnos, afastamentos, feriados] = await Promise.all([
     db.query(SQL_TURNOS, [inicio, fim]),
     db.query(SQL_AFAST, [inicio, fim]),
@@ -48,18 +48,18 @@ router.get('/', async (req, res) => {
 router.post('/turnos', async (req, res) => {
   const { servidor_id, data, inicio, fim, modalidade, observacao } = req.body || {};
   const alvo = servidor_id || req.usuario.id;
-  if (!podeEditar(req.usuario, alvo)) return res.status(403).json({ erro: 'Voce so pode editar a sua propria escala' });
-  if (!ehInteiro(alvo, { min: 1 })) return res.status(400).json({ erro: 'servidor_id invalido' });
-  if (!['P', 'D'].includes(modalidade)) return res.status(400).json({ erro: 'Informe a modalidade: P (presencial) ou D (a distancia)' });
-  if (!ehData(data)) return res.status(400).json({ erro: `Data invalida: "${data ?? ''}". Use o formato YYYY-MM-DD` });
-  if (!ehHora(inicio) || !ehHora(fim)) return res.status(400).json({ erro: `Horario invalido: "${inicio ?? ''}"–"${fim ?? ''}". Use o formato HH:MM` });
-  if (paraMinutos(fim) <= paraMinutos(inicio)) return res.status(400).json({ erro: 'O fim deve ser depois do inicio' });
+  if (!podeEditar(req.usuario, alvo)) return res.status(403).json({ erro: 'Você só pode editar a sua própria escala' });
+  if (!ehInteiro(alvo, { min: 1 })) return res.status(400).json({ erro: 'servidor_id inválido' });
+  if (!['P', 'D'].includes(modalidade)) return res.status(400).json({ erro: 'Informe a modalidade: P (presencial) ou D (à distância)' });
+  if (!ehData(data)) return res.status(400).json({ erro: `Data inválida: "${data ?? ''}". Use o formato YYYY-MM-DD` });
+  if (!ehHora(inicio) || !ehHora(fim)) return res.status(400).json({ erro: `Horário inválido: "${inicio ?? ''}"–"${fim ?? ''}". Use o formato HH:MM` });
+  if (paraMinutos(fim) <= paraMinutos(inicio)) return res.status(400).json({ erro: 'O fim deve ser depois do início' });
 
   const conflito = await db.query(
     `SELECT id FROM turnos WHERE servidor_id = $1 AND data = $2 AND $3::time < fim AND $4::time > inicio`,
     [alvo, data, inicio, fim]
   );
-  if (conflito.rows.length) return res.status(409).json({ erro: 'Ja existe turno seu nesse horario' });
+  if (conflito.rows.length) return res.status(409).json({ erro: 'Já existe turno seu nesse horário' });
 
   const antes = await fotografar(data, data);
   const { rows } = await db.query(
@@ -73,12 +73,12 @@ router.post('/turnos', async (req, res) => {
 });
 
 router.delete('/turnos/:id', async (req, res) => {
-  if (!ehInteiro(req.params.id, { min: 1 })) return res.status(400).json({ erro: 'id invalido' });
+  if (!ehInteiro(req.params.id, { min: 1 })) return res.status(400).json({ erro: 'id inválido' });
   const { rows } = await db.query(
     `SELECT t.servidor_id, t.data, to_char(t.inicio,'HH24:MI') AS inicio, to_char(t.fim,'HH24:MI') AS fim, t.modalidade, s.nome
        FROM turnos t JOIN servidores s ON s.id = t.servidor_id WHERE t.id = $1`, [req.params.id]);
-  if (!rows[0]) return res.status(404).json({ erro: 'Turno nao encontrado' });
-  if (!podeEditar(req.usuario, rows[0].servidor_id)) return res.status(403).json({ erro: 'Sem permissao' });
+  if (!rows[0]) return res.status(404).json({ erro: 'Turno não encontrado' });
+  if (!podeEditar(req.usuario, rows[0].servidor_id)) return res.status(403).json({ erro: 'Sem permissão' });
   const t = rows[0];
   const dia = iso(t.data);
   const antes = await fotografar(dia, dia);
@@ -93,12 +93,12 @@ router.delete('/turnos/:id', async (req, res) => {
  * contra os OUTROS turnos da pessoa no dia, nunca contra o proprio.
  */
 router.put('/turnos/:id', async (req, res) => {
-  if (!ehInteiro(req.params.id, { min: 1 })) return res.status(400).json({ erro: 'id invalido' });
+  if (!ehInteiro(req.params.id, { min: 1 })) return res.status(400).json({ erro: 'id inválido' });
   const atual = (await db.query(
     `SELECT id, servidor_id, data, to_char(inicio,'HH24:MI') AS inicio, to_char(fim,'HH24:MI') AS fim, modalidade, observacao
        FROM turnos WHERE id = $1`, [req.params.id])).rows[0];
-  if (!atual) return res.status(404).json({ erro: 'Turno nao encontrado' });
-  if (!podeEditar(req.usuario, atual.servidor_id)) return res.status(403).json({ erro: 'Sem permissao' });
+  if (!atual) return res.status(404).json({ erro: 'Turno não encontrado' });
+  if (!podeEditar(req.usuario, atual.servidor_id)) return res.status(403).json({ erro: 'Sem permissão' });
 
   const corpo = req.body || {};
   const alvo = corpo.servidor_id ?? atual.servidor_id;
@@ -108,18 +108,18 @@ router.put('/turnos/:id', async (req, res) => {
   const modalidade = corpo.modalidade ?? atual.modalidade;
   const observacao = corpo.observacao === undefined ? atual.observacao : (corpo.observacao || null);
 
-  if (!ehInteiro(alvo, { min: 1 })) return res.status(400).json({ erro: 'servidor_id invalido' });
-  if (!podeEditar(req.usuario, alvo)) return res.status(403).json({ erro: 'Voce so pode editar a sua propria escala' });
-  if (!['P', 'D'].includes(modalidade)) return res.status(400).json({ erro: 'Informe a modalidade: P (presencial) ou D (a distancia)' });
-  if (!ehData(data)) return res.status(400).json({ erro: `Data invalida: "${data ?? ''}". Use o formato YYYY-MM-DD` });
-  if (!ehHora(inicio) || !ehHora(fim)) return res.status(400).json({ erro: `Horario invalido: "${inicio ?? ''}"–"${fim ?? ''}". Use o formato HH:MM` });
-  if (paraMinutos(fim) <= paraMinutos(inicio)) return res.status(400).json({ erro: 'O fim deve ser depois do inicio' });
+  if (!ehInteiro(alvo, { min: 1 })) return res.status(400).json({ erro: 'servidor_id inválido' });
+  if (!podeEditar(req.usuario, alvo)) return res.status(403).json({ erro: 'Você só pode editar a sua própria escala' });
+  if (!['P', 'D'].includes(modalidade)) return res.status(400).json({ erro: 'Informe a modalidade: P (presencial) ou D (à distância)' });
+  if (!ehData(data)) return res.status(400).json({ erro: `Data inválida: "${data ?? ''}". Use o formato YYYY-MM-DD` });
+  if (!ehHora(inicio) || !ehHora(fim)) return res.status(400).json({ erro: `Horário inválido: "${inicio ?? ''}"–"${fim ?? ''}". Use o formato HH:MM` });
+  if (paraMinutos(fim) <= paraMinutos(inicio)) return res.status(400).json({ erro: 'O fim deve ser depois do início' });
 
   const conflito = await db.query(
     `SELECT id FROM turnos WHERE servidor_id = $1 AND data = $2 AND id <> $5 AND $3::time < fim AND $4::time > inicio`,
     [alvo, data, inicio, fim, atual.id]
   );
-  if (conflito.rows.length) return res.status(409).json({ erro: 'Ja existe outro turno nesse horario' });
+  if (conflito.rows.length) return res.status(409).json({ erro: 'Já existe outro turno nesse horário' });
 
   const de = menor(iso(atual.data), data), ate = maior(iso(atual.data), data);
   const antes = await fotografar(de, ate);
@@ -140,18 +140,18 @@ router.put('/turnos/:id', async (req, res) => {
 router.post('/replicar', async (req, res) => {
   const { semana_base, ate, servidor_id, substituir } = req.body || {};
   if (!ehData(semana_base) || !ehData(ate)) {
-    return res.status(400).json({ erro: 'Informe semana_base e ate no formato YYYY-MM-DD' });
+    return res.status(400).json({ erro: 'Informe semana_base e até no formato YYYY-MM-DD' });
   }
   const alvo = servidor_id || req.usuario.id;
-  if (!ehInteiro(alvo, { min: 1 })) return res.status(400).json({ erro: 'servidor_id invalido' });
-  if (!podeEditar(req.usuario, alvo)) return res.status(403).json({ erro: 'Sem permissao' });
+  if (!ehInteiro(alvo, { min: 1 })) return res.status(400).json({ erro: 'servidor_id inválido' });
+  if (!podeEditar(req.usuario, alvo)) return res.status(403).json({ erro: 'Sem permissão' });
   // Quantas semanas cabem entre a base e "ate". Sem este teto, "ate" invalido
   // ou distante demais virava laco sem fim gravando turno dentro de uma
   // transacao — o servidor travava com o cliente do banco preso.
   const semanas = Math.floor((Date.parse(`${ate}T12:00:00Z`) - Date.parse(`${semana_base}T12:00:00Z`)) / (7 * 86400000));
-  if (semanas < 1) return res.status(400).json({ erro: `"ate" (${ate}) precisa ser ao menos uma semana depois da semana base (${semana_base})` });
+  if (semanas < 1) return res.status(400).json({ erro: `"até" (${ate}) precisa ser ao menos uma semana depois da semana base (${semana_base})` });
   if (semanas > MAX_SEMANAS_REPLICAR) {
-    return res.status(400).json({ erro: `Sao ${semanas} semanas entre ${semana_base} e ${ate}; o maximo e ${MAX_SEMANAS_REPLICAR} (um ano). Escolha uma data mais proxima` });
+    return res.status(400).json({ erro: `Sao ${semanas} semanas entre ${semana_base} e ${ate}; o máximo e ${MAX_SEMANAS_REPLICAR} (um ano). Escolha uma data mais próxima` });
   }
 
   const base = await db.query(
@@ -159,7 +159,7 @@ router.post('/replicar', async (req, res) => {
        FROM turnos WHERE servidor_id = $1 AND data BETWEEN $2 AND ($2::date + 6)`,
     [alvo, semana_base]
   );
-  if (!base.rows.length) return res.status(400).json({ erro: 'A semana base nao tem turnos lancados' });
+  if (!base.rows.length) return res.status(400).json({ erro: 'A semana base não tem turnos lancados' });
 
   const antes = await fotografar(semana_base, ate);
   let criados = 0;
@@ -198,15 +198,15 @@ router.post('/replicar', async (req, res) => {
   } finally {
     cliente.release();
   }
-  const avisos = await registrarNovas(antes, await fotografar(semana_base, ate), { autor: req.usuario, origem: `semana de ${semana_base} repetida ate ${ate} por ${req.usuario.nome}${substituir ? ', substituindo o que havia' : ''}` });
+  const avisos = await registrarNovas(antes, await fotografar(semana_base, ate), { autor: req.usuario, origem: `semana de ${semana_base} repetida até ${ate} por ${req.usuario.nome}${substituir ? ', substituindo o que havia' : ''}` });
   res.json({ ok: true, criados, semanas, avisos_gerados: avisos });
 });
 
 router.post('/afastamentos', async (req, res) => {
   const { servidor_id, data_inicio, data_fim, tipo, observacao } = req.body || {};
   const alvo = servidor_id || req.usuario.id;
-  if (!ehInteiro(alvo, { min: 1 })) return res.status(400).json({ erro: 'servidor_id invalido' });
-  if (!podeEditar(req.usuario, alvo)) return res.status(403).json({ erro: 'Sem permissao' });
+  if (!ehInteiro(alvo, { min: 1 })) return res.status(400).json({ erro: 'servidor_id inválido' });
+  if (!podeEditar(req.usuario, alvo)) return res.status(403).json({ erro: 'Sem permissão' });
   if (!ehData(data_inicio) || !ehData(data_fim)) return res.status(400).json({ erro: 'Informe data_inicio e data_fim no formato YYYY-MM-DD' });
   if (data_fim < data_inicio) return res.status(400).json({ erro: 'A data final deve ser igual ou posterior a inicial' });
   const antes = await fotografar(data_inicio, data_fim);
@@ -221,10 +221,10 @@ router.post('/afastamentos', async (req, res) => {
 });
 
 router.put('/afastamentos/:id', async (req, res) => {
-  if (!ehInteiro(req.params.id, { min: 1 })) return res.status(400).json({ erro: 'id invalido' });
+  if (!ehInteiro(req.params.id, { min: 1 })) return res.status(400).json({ erro: 'id inválido' });
   const atual = (await db.query('SELECT * FROM afastamentos WHERE id = $1', [req.params.id])).rows[0];
-  if (!atual) return res.status(404).json({ erro: 'Afastamento nao encontrado' });
-  if (!podeEditar(req.usuario, atual.servidor_id)) return res.status(403).json({ erro: 'Sem permissao' });
+  if (!atual) return res.status(404).json({ erro: 'Afastamento não encontrado' });
+  if (!podeEditar(req.usuario, atual.servidor_id)) return res.status(403).json({ erro: 'Sem permissão' });
 
   const corpo = req.body || {};
   const alvo = corpo.servidor_id ?? atual.servidor_id;
@@ -233,8 +233,8 @@ router.put('/afastamentos/:id', async (req, res) => {
   const tipo = corpo.tipo ? String(corpo.tipo).trim() : atual.tipo;
   const observacao = corpo.observacao === undefined ? atual.observacao : (corpo.observacao || null);
 
-  if (!ehInteiro(alvo, { min: 1 })) return res.status(400).json({ erro: 'servidor_id invalido' });
-  if (!podeEditar(req.usuario, alvo)) return res.status(403).json({ erro: 'Sem permissao' });
+  if (!ehInteiro(alvo, { min: 1 })) return res.status(400).json({ erro: 'servidor_id inválido' });
+  if (!podeEditar(req.usuario, alvo)) return res.status(403).json({ erro: 'Sem permissão' });
   if (!ehData(data_inicio) || !ehData(data_fim)) return res.status(400).json({ erro: 'Informe data_inicio e data_fim no formato YYYY-MM-DD' });
   if (data_fim < data_inicio) return res.status(400).json({ erro: 'A data final deve ser igual ou posterior a inicial' });
   if (!tipo) return res.status(400).json({ erro: 'Informe o tipo do afastamento' });
@@ -251,11 +251,11 @@ router.put('/afastamentos/:id', async (req, res) => {
 });
 
 router.delete('/afastamentos/:id', async (req, res) => {
-  if (!ehInteiro(req.params.id, { min: 1 })) return res.status(400).json({ erro: 'id invalido' });
+  if (!ehInteiro(req.params.id, { min: 1 })) return res.status(400).json({ erro: 'id inválido' });
   const { rows } = await db.query(
     'SELECT a.*, s.nome FROM afastamentos a JOIN servidores s ON s.id = a.servidor_id WHERE a.id = $1', [req.params.id]);
-  if (!rows[0]) return res.status(404).json({ erro: 'Afastamento nao encontrado' });
-  if (!podeEditar(req.usuario, rows[0].servidor_id)) return res.status(403).json({ erro: 'Sem permissao' });
+  if (!rows[0]) return res.status(404).json({ erro: 'Afastamento não encontrado' });
+  if (!podeEditar(req.usuario, rows[0].servidor_id)) return res.status(403).json({ erro: 'Sem permissão' });
   const a = rows[0];
   const de = iso(a.data_inicio), ate = iso(a.data_fim);
   const antes = await fotografar(de, ate);
@@ -276,13 +276,13 @@ router.get('/feriados', async (req, res) => {
 router.post('/feriados', exigirChefia, async (req, res) => {
   const { data, descricao } = req.body || {};
   if (!ehData(data)) return res.status(400).json({ erro: 'Informe a data no formato YYYY-MM-DD' });
-  if (!descricao || !String(descricao).trim()) return res.status(400).json({ erro: 'Informe a descricao do feriado' });
+  if (!descricao || !String(descricao).trim()) return res.status(400).json({ erro: 'Informe a descrição do feriado' });
   await db.query('INSERT INTO feriados (data, descricao) VALUES ($1,$2) ON CONFLICT (data) DO UPDATE SET descricao = $2', [data, descricao]);
   res.status(201).json({ data, descricao });
 });
 
 router.delete('/feriados/:data', exigirChefia, async (req, res) => {
-  if (!ehData(req.params.data)) return res.status(400).json({ erro: 'Data invalida' });
+  if (!ehData(req.params.data)) return res.status(400).json({ erro: 'Data inválida' });
   const dia = req.params.data;
   const antes = await fotografar(dia, dia);
   await db.query('DELETE FROM feriados WHERE data = $1', [dia]);

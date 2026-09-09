@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 // O bloco do Railway herdado do SIGAP ja tem SESSION_SECRET; serve igual.
 const SEGREDO = process.env.JWT_SECRET || process.env.SESSION_SECRET || 'dev-secret-trocar';
 if (SEGREDO === 'dev-secret-trocar' && process.env.NODE_ENV === 'production') {
-  console.error('AVISO: nem JWT_SECRET nem SESSION_SECRET definidos; a sessao esta assinada com um segredo publico.');
+  console.error('AVISO: nem JWT_SECRET nem SESSION_SECRET definidos; a sessão esta assinada com um segredo publico.');
 }
 const COOKIE = 'escala_token';
 
@@ -29,12 +29,12 @@ function limparCookie(res) {
 
 function autenticar(req, res, next) {
   const token = req.cookies?.[COOKIE];
-  if (!token) return res.status(401).json({ erro: 'Nao autenticado' });
+  if (!token) return res.status(401).json({ erro: 'Não autenticado' });
   try {
     req.usuario = jwt.verify(token, SEGREDO);
     next();
   } catch {
-    return res.status(401).json({ erro: 'Sessao expirada' });
+    return res.status(401).json({ erro: 'Sessão expirada' });
   }
 }
 
@@ -47,7 +47,7 @@ function exigirSenhaDefinitiva(req, res, next) {
 
 function exigirChefia(req, res, next) {
   if (req.usuario?.perfil !== 'chefia') {
-    return res.status(403).json({ erro: 'Acao permitida apenas a chefia' });
+    return res.status(403).json({ erro: 'Ação permitida apenas a chefia' });
   }
   next();
 }

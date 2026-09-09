@@ -65,7 +65,7 @@ async function registrarNovas(antes, depois, { autor, origem }) {
   const novas = novasLacunas(antes, depois);
   const avisos = [];
   for (const n of novas) {
-    const mensagem = `${dataBonita(n.data)} ficou sem ninguem presencial em ${n.faixas.join(', ')}`;
+    const mensagem = `${dataBonita(n.data)} ficou sem ninguém presencial em ${n.faixas.join(', ')}`;
     const { rows } = await db.query(
       `INSERT INTO avisos (data, mensagem, origem, autor_id) VALUES ($1,$2,$3,$4)
        RETURNING id, criado_em, data, mensagem, origem, autor_id, lido`,
@@ -94,8 +94,8 @@ async function notificarChefia(avisos, origem) {
   const linhas = avisos.map((a) => `- ${a.mensagem}`).join('\n');
   return enviarEmail({
     para,
-    assunto: `Escala Hibrida: ${avisos.length} dia(s) com horario descoberto`,
-    texto: `A escala mudou e abriu horario sem ninguem presencial.\n\nO que mudou: ${origem || 'alteracao na escala'}\n\n${linhas}\n\nAbra o sistema para ver quem esta e ajustar.`,
+    assunto: `Escala Híbrida: ${avisos.length} dia(s) com horário descoberto`,
+    texto: `A escala mudou e abriu horário sem ninguém presencial.\n\nO que mudou: ${origem || 'alteracao na escala'}\n\n${linhas}\n\nAbra o sistema para ver quem está e ajustar.`,
   });
 }
 

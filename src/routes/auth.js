@@ -12,7 +12,7 @@ router.post('/login', async (req, res) => {
   const { rows } = await db.query('SELECT * FROM servidores WHERE lower(email) = lower($1) AND ativo', [email]);
   const servidor = rows[0];
   if (!servidor || !(await bcrypt.compare(senha, servidor.senha_hash))) {
-    return res.status(401).json({ erro: 'Email ou senha invalidos' });
+    return res.status(401).json({ erro: 'Email ou senha inválidos' });
   }
   definirCookie(res, gerarToken(servidor));
   res.json({ id: servidor.id, nome: servidor.nome, email: servidor.email, perfil: servidor.perfil, senha_provisoria: Boolean(servidor.senha_provisoria) });
@@ -28,7 +28,7 @@ router.get('/eu', autenticar, async (req, res) => {
     'SELECT id, nome, email, perfil, meta_presencial_semanal, meta_distancia_semanal, senha_provisoria FROM servidores WHERE id = $1',
     [req.usuario.id]
   );
-  if (!rows[0]) return res.status(401).json({ erro: 'Usuario nao encontrado' });
+  if (!rows[0]) return res.status(401).json({ erro: 'Usuário não encontrado' });
   res.json(rows[0]);
 });
 
@@ -42,16 +42,16 @@ router.put('/conta', autenticar, async (req, res) => {
   const login = req.body?.login === undefined ? undefined : normalizarEmail(req.body.login);
   const { rows } = await db.query('SELECT * FROM servidores WHERE id = $1', [req.usuario.id]);
   const atual = rows[0];
-  if (!atual) return res.status(401).json({ erro: 'Usuario nao encontrado' });
+  if (!atual) return res.status(401).json({ erro: 'Usuário não encontrado' });
   if (!(await bcrypt.compare(senha_atual || '', atual.senha_hash))) return res.status(401).json({ erro: 'Senha atual incorreta' });
   if (login !== undefined && !ehLogin(login)) {
-    return res.status(400).json({ erro: `Login invalido: "${login}". Use um e-mail ou um nome de usuario (letras, numeros, ponto), com 3 a 40 caracteres` });
+    return res.status(400).json({ erro: `Login inválido: "${login}". Use um e-mail ou um nome de usuário (letras, números, ponto), com 3 a 40 caracteres` });
   }
-  if (nome !== undefined && !String(nome).trim()) return res.status(400).json({ erro: 'O nome nao pode ficar vazio' });
+  if (nome !== undefined && !String(nome).trim()) return res.status(400).json({ erro: 'O nome não pode ficar vazio' });
   if (senha_nova !== undefined && senha_nova !== '' && senha_nova.length < 6) {
     return res.status(400).json({ erro: 'A nova senha precisa ter ao menos 6 caracteres' });
   }
-  if (atual.senha_provisoria && !senha_nova) return res.status(400).json({ erro: 'Defina uma senha nova: a atual foi dada pela chefia e e provisoria' });
+  if (atual.senha_provisoria && !senha_nova) return res.status(400).json({ erro: 'Defina uma senha nova: a atual foi dada pela chefia e é provisória' });
   const hash = senha_nova ? await bcrypt.hash(senha_nova, 10) : atual.senha_hash;
   try {
     const r = await db.query(
@@ -64,7 +64,7 @@ router.put('/conta', autenticar, async (req, res) => {
     definirCookie(res, gerarToken(r.rows[0]));
     res.json(r.rows[0]);
   } catch (e) {
-    if (e.code === '23505') return res.status(409).json({ erro: 'Esse login ja esta em uso por outra pessoa' });
+    if (e.code === '23505') return res.status(409).json({ erro: 'Esse login já está em uso por outra pessoa' });
     throw e;
   }
 });

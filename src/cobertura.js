@@ -65,18 +65,18 @@ function interpretarConfig(config) {
     c[chave] = CONFIG_PADRAO[chave];
   };
 
-  if (!ehHora(c.cobertura_inicio)) usarPadrao('cobertura_inicio', 'nao e hora HH:MM');
-  if (!ehHora(c.cobertura_fim)) usarPadrao('cobertura_fim', 'nao e hora HH:MM');
+  if (!ehHora(c.cobertura_inicio)) usarPadrao('cobertura_inicio', 'não é hora HH:MM');
+  if (!ehHora(c.cobertura_fim)) usarPadrao('cobertura_fim', 'não é hora HH:MM');
   if (paraMinutos(c.cobertura_fim) <= paraMinutos(c.cobertura_inicio)) {
-    usarPadrao('cobertura_inicio', 'nao vem antes do fim');
-    usarPadrao('cobertura_fim', 'nao vem depois do inicio');
+    usarPadrao('cobertura_inicio', 'não vem antes do fim');
+    usarPadrao('cobertura_fim', 'não vem depois do início');
   }
-  if (!ehInteiro(c.minimo_presencial, { min: 1, max: 100 })) usarPadrao('minimo_presencial', 'nao e inteiro entre 1 e 100');
-  if (!ehInteiro(c.granularidade_min, { min: 5, max: 240 })) usarPadrao('granularidade_min', 'nao e inteiro entre 5 e 240');
-  if (!diasUteisOuNulo(c.dias_uteis)) usarPadrao('dias_uteis', 'nao e lista de dias 0..6');
-  if (c.periodo_inicio && !ehData(c.periodo_inicio)) usarPadrao('periodo_inicio', 'nao e data YYYY-MM-DD');
-  if (c.periodo_fim && !ehData(c.periodo_fim)) usarPadrao('periodo_fim', 'nao e data YYYY-MM-DD');
-  if (c.periodo_inicio && c.periodo_fim && c.periodo_fim < c.periodo_inicio) usarPadrao('periodo_fim', 'vem antes do inicio do periodo');
+  if (!ehInteiro(c.minimo_presencial, { min: 1, max: 100 })) usarPadrao('minimo_presencial', 'não é inteiro entre 1 e 100');
+  if (!ehInteiro(c.granularidade_min, { min: 5, max: 240 })) usarPadrao('granularidade_min', 'não é inteiro entre 5 e 240');
+  if (!diasUteisOuNulo(c.dias_uteis)) usarPadrao('dias_uteis', 'não é lista de dias 0..6');
+  if (c.periodo_inicio && !ehData(c.periodo_inicio)) usarPadrao('periodo_inicio', 'não é data YYYY-MM-DD');
+  if (c.periodo_fim && !ehData(c.periodo_fim)) usarPadrao('periodo_fim', 'não é data YYYY-MM-DD');
+  if (c.periodo_inicio && c.periodo_fim && c.periodo_fim < c.periodo_inicio) usarPadrao('periodo_fim', 'vem antes do início do período');
 
   return {
     abre: paraMinutos(c.cobertura_inicio),

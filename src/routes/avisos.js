@@ -25,9 +25,9 @@ router.get('/contagem', async (req, res) => {
 });
 
 router.post('/:id/lido', async (req, res) => {
-  if (!ehInteiro(req.params.id, { min: 1 })) return res.status(400).json({ erro: 'id invalido' });
+  if (!ehInteiro(req.params.id, { min: 1 })) return res.status(400).json({ erro: 'id inválido' });
   const { rows } = await db.query('UPDATE avisos SET lido = TRUE WHERE id = $1 RETURNING id', [req.params.id]);
-  if (!rows[0]) return res.status(404).json({ erro: 'Aviso nao encontrado' });
+  if (!rows[0]) return res.status(404).json({ erro: 'Aviso não encontrado' });
   res.json({ ok: true });
 });
 
