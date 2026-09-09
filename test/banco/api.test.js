@@ -289,6 +289,21 @@ test('config invalida gravada por fora do app nao silencia o alerta: cai no padr
   await db.query(`UPDATE config SET valor = '30' WHERE chave = 'granularidade_min'`);
 });
 
+test('mural: chefia escreve, todos leem, servidor nao escreve, vencido some', async () => {
+  const vazio = await chamar('/mural', { metodo: 'POST', como: 'chefia', corpo: { texto: '   ' } });
+  assert.equal(vazio.status, 400);
+  const novo = await chamar('/mural', { metodo: 'POST', como: 'chefia', corpo: { texto: 'Sexta encerra as 14h', fixado: true } });
+  assert.equal(novo.status, 201, JSON.stringify(novo.json));
+  const vencido = await chamar('/mural', { metodo: 'POST', como: 'chefia', corpo: { texto: 'antigo', valido_ate: '2020-01-01' } });
+  assert.equal(vencido.status, 201);
+  assert.equal((await chamar('/mural', { metodo: 'POST', como: 'luiz', corpo: { texto: 'nao posso' } })).status, 403);
+  const lista = await chamar('/mural', { como: 'luiz' });
+  assert.equal(lista.status, 200);
+  assert.ok(lista.json.some((m) => m.id === novo.json.id), 'servidor le o recado');
+  assert.ok(!lista.json.some((m) => m.id === vencido.json.id), 'vencido nao aparece');
+  assert.equal((await chamar(`/mural/${novo.json.id}`, { metodo: 'DELETE', como: 'chefia' })).status, 200);
+});
+
 test('trocar senha: curta e 400, certa funciona e a antiga para de valer', async () => {
   assert.equal((await chamar('/auth/senha', { metodo: 'POST', como: 'luiz', corpo: { senha_atual: '12345678', senha_nova: '123' } })).status, 400);
   assert.equal((await chamar('/auth/senha', { metodo: 'POST', como: 'luiz', corpo: { senha_atual: 'errada', senha_nova: 'novasenha' } })).status, 401);

@@ -316,6 +316,22 @@ tr.afastado td.nome { color: var(--suave); }
 .setor-eixo .fim-eixo { position: absolute; right: 0; top: 0; transform: translateX(50%); }
 @media (max-width: 900px) { .setor-stats { grid-template-columns: repeat(2, 1fr); } }
 
+/* ---------- Tela inicial ---------- */
+.inicio-topo { margin: 4px 0 14px; }
+.inicio-topo h2 { font-size: 22px; }
+.inicio-topo .sub { margin: 4px 0 0; }
+.inicio { display: grid; grid-template-columns: 1.35fr 1fr; gap: 16px; align-items: start; }
+.inicio .cartao { margin-bottom: 0; }
+.inicio-grupos { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.inicio-grupo { border: 1px solid var(--borda); border-radius: 10px; padding: 8px 10px; background: var(--cartao-2); }
+.inicio-grupo .contar-titulo { margin-bottom: 4px; }
+.mural-item { border-left: 3px solid var(--borda-forte); align-items: flex-start; }
+.mural-item.fixado { border-left-color: var(--afastamento); background: color-mix(in srgb, var(--afastamento-fraco) 35%, var(--cartao-2)); }
+.mural-texto { font-size: 14px; line-height: 1.5; white-space: pre-wrap; }
+textarea { font: inherit; color: var(--texto); background: var(--cartao); padding: 8px 10px; border: 1px solid var(--borda-forte); border-radius: var(--raio-p); resize: vertical; }
+textarea:focus { outline: 2px solid var(--acao); outline-offset: 1px; }
+@media (max-width: 1100px) { .inicio { grid-template-columns: 1fr; } }
+
 /* ---------- Com quem posso contar ---------- */
 .contar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
 .contar-grupo { border: 1px solid var(--borda); border-radius: 10px; padding: 10px 12px; background: var(--cartao-2); }

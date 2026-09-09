@@ -3,7 +3,8 @@
 const estado = {
   usuario: null,
   servidores: [],
-  visao: 'semana',
+  visao: 'inicio',
+  mural: [],
   referencia: new Date(),
   dados: { turnos: [], afastamentos: [], feriados: [] },
   cobertura: null,
@@ -199,6 +200,7 @@ function modalSenhaObrigatoria() {
 /* ---------------- período visível ---------------- */
 function intervalo() {
   const r = estado.referencia;
+  if (estado.visao === 'inicio') { const hoje = new Date(); return { inicio: iso(segundaDa(hoje)), fim: iso(somaDias(hoje, 7)) }; }
   if (estado.visao === 'dia') return { inicio: iso(r), fim: iso(r) };
   if (estado.visao === 'semana') { const seg = segundaDa(r); return { inicio: iso(seg), fim: iso(somaDias(seg, 6)) }; }
   const primeiro = new Date(r.getFullYear(), r.getMonth(), 1);
@@ -208,6 +210,7 @@ function intervalo() {
 
 function rotuloPeriodo() {
   const r = estado.referencia;
+  if (estado.visao === 'inicio') { const h = new Date(); return `Início — ${DIAS_SEMANA[h.getDay()]}, ${h.getDate()} de ${MESES[h.getMonth()]}`; }
   if (estado.visao === 'dia') return `${DIAS_SEMANA[r.getDay()]}, ${r.getDate()} de ${MESES[r.getMonth()]} de ${r.getFullYear()}`;
   if (estado.visao === 'semana') {
     const seg = segundaDa(r), sex = somaDias(seg, 4);
@@ -219,12 +222,14 @@ function rotuloPeriodo() {
 /* ---------------- carregamento ---------------- */
 async function carregar() {
   const { inicio, fim } = intervalo();
-  const [escala, cobertura] = await Promise.all([
+  const [escala, cobertura, mural] = await Promise.all([
     api(`/escala?inicio=${inicio}&fim=${fim}`),
     api(`/cobertura?inicio=${inicio}&fim=${fim}`),
+    estado.visao === 'inicio' ? api('/mural') : Promise.resolve(estado.mural),
   ]);
   estado.dados = escala;
   estado.cobertura = cobertura;
+  estado.mural = mural || [];
   desenhar();
   atualizarContadorAvisos();
 }
@@ -257,6 +262,7 @@ $('#hoje').addEventListener('click', () => {
 });
 function deslocar(n) {
   const r = estado.referencia;
+  if (estado.visao === 'inicio') return;
   if (estado.visao === 'dia') estado.referencia = proximoDiaUtil(r, n);
   else if (estado.visao === 'semana') estado.referencia = somaDias(r, 7 * n);
   else estado.referencia = new Date(r.getFullYear(), r.getMonth() + n, 1);
@@ -476,10 +482,115 @@ function irParaDia(data) {
 /* ---------------- desenho ---------------- */
 function desenhar() {
   $('#periodo').textContent = rotuloPeriodo();
+  $('.barra .nav').classList.toggle('oculto', estado.visao === 'inicio');
+  if (estado.visao === 'inicio') { $('#alerta').innerHTML = ''; $('#alerta').className = ''; desenharInicio(); return; }
   desenharAlerta();
   if (estado.visao === 'dia') desenharDia();
   else if (estado.visao === 'semana') desenharSemana();
   else desenharMes();
+}
+
+/* ---- tela inicial: hoje, mural, próximos dias e pendências ---- */
+function saudacao() {
+  const h = new Date().getHours();
+  return h < 12 ? 'Bom dia' : (h < 18 ? 'Boa tarde' : 'Boa noite');
+}
+
+function desenharInicio() {
+  const hoje = iso(new Date());
+  const cfg = estado.cobertura?.config || {};
+  const diaHoje = diaCobertura(hoje);
+  const g = contarDia(hoje);
+  const util = diaHoje?.util;
+
+  // Hoje
+  const grupo = (chave, rotulo, classe) => `<div class="inicio-grupo"><span class="contar-titulo"><i class="ponto ${classe}"></i>${rotulo} <b>${g[chave].length}</b></span>
+      <div>${g[chave].length ? g[chave].map((p) => `<span class="pessoa ${classe}" title="${escapar(p.detalhe)}">${escapar(p.nome.split(' ')[0])}</span>`).join('') : '<span class="vazio">ninguém</span>'}</div></div>`;
+  const cartaoHoje = `<div class="cartao">
+    <h2>${icone('calendario')} Hoje, ${dataBonita(hoje)}${diaHoje?.feriado ? ` <span class="chip A fixo">${escapar(diaHoje.feriado)}</span>` : ''}</h2>
+    ${util ? `<div class="inicio-grupos">${grupo('presencial', 'Presencial', 'P')}${grupo('distancia', 'À distância', 'D')}${grupo('afastados', 'Afastados', 'A')}${grupo('sem', 'Sem lançamento', 'S')}</div>
+      <div style="margin-top:12px"><div class="rotulo" style="font-size:12px;color:var(--suave);margin-bottom:4px">Cobertura presencial das ${escapar(cfg.cobertura_inicio || '')} às ${escapar(cfg.cobertura_fim || '')}</div>${barraCobertura(diaHoje, { alta: true })}${pilulasLacunas(diaHoje)}</div>`
+      : `<p class="vazio">${diaHoje?.feriado ? 'Feriado: sem exigência de cobertura.' : (diaHoje?.fora_periodo ? 'Hoje está fora do período híbrido.' : 'Sem expediente hoje.')}</p>`}
+    <div class="acoes" style="justify-content:flex-start;margin-top:12px"><button class="primario" data-ir-dia="${hoje}">Abrir o dia</button><button data-ir-semana>Ver a semana</button></div>
+  </div>`;
+
+  // Mural
+  const mural = estado.mural || [];
+  const itensMural = mural.length ? mural.map((m) => `<div class="item mural-item ${m.fixado ? 'fixado' : ''}">
+      <div class="cresce"><div class="mural-texto">${escapar(m.texto).replace(/\n/g, '<br>')}</div>
+        <small>${escapar(m.autor || 'chefia')} · ${dataBr(m.criado_em.slice(0, 10))}${m.valido_ate ? ' · até ' + dataBr(m.valido_ate) : ''}${m.fixado ? ' · fixado' : ''}</small></div>
+      ${ehChefia() ? `<button class="pequeno" data-editar-mural="${m.id}">${icone('lapis')}</button>` : ''}
+    </div>`).join('') : '<p class="vazio">Nenhum recado no mural.</p>';
+  const cartaoMural = `<div class="cartao">
+    <h2>${icone('alerta')} Mural</h2>
+    <p class="sub">Recados da chefia para todo o setor. Somem quando vencem.</p>
+    <div class="lista">${itensMural}</div>
+    ${ehChefia() ? `<div class="acoes" style="justify-content:flex-start"><button class="primario" data-novo-mural>${icone('mais')} Novo recado</button></div>` : ''}
+  </div>`;
+
+  // Próximos dias: furos, feriados e afastamentos que começam
+  const dias = (estado.cobertura?.dias || []).filter((d) => d.data > hoje && d.data <= iso(somaDias(new Date(), 7)));
+  const furos = dias.filter((d) => d.util && d.lacunas.length);
+  const feriados = estado.dados.feriados.filter((f) => f.data > hoje && f.data <= iso(somaDias(new Date(), 7)));
+  const afastamentos = estado.dados.afastamentos.filter((af) => af.data_inicio > hoje && af.data_inicio <= iso(somaDias(new Date(), 7)));
+  const linhasProx = [
+    ...furos.map((d) => `<div class="item"><span class="data">${dataBonita(d.data)}</span><div class="cresce"><span class="lacuna">${icone('alerta')} sem presencial em ${d.lacunas.map((l) => `${l.inicio}–${l.fim}`).join(', ')}</span></div><button class="pequeno" data-ir-dia="${d.data}">Abrir</button></div>`),
+    ...feriados.map((f) => `<div class="item"><span class="data">${dataBonita(f.data)}</span><div class="cresce"><span class="chip A fixo">${escapar(f.descricao)}</span></div></div>`),
+    ...afastamentos.map((af) => `<div class="item"><span class="data">${dataBonita(af.data_inicio)}</span><div class="cresce">${icone('ferias')} <strong>${escapar(af.nome)}</strong> começa ${escapar(af.tipo.toLowerCase())}${af.data_fim !== af.data_inicio ? ' até ' + dataBr(af.data_fim) : ''}</div></div>`),
+  ];
+  const cartaoProx = `<div class="cartao">
+    <h2>${icone('calendario')} Próximos 7 dias</h2>
+    <div class="lista">${linhasProx.length ? linhasProx.join('') : '<p class="vazio">Nada pendente: cobertura em ordem, sem feriado e sem afastamento começando.</p>'}</div>
+  </div>`;
+
+  // Pendências: chefia vê avisos; os demais, a própria semana
+  let cartaoPend = '';
+  if (ehChefia()) {
+    cartaoPend = `<div class="cartao" id="inicio-avisos"><h2>${icone('alerta')} Avisos pendentes</h2><p class="vazio">Carregando…</p></div>`;
+  } else {
+    const seg = segundaDa(new Date());
+    const meus = estado.dados.turnos.filter((t) => Number(t.servidor_id) === Number(estado.usuario.id) && t.data >= iso(seg) && t.data <= iso(somaDias(seg, 4)));
+    cartaoPend = `<div class="cartao"><h2>${icone('ok')} Minha semana</h2>
+      ${meus.length ? `<p class="sub">Você tem ${meus.length} horário(s) lançado(s) nesta semana.</p>` : '<p class="sub" style="color:var(--alerta-texto)">Você ainda não lançou nenhum horário nesta semana.</p>'}
+      <div class="acoes" style="justify-content:flex-start"><button class="primario" id="btn-turno-inicio">${icone('mais')} Lançar horário</button><button data-ir-semana>Ver a semana</button></div></div>`;
+  }
+
+  $('#conteudo').innerHTML = `<div class="inicio-topo"><h2>${saudacao()}, ${escapar(estado.usuario.nome.split(' ')[0])}!</h2><p class="sub">${textoPeriodo() || 'Escala híbrida do setor.'}</p></div>
+    <div class="inicio">${cartaoHoje}${cartaoMural}${cartaoProx}${cartaoPend}</div>`;
+
+  $$('[data-ir-dia]').forEach((b) => b.addEventListener('click', () => irParaDia(b.dataset.irDia)));
+  $$('[data-ir-semana]').forEach((b) => b.addEventListener('click', () => { estado.visao = 'semana'; $$('[data-visao]').forEach((x) => x.classList.toggle('ativa', x.dataset.visao === 'semana')); carregar(); }));
+  $('#btn-turno-inicio')?.addEventListener('click', () => modalTurno({ servidor_id: estado.usuario.id, data: hoje }));
+  $('[data-novo-mural]')?.addEventListener('click', () => modalMural({}));
+  $$('[data-editar-mural]').forEach((b) => b.addEventListener('click', () => modalMural(mural.find((m) => Number(m.id) === Number(b.dataset.editarMural)))));
+
+  if (ehChefia()) {
+    api('/avisos').then((lista) => {
+      const el = $('#inicio-avisos');
+      if (!el) return;
+      const itens = lista.slice(0, 5).map((v) => `<div class="item aviso-item"><div class="cresce"><strong class="dia-link" data-ir-dia="${v.data}" style="cursor:pointer">${escapar(v.mensagem)}</strong><small>${escapar(v.origem || '')}</small></div></div>`).join('');
+      el.innerHTML = `<h2>${icone('alerta')} Avisos pendentes${lista.length ? ` <span class="contador">${lista.length}</span>` : ''}</h2>
+        <div class="lista">${itens || '<p class="vazio">Nenhum aviso pendente.</p>'}</div>
+        ${lista.length ? '<div class="acoes" style="justify-content:flex-start"><button data-abrir-avisos>Ver todos</button></div>' : ''}`;
+      el.querySelectorAll('[data-ir-dia]').forEach((b) => b.addEventListener('click', () => irParaDia(b.dataset.irDia)));
+      el.querySelector('[data-abrir-avisos]')?.addEventListener('click', () => modalAvisos(false));
+    }).catch(() => { const el = $('#inicio-avisos'); if (el) el.querySelector('.vazio').textContent = 'Não foi possível carregar os avisos.'; });
+  }
+}
+
+function modalMural(m) {
+  const editando = Boolean(m.id);
+  abrirModal(`<h2>${editando ? 'Alterar recado' : 'Novo recado no mural'}</h2>
+    <p class="sub">Todo mundo vê na tela inicial. Com validade, o recado some sozinho no dia seguinte.</p>
+    <label>Mensagem</label><textarea id="mu-texto" rows="4" style="width:100%">${escapar(m.texto || '')}</textarea>
+    <div class="dupla"><div><label>Válido até (opcional)</label><input id="mu-ate" type="date" value="${m.valido_ate || ''}"></div>
+      <div><label>Destaque</label><label style="display:flex;align-items:center;gap:8px;margin-top:0;font-weight:500;color:var(--texto);min-height:36px"><input id="mu-fixado" type="checkbox" ${m.fixado ? 'checked' : ''}> Fixar no topo</label></div></div>`,
+    async (f) => {
+      const corpo = { texto: f.querySelector('#mu-texto').value.trim(), valido_ate: f.querySelector('#mu-ate').value || null, fixado: f.querySelector('#mu-fixado').checked };
+      if (editando) { await api(`/mural/${m.id}`, { method: 'PUT', corpo }); aviso('Recado alterado'); }
+      else { await api('/mural', { method: 'POST', corpo }); aviso('Recado publicado'); }
+    },
+    editando ? { extra: { rotulo: 'Excluir', classe: 'perigo', acao: async () => { await api(`/mural/${m.id}`, { method: 'DELETE' }); aviso('Recado removido'); } } } : {});
 }
 
 /* ---- visão diária: linha do tempo ---- */

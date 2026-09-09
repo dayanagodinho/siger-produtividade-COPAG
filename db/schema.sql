@@ -67,6 +67,17 @@ CREATE TABLE IF NOT EXISTS avisos (
 );
 CREATE INDEX IF NOT EXISTS idx_avisos_lido ON avisos(lido, criado_em DESC);
 
+-- Mural da tela inicial: recados da chefia para todo mundo, com validade
+-- opcional. Fixado fica no topo.
+CREATE TABLE IF NOT EXISTS mural (
+  id         SERIAL PRIMARY KEY,
+  criado_em  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  texto      TEXT NOT NULL,
+  valido_ate DATE,
+  fixado     BOOLEAN NOT NULL DEFAULT FALSE,
+  autor_id   INTEGER REFERENCES servidores(id) ON DELETE SET NULL
+);
+
 CREATE TABLE IF NOT EXISTS config (
   chave  TEXT PRIMARY KEY,
   valor  TEXT NOT NULL
