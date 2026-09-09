@@ -99,13 +99,13 @@ async function atualizarContadorAvisos() {
 async function modalAvisos(todos = false) {
   const lista = await api(`/avisos${todos ? '?todos=1' : ''}`);
   const quando = (t) => { const d = new Date(t); return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
-  const itens = lista.length ? lista.map((v) => `<div class="item aviso-item ${v.lido ? 'lido' : ''}">
+  const itens = lista.length ? lista.map((v) => `<div class="item aviso-item ${v.resolvido_em ? 'resolvido' : (v.lido ? 'lido' : '')}">
       <div class="cresce"><strong class="dia-link" data-dia="${v.data}" style="cursor:pointer">${escapar(v.mensagem)}</strong>
-        <small>${escapar(v.origem || '')}</small><small>${quando(v.criado_em)}${v.autor ? ' · ' + escapar(v.autor) : ''}</small></div>
+        <small>${escapar(v.origem || '')}</small><small>${quando(v.criado_em)}${v.autor ? ' · ' + escapar(v.autor) : ''}${v.resolvido_em ? ` · <b style="color:var(--ok-texto)">resolvido ${quando(v.resolvido_em)}</b>` : ''}</small></div>
       ${v.lido ? '' : `<button class="pequeno" data-lido="${v.id}">Lido</button>`}
     </div>`).join('') : '<p class="vazio">Nenhum aviso pendente. Nenhuma mudança recente abriu horário descoberto.</p>';
   const f = abrirModal(`<h2>Avisos de horário descoberto</h2>
-    <p class="sub">Gerados quando um turno, afastamento, feriado ou regra muda e deixa faixa sem ninguém presencial. Clique no aviso para abrir o dia.</p>
+    <p class="sub">Gerados quando um turno, afastamento, feriado ou regra muda e deixa faixa sem ninguém presencial. Quando o dia volta a ficar coberto, o aviso se resolve sozinho e sai daqui. Clique no aviso para abrir o dia.</p>
     <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap"><button class="pequeno" data-todos>${todos ? 'Só os pendentes' : 'Mostrar os já lidos'}</button>${lista.some((v) => !v.lido) ? '<button class="pequeno" data-todos-lidos>Marcar todos como lidos</button>' : ''}</div>
     <div class="lista">${itens}</div>`, null, { semOk: true });
   f.querySelector('[data-todos]').addEventListener('click', () => { f.remove(); modalAvisos(!todos); });

@@ -66,6 +66,8 @@ CREATE TABLE IF NOT EXISTS avisos (
   lido       BOOLEAN NOT NULL DEFAULT FALSE
 );
 CREATE INDEX IF NOT EXISTS idx_avisos_lido ON avisos(lido, criado_em DESC);
+-- Quando o dia do aviso volta a ficar coberto, o aviso se resolve sozinho.
+ALTER TABLE avisos ADD COLUMN IF NOT EXISTS resolvido_em TIMESTAMPTZ;
 
 -- Mural da tela inicial: recados da chefia para todo mundo, com validade
 -- opcional. Fixado fica no topo.

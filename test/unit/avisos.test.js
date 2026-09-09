@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { novasLacunas, dataBonita } = require('../../src/avisos');
+const { novasLacunas, classificarPendente, dataBonita } = require('../../src/avisos');
 
 const foto = (obj) => new Map(Object.entries(obj).map(([d, faixas]) => [d, faixas.map((f) => { const [inicio, fim] = f.split('-'); return { inicio, fim }; })]));
 
@@ -37,4 +37,12 @@ test('varios dias saem em ordem de data', () => {
 test('dataBonita nao anda um dia em fuso positivo nem negativo', () => {
   assert.equal(dataBonita('2026-09-07'), 'Seg 07/09');
   assert.equal(dataBonita('2026-01-01'), 'Qui 01/01');
+});
+
+test('aviso pendente acompanha a escala: resolve, atualiza ou mantem', () => {
+  const aviso = { data: '2026-09-09', mensagem: 'Qua 09/09 ficou sem ninguém presencial em 12:00–14:00' };
+  assert.deepEqual(classificarPendente(aviso, []), { acao: 'resolver' }, 'dia coberto');
+  assert.deepEqual(classificarPendente(aviso, undefined), { acao: 'resolver' }, 'dia deixou de ser util (feriado)');
+  assert.deepEqual(classificarPendente(aviso, [{ inicio: '12:00', fim: '14:00' }]), { acao: 'manter' });
+  assert.deepEqual(classificarPendente(aviso, [{ inicio: '13:00', fim: '14:00' }]), { acao: 'atualizar', mensagem: 'Qua 09/09 ficou sem ninguém presencial em 13:00–14:00' });
 });

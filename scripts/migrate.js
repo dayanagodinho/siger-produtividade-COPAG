@@ -96,6 +96,20 @@ async function migrar() {
   } finally {
     cliente.release();
   }
+  await reconciliarAvisos();
+}
+
+// Avisos pendentes cujo dia ja esta coberto se resolvem na subida. Cobre o
+// que foi corrigido antes desta regra existir, e qualquer mudanca feita por
+// fora do app.
+async function reconciliarAvisos() {
+  const { rows } = await db.query('SELECT min(data) AS de, max(data) AS ate FROM avisos WHERE NOT lido AND resolvido_em IS NULL');
+  if (!rows[0]?.de) return;
+  const { fotografar, atualizarPendentes } = require('../src/avisos');
+  const { iso } = require('../src/cobertura');
+  const foto = await fotografar(iso(rows[0].de), iso(rows[0].ate));
+  const r = await atualizarPendentes(foto, foto);
+  if (r.resolvidos || r.atualizados) console.log(`Avisos reconciliados: ${r.resolvidos} resolvido(s), ${r.atualizados} atualizado(s).`);
 }
 
 module.exports = { migrar, FERIADOS_2026, AJUSTES };

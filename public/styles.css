@@ -297,6 +297,7 @@ tr.afastado td.nome { color: var(--suave); }
 #impacto .fechar { margin-left: auto; }
 .aviso-item { border-left: 3px solid var(--alerta); }
 .aviso-item.lido { border-left-color: var(--borda-forte); opacity: .7; }
+.aviso-item.resolvido { border-left-color: var(--ok); opacity: .85; }
 .aviso-item small { display: block; }
 
 /* ---------- Cobertura do setor (dia) ---------- */

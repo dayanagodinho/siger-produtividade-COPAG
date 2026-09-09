@@ -10,7 +10,7 @@ const router = express.Router();
 router.use(autenticar, exigirSenhaDefinitiva, exigirChefia);
 
 const SQL = `
-  SELECT a.id, a.criado_em, a.data, a.mensagem, a.origem, a.lido, s.nome AS autor
+  SELECT a.id, a.criado_em, a.data, a.mensagem, a.origem, a.lido, a.resolvido_em, s.nome AS autor
     FROM avisos a LEFT JOIN servidores s ON s.id = a.autor_id`;
 
 router.get('/', async (req, res) => {

@@ -61,7 +61,39 @@ function novasLacunas(antes, depois) {
   return novas.sort((a, b) => a.data.localeCompare(b.data));
 }
 
+/**
+ * O que fazer com um aviso pendente depois de uma mudanca no dia dele:
+ * - dia sem lacuna (ou que deixou de ser util): 'resolver';
+ * - lacunas diferentes das do texto: 'atualizar', com a mensagem nova;
+ * - igual: 'manter'.
+ * Puro, para o teste. `lacunas` e o que a fotografia "depois" tem para o dia
+ * (undefined quando o dia nao e mais util).
+ */
+function classificarPendente(aviso, lacunas) {
+  if (!lacunas || !lacunas.length) return { acao: 'resolver' };
+  const mensagem = `${dataBonita(aviso.data)} ficou sem ninguém presencial em ${lacunas.map((l) => `${l.inicio}–${l.fim}`).join(', ')}`;
+  return mensagem === aviso.mensagem ? { acao: 'manter' } : { acao: 'atualizar', mensagem };
+}
+
+// Avisos pendentes dos dias tocados pela mudanca acompanham a escala: dia
+// que ficou coberto resolve o aviso; furo que mudou de horario atualiza o
+// texto. Sem isso o aviso dizia "descoberto" depois de alguem ter coberto.
+async function atualizarPendentes(antes, depois) {
+  const dias = [...new Set([...antes.keys(), ...depois.keys()])];
+  if (!dias.length) return { resolvidos: 0, atualizados: 0 };
+  const { rows } = await db.query(
+    'SELECT id, data, mensagem FROM avisos WHERE NOT lido AND resolvido_em IS NULL AND data = ANY($1::date[])', [dias]);
+  let resolvidos = 0, atualizados = 0;
+  for (const av of rows) {
+    const r = classificarPendente({ ...av, data: iso(av.data) }, depois.get(iso(av.data)));
+    if (r.acao === 'resolver') { await db.query('UPDATE avisos SET resolvido_em = now(), lido = TRUE WHERE id = $1', [av.id]); resolvidos++; }
+    else if (r.acao === 'atualizar') { await db.query('UPDATE avisos SET mensagem = $2 WHERE id = $1', [av.id, r.mensagem]); atualizados++; }
+  }
+  return { resolvidos, atualizados };
+}
+
 async function registrarNovas(antes, depois, { autor, origem }) {
+  await atualizarPendentes(antes, depois);
   const novas = novasLacunas(antes, depois);
   const avisos = [];
   for (const n of novas) {
@@ -99,4 +131,4 @@ async function notificarChefia(avisos, origem) {
   });
 }
 
-module.exports = { fotografar, novasLacunas, registrarNovas, vigiar, notificarChefia, dataBonita };
+module.exports = { fotografar, novasLacunas, classificarPendente, atualizarPendentes, registrarNovas, vigiar, notificarChefia, dataBonita };
