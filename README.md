@@ -19,6 +19,7 @@ Substitui a planilha `CONTROLE ESCALA HÍBRIDO 2026.xlsx` — cuja escala já ve
 - **Férias e afastamentos** (férias, licença, capacitação, folga): nos dias marcados a pessoa deixa de contar para a cobertura, e o alerta recalcula na hora — é assim que aparece quem precisa cobrir.
 - **Configurações** (só chefia), em quatro abas: **Período híbrido** (início e fim; começou em 09/09/2026, e dias fora dele não geram alerta), **Pessoas** (quem entra no acompanhamento, cadastro, perfil, metas e redefinição de senha; tirar alguém não apaga nada), **Feriados** e **Regras de cobertura**.
 - **Feriados**: os nacionais de 2026 já vêm carregados na primeira subida; a chefia inclui os locais e apaga os que não valem para o setor. Em feriado não há exigência de cobertura e as horas não contam.
+- **Aviso à chefia a cada furo**: toda mudança (turno, afastamento, feriado, regra) é comparada antes e depois; se abriu faixa sem ninguém presencial, quem mudou vê o alerta na hora e a chefia recebe um aviso no menu ("Avisos", com contador) e, se o Railway tiver `RESEND_API_KEY` e `EMAIL_REMETENTE`, um e-mail para cada chefia cujo login é um e-mail.
 - **Fim de semana não entra na escala**: a semana mostra segunda a sexta, o mês só os dias com expediente, e as setas do dia pulam sábado e domingo.
 - **Três visões**: linha do tempo do dia, grade da semana (parecida com a planilha, com totais P/D por pessoa contra a meta de 20h+20h) e calendário do mês com a cobertura de cada dia.
 - **Repetir semana**: copia a escala de uma semana para as seguintes, que é o padrão da planilha antiga.
@@ -52,6 +53,8 @@ Nada para criar: é o mesmo bloco e o mesmo Postgres que o SIGAP usava.
    start:so-servidor` sobe sem migrar, para uso local.)
 3. Variáveis: `DATABASE_URL` e `SESSION_SECRET` já existem no bloco (o Escala aceita
    `SESSION_SECRET` no lugar de `JWT_SECRET`). `SENHA_PADRAO` é opcional (padrão `mudar123`).
+   Para o aviso por e-mail, crie `RESEND_API_KEY` e `EMAIL_REMETENTE` (remetente verificado no Resend);
+   sem elas o aviso fica só no painel.
    As variáveis `ADMIN_*`, `SETOR_*` e `IMPORTAR_CATALOGO` eram do SIGAP e podem ser apagadas.
 4. O painel do Railway (**Settings** do bloco `sigap`) guardava dois comandos do SIGAP
    gravados à mão, e o painel manda acima do `railway.json`: **Build → Custom Build Command**
@@ -77,6 +80,8 @@ server.js              entrada da aplicação
 db/schema.sql          tabelas (servidores, turnos, afastamentos, feriados, config)
 db/seed-escala.json    escala extraída da planilha de 2026
 src/cobertura.js       motor que encontra as faixas sem presencial
+src/avisos.js          fotografa a cobertura antes e depois de cada mudança e avisa a chefia
+src/email.js           envio pelo Resend (só com RESEND_API_KEY e EMAIL_REMETENTE)
 src/validar.js         checagem de data, hora, número e e-mail antes do banco
 src/auth.js            login por cookie assinado (JWT) e regras de permissão
 src/routes/            auth, servidores, escala, cobertura
@@ -122,6 +127,9 @@ e-mail duplicado com maiúscula, "repetir semana" até `abc` e até 2099.
 | POST/DELETE | `/api/escala/feriados` | cadastra/remove feriado (só chefia) |
 | GET | `/api/cobertura?inicio=&fim=` | análise de cobertura + horas por servidor |
 | GET/PUT | `/api/cobertura/config` | regras de cobertura e período híbrido (PUT só chefia) |
+| GET | `/api/avisos` | avisos pendentes (`?todos=1` inclui os lidos); só chefia |
+| GET | `/api/avisos/contagem` | quantos avisos pendentes |
+| POST | `/api/avisos/:id/lido`, `/api/avisos/lidos` | marca como lido |
 
 ## Regras de permissão
 

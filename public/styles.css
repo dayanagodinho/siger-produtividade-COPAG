@@ -266,6 +266,40 @@ tfoot td { background: var(--cartao-2); font-size: 12px; }
 .mes .dia .miudo { font-size: 11px; color: var(--suave); line-height: 1.5; }
 .mes .dia .miudo b { color: var(--texto); font-weight: 600; }
 
+/* ---------- Avisos ---------- */
+.contador { margin-left: auto; background: var(--alerta); color: #fff; font-size: 11px; font-weight: 700; border-radius: 999px; padding: 1px 7px; min-width: 20px; text-align: center; }
+.menu-lateral button.ativa .contador { background: #fff; color: var(--alerta); }
+#impacto { border-radius: var(--raio); padding: 14px 16px; margin-bottom: 16px; font-size: 14px; display: flex; gap: 12px; align-items: flex-start; background: var(--afastamento-fraco); color: var(--afastamento-texto); border: 1px solid color-mix(in srgb, var(--afastamento) 45%, transparent); }
+#impacto > .ic { width: 22px; height: 22px; margin-top: 2px; flex-shrink: 0; }
+#impacto h3 { font-size: 15px; margin-bottom: 4px; }
+#impacto ul { margin: 6px 0 0; padding-left: 18px; }
+#impacto .fechar { margin-left: auto; }
+.aviso-item { border-left: 3px solid var(--alerta); }
+.aviso-item.lido { border-left-color: var(--borda-forte); opacity: .7; }
+.aviso-item small { display: block; }
+
+/* ---------- Com quem posso contar ---------- */
+.contar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.contar-grupo { border: 1px solid var(--borda); border-radius: 10px; padding: 10px 12px; background: var(--cartao-2); }
+.contar-grupo.P { border-top: 3px solid var(--presencial); }
+.contar-grupo.D { border-top: 3px solid var(--distancia); }
+.contar-grupo.A { border-top: 3px solid var(--afastamento); }
+.contar-grupo.S { border-top: 3px solid var(--borda-forte); }
+.contar-titulo { font-size: 12px; font-weight: 700; color: var(--suave); text-transform: uppercase; letter-spacing: .05em; display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+.contar-titulo b { margin-left: auto; font-size: 15px; color: var(--texto); }
+.contar-titulo .ponto { margin: 0; }
+.contar-grupo ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.contar-grupo li strong { display: block; font-size: 13px; }
+.contar-grupo li small { color: var(--suave); font-size: 11px; }
+.ponto.S { background: var(--borda-forte); }
+.contar-semana td { vertical-align: middle; }
+.pessoa { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; margin: 2px 3px 2px 0; font-weight: 600; cursor: default; }
+.pessoa.P { background: var(--presencial-fraco); color: var(--presencial-texto); }
+.pessoa.D { background: var(--distancia-fraco); color: var(--distancia-texto); }
+.pessoa.A { background: var(--afastamento-fraco); color: var(--afastamento-texto); }
+.pessoa.S { background: var(--cartao-2); color: var(--suave); border: 1px solid var(--borda); }
+@media (max-width: 900px) { .contar { grid-template-columns: repeat(2, 1fr); } }
+
 /* ---------- Listas ---------- */
 .lista { display: flex; flex-direction: column; gap: 6px; }
 .item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid var(--borda); border-radius: 10px; background: var(--cartao-2); font-size: 13px; }

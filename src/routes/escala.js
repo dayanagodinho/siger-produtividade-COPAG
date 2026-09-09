@@ -3,6 +3,11 @@ const db = require('../db');
 const { autenticar, podeEditar, exigirChefia } = require('../auth');
 const { paraMinutos, iso } = require('../cobertura');
 const { ehData, ehHora, ehInteiro } = require('../validar');
+const { fotografar, registrarNovas } = require('../avisos');
+
+const rotulo = (m) => (m === 'P' ? 'presencial' : 'a distancia');
+const menor = (a, b) => (a < b ? a : b);
+const maior = (a, b) => (a > b ? a : b);
 
 // Teto do repetir-semana. Acima disso e quase certo engano de data.
 const MAX_SEMANAS_REPLICAR = 53;
@@ -56,22 +61,30 @@ router.post('/turnos', async (req, res) => {
   );
   if (conflito.rows.length) return res.status(409).json({ erro: 'Ja existe turno seu nesse horario' });
 
+  const antes = await fotografar(data, data);
   const { rows } = await db.query(
     `INSERT INTO turnos (servidor_id, data, inicio, fim, modalidade, observacao)
      VALUES ($1,$2,$3,$4,$5,$6)
      RETURNING id, servidor_id, data, to_char(inicio,'HH24:MI') AS inicio, to_char(fim,'HH24:MI') AS fim, modalidade, observacao`,
     [alvo, data, inicio, fim, modalidade, observacao || null]
   );
-  res.status(201).json({ ...rows[0], data: iso(rows[0].data) });
+  const avisos = await registrarNovas(antes, await fotografar(data, data), { autor: req.usuario, origem: `turno ${inicio}–${fim} ${rotulo(modalidade)} lancado por ${req.usuario.nome}` });
+  res.status(201).json({ ...rows[0], data: iso(rows[0].data), avisos_gerados: avisos });
 });
 
 router.delete('/turnos/:id', async (req, res) => {
   if (!ehInteiro(req.params.id, { min: 1 })) return res.status(400).json({ erro: 'id invalido' });
-  const { rows } = await db.query('SELECT servidor_id FROM turnos WHERE id = $1', [req.params.id]);
+  const { rows } = await db.query(
+    `SELECT t.servidor_id, t.data, to_char(t.inicio,'HH24:MI') AS inicio, to_char(t.fim,'HH24:MI') AS fim, t.modalidade, s.nome
+       FROM turnos t JOIN servidores s ON s.id = t.servidor_id WHERE t.id = $1`, [req.params.id]);
   if (!rows[0]) return res.status(404).json({ erro: 'Turno nao encontrado' });
   if (!podeEditar(req.usuario, rows[0].servidor_id)) return res.status(403).json({ erro: 'Sem permissao' });
+  const t = rows[0];
+  const dia = iso(t.data);
+  const antes = await fotografar(dia, dia);
   await db.query('DELETE FROM turnos WHERE id = $1', [req.params.id]);
-  res.json({ ok: true });
+  const avisos = await registrarNovas(antes, await fotografar(dia, dia), { autor: req.usuario, origem: `turno ${t.inicio}–${t.fim} ${rotulo(t.modalidade)} de ${t.nome} removido por ${req.usuario.nome}` });
+  res.json({ ok: true, avisos_gerados: avisos });
 });
 
 /**
@@ -108,13 +121,16 @@ router.put('/turnos/:id', async (req, res) => {
   );
   if (conflito.rows.length) return res.status(409).json({ erro: 'Ja existe outro turno nesse horario' });
 
+  const de = menor(iso(atual.data), data), ate = maior(iso(atual.data), data);
+  const antes = await fotografar(de, ate);
   const { rows } = await db.query(
     `UPDATE turnos SET servidor_id = $1, data = $2, inicio = $3, fim = $4, modalidade = $5, observacao = $6
       WHERE id = $7
       RETURNING id, servidor_id, data, to_char(inicio,'HH24:MI') AS inicio, to_char(fim,'HH24:MI') AS fim, modalidade, observacao`,
     [alvo, data, inicio, fim, modalidade, observacao, atual.id]
   );
-  res.json({ ...rows[0], data: iso(rows[0].data) });
+  const avisos = await registrarNovas(antes, await fotografar(de, ate), { autor: req.usuario, origem: `turno alterado por ${req.usuario.nome} para ${inicio}–${fim} ${rotulo(modalidade)} em ${data}` });
+  res.json({ ...rows[0], data: iso(rows[0].data), avisos_gerados: avisos });
 });
 
 /**
@@ -145,6 +161,7 @@ router.post('/replicar', async (req, res) => {
   );
   if (!base.rows.length) return res.status(400).json({ erro: 'A semana base nao tem turnos lancados' });
 
+  const antes = await fotografar(semana_base, ate);
   let criados = 0;
   const cliente = await db.pool.connect();
   try {
@@ -181,7 +198,8 @@ router.post('/replicar', async (req, res) => {
   } finally {
     cliente.release();
   }
-  res.json({ ok: true, criados, semanas });
+  const avisos = await registrarNovas(antes, await fotografar(semana_base, ate), { autor: req.usuario, origem: `semana de ${semana_base} repetida ate ${ate} por ${req.usuario.nome}${substituir ? ', substituindo o que havia' : ''}` });
+  res.json({ ok: true, criados, semanas, avisos_gerados: avisos });
 });
 
 router.post('/afastamentos', async (req, res) => {
@@ -191,12 +209,15 @@ router.post('/afastamentos', async (req, res) => {
   if (!podeEditar(req.usuario, alvo)) return res.status(403).json({ erro: 'Sem permissao' });
   if (!ehData(data_inicio) || !ehData(data_fim)) return res.status(400).json({ erro: 'Informe data_inicio e data_fim no formato YYYY-MM-DD' });
   if (data_fim < data_inicio) return res.status(400).json({ erro: 'A data final deve ser igual ou posterior a inicial' });
+  const antes = await fotografar(data_inicio, data_fim);
   const { rows } = await db.query(
     `INSERT INTO afastamentos (servidor_id, data_inicio, data_fim, tipo, observacao)
      VALUES ($1,$2,$3,$4,$5) RETURNING *`,
     [alvo, data_inicio, data_fim, tipo || 'Licenca', observacao || null]
   );
-  res.status(201).json({ ...rows[0], data_inicio: iso(rows[0].data_inicio), data_fim: iso(rows[0].data_fim) });
+  const nomeAlvo = (await db.query('SELECT nome FROM servidores WHERE id = $1', [alvo])).rows[0]?.nome || 'servidor';
+  const avisos = await registrarNovas(antes, await fotografar(data_inicio, data_fim), { autor: req.usuario, origem: `${tipo || 'afastamento'} de ${nomeAlvo} (${data_inicio} a ${data_fim}) registrado por ${req.usuario.nome}` });
+  res.status(201).json({ ...rows[0], data_inicio: iso(rows[0].data_inicio), data_fim: iso(rows[0].data_fim), avisos_gerados: avisos });
 });
 
 router.put('/afastamentos/:id', async (req, res) => {
@@ -218,21 +239,29 @@ router.put('/afastamentos/:id', async (req, res) => {
   if (data_fim < data_inicio) return res.status(400).json({ erro: 'A data final deve ser igual ou posterior a inicial' });
   if (!tipo) return res.status(400).json({ erro: 'Informe o tipo do afastamento' });
 
+  const de = menor(iso(atual.data_inicio), data_inicio), ate = maior(iso(atual.data_fim), data_fim);
+  const antes = await fotografar(de, ate);
   const { rows } = await db.query(
     `UPDATE afastamentos SET servidor_id = $1, data_inicio = $2, data_fim = $3, tipo = $4, observacao = $5
       WHERE id = $6 RETURNING *`,
     [alvo, data_inicio, data_fim, tipo, observacao, atual.id]
   );
-  res.json({ ...rows[0], data_inicio: iso(rows[0].data_inicio), data_fim: iso(rows[0].data_fim) });
+  const avisos = await registrarNovas(antes, await fotografar(de, ate), { autor: req.usuario, origem: `afastamento alterado por ${req.usuario.nome} (${tipo}, ${data_inicio} a ${data_fim})` });
+  res.json({ ...rows[0], data_inicio: iso(rows[0].data_inicio), data_fim: iso(rows[0].data_fim), avisos_gerados: avisos });
 });
 
 router.delete('/afastamentos/:id', async (req, res) => {
   if (!ehInteiro(req.params.id, { min: 1 })) return res.status(400).json({ erro: 'id invalido' });
-  const { rows } = await db.query('SELECT servidor_id FROM afastamentos WHERE id = $1', [req.params.id]);
+  const { rows } = await db.query(
+    'SELECT a.*, s.nome FROM afastamentos a JOIN servidores s ON s.id = a.servidor_id WHERE a.id = $1', [req.params.id]);
   if (!rows[0]) return res.status(404).json({ erro: 'Afastamento nao encontrado' });
   if (!podeEditar(req.usuario, rows[0].servidor_id)) return res.status(403).json({ erro: 'Sem permissao' });
+  const a = rows[0];
+  const de = iso(a.data_inicio), ate = iso(a.data_fim);
+  const antes = await fotografar(de, ate);
   await db.query('DELETE FROM afastamentos WHERE id = $1', [req.params.id]);
-  res.json({ ok: true });
+  const avisos = await registrarNovas(antes, await fotografar(de, ate), { autor: req.usuario, origem: `${a.tipo} de ${a.nome} (${de} a ${ate}) removido por ${req.usuario.nome}` });
+  res.json({ ok: true, avisos_gerados: avisos });
 });
 
 // Feriados de um ano inteiro, para a tela de gestao. Qualquer um pode ver;
@@ -254,8 +283,11 @@ router.post('/feriados', exigirChefia, async (req, res) => {
 
 router.delete('/feriados/:data', exigirChefia, async (req, res) => {
   if (!ehData(req.params.data)) return res.status(400).json({ erro: 'Data invalida' });
-  await db.query('DELETE FROM feriados WHERE data = $1', [req.params.data]);
-  res.json({ ok: true });
+  const dia = req.params.data;
+  const antes = await fotografar(dia, dia);
+  await db.query('DELETE FROM feriados WHERE data = $1', [dia]);
+  const avisos = await registrarNovas(antes, await fotografar(dia, dia), { autor: req.usuario, origem: `feriado de ${dia} removido por ${req.usuario.nome}; o dia voltou a exigir cobertura` });
+  res.json({ ok: true, avisos_gerados: avisos });
 });
 
 module.exports = router;

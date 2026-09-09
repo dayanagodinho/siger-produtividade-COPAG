@@ -63,7 +63,53 @@ async function api(caminho, opcoes = {}) {
   if (resposta.status === 401 && estado.usuario && !opcoes.semRecarregar) { location.reload(); return; }
   const json = await resposta.json().catch(() => ({}));
   if (!resposta.ok) throw new Error(json.erro || 'Falha na comunicação com o servidor');
+  if (Array.isArray(json.avisos_gerados) && json.avisos_gerados.length) mostrarImpacto(json.avisos_gerados);
   return json;
+}
+
+/* ---------------- avisos de horário descoberto ----------------
+   Toda mudança que abre faixa sem presencial volta com "avisos_gerados":
+   quem mudou vê a faixa na hora, e a chefia recebe no menu (e por e-mail,
+   quando o servidor tem RESEND_API_KEY). */
+function mostrarImpacto(avisos) {
+  const el = $('#impacto');
+  el.innerHTML = `${icone('alerta')}<div style="flex:1"><h3>Atenção: essa mudança deixou horário sem ninguém presencial</h3>
+    <ul>${avisos.map((v) => `<li><span class="dia-link" data-dia="${v.data}" style="cursor:pointer;text-decoration:underline">${escapar(v.mensagem)}</span></li>`).join('')}</ul>
+    <div style="margin-top:6px">${ehChefia() ? 'Ficou registrado em "Avisos".' : 'A chefia foi avisada. Se puder, combine quem cobre.'}</div></div>
+    <button class="fantasma pequeno fechar" data-fechar-impacto title="Fechar">✕</button>`;
+  el.classList.remove('oculto');
+  el.querySelector('[data-fechar-impacto]').addEventListener('click', () => el.classList.add('oculto'));
+  el.querySelectorAll('[data-dia]').forEach((s) => s.addEventListener('click', () => irParaDia(s.dataset.dia)));
+  el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  atualizarContadorAvisos();
+}
+
+async function atualizarContadorAvisos() {
+  if (!ehChefia()) return;
+  try {
+    const { nao_lidos } = await api('/avisos/contagem');
+    const n = $('#avisos-n');
+    n.textContent = nao_lidos;
+    n.classList.toggle('oculto', !nao_lidos);
+  } catch { /* contador e so conforto; nao derruba a tela */ }
+}
+
+async function modalAvisos(todos = false) {
+  const lista = await api(`/avisos${todos ? '?todos=1' : ''}`);
+  const quando = (t) => { const d = new Date(t); return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
+  const itens = lista.length ? lista.map((v) => `<div class="item aviso-item ${v.lido ? 'lido' : ''}">
+      <div class="cresce"><strong class="dia-link" data-dia="${v.data}" style="cursor:pointer">${escapar(v.mensagem)}</strong>
+        <small>${escapar(v.origem || '')}</small><small>${quando(v.criado_em)}${v.autor ? ' · ' + escapar(v.autor) : ''}</small></div>
+      ${v.lido ? '' : `<button class="pequeno" data-lido="${v.id}">Lido</button>`}
+    </div>`).join('') : '<p class="vazio">Nenhum aviso pendente. Nenhuma mudança recente abriu horário descoberto.</p>';
+  const f = abrirModal(`<h2>Avisos de horário descoberto</h2>
+    <p class="sub">Gerados quando um turno, afastamento, feriado ou regra muda e deixa faixa sem ninguém presencial. Clique no aviso para abrir o dia.</p>
+    <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap"><button class="pequeno" data-todos>${todos ? 'Só os pendentes' : 'Mostrar os já lidos'}</button>${lista.some((v) => !v.lido) ? '<button class="pequeno" data-todos-lidos>Marcar todos como lidos</button>' : ''}</div>
+    <div class="lista">${itens}</div>`, null, { semOk: true });
+  f.querySelector('[data-todos]').addEventListener('click', () => { f.remove(); modalAvisos(!todos); });
+  f.querySelector('[data-todos-lidos]')?.addEventListener('click', async () => { await api('/avisos/lidos', { method: 'POST' }); f.remove(); atualizarContadorAvisos(); modalAvisos(todos); });
+  f.querySelectorAll('[data-lido]').forEach((b) => b.addEventListener('click', async () => { await api(`/avisos/${b.dataset.lido}/lido`, { method: 'POST' }); f.remove(); atualizarContadorAvisos(); modalAvisos(todos); }));
+  f.querySelectorAll('[data-dia]').forEach((s) => s.addEventListener('click', () => { f.remove(); irParaDia(s.dataset.dia); }));
 }
 
 const podeEditar = (servidorId) => estado.usuario.perfil === 'chefia' || Number(estado.usuario.id) === Number(servidorId);
@@ -126,6 +172,7 @@ async function carregar() {
   estado.dados = escala;
   estado.cobertura = cobertura;
   desenhar();
+  atualizarContadorAvisos();
 }
 
 async function iniciar() {
@@ -133,7 +180,8 @@ async function iniciar() {
   $('#app').classList.remove('oculto');
   estado.servidores = await api('/servidores');
   $('#quem').textContent = `${estado.usuario.nome}${ehChefia() ? ' · chefia' : ''}`;
-  if (ehChefia()) $('#btn-config').classList.remove('oculto');
+  if (ehChefia()) { $('#btn-config').classList.remove('oculto'); $('#btn-avisos').classList.remove('oculto'); }
+  $('#btn-avisos').addEventListener('click', () => modalAvisos(false));
   await carregar();
   // Aberto num sábado ou domingo: já cai no próximo dia com expediente.
   if (!temExpediente(estado.referencia)) { estado.referencia = proximoDiaUtil(estado.referencia, 1); await carregar(); }
@@ -178,6 +226,71 @@ function textoPeriodo() {
   if (c.periodo_inicio && c.periodo_fim) return `Período híbrido de ${dataBr(c.periodo_inicio)} a ${dataBr(c.periodo_fim)}.`;
   if (c.periodo_inicio) return `Período híbrido desde ${dataBr(c.periodo_inicio)}.`;
   return `Período híbrido até ${dataBr(c.periodo_fim)}.`;
+}
+
+/* ---------------- com quem posso contar ----------------
+   Para um dia: quem esta presencial (com horario), quem esta a distancia,
+   quem esta afastado e quem nao lancou nada. E a pergunta que a chefia faz
+   de manha; o mesmo quadro aparece no dia e, compactado, na semana. */
+function contarDia(data) {
+  const grupos = { presencial: [], distancia: [], afastados: [], sem: [] };
+  for (const s of servidoresAtivos()) {
+    const af = afastamentoDe(s.id, data);
+    if (af) { grupos.afastados.push({ nome: s.nome, detalhe: af.tipo }); continue; }
+    const turnos = turnosDe(s.id, data);
+    const p = turnos.filter((t) => t.modalidade === 'P');
+    const d = turnos.filter((t) => t.modalidade === 'D');
+    if (p.length) grupos.presencial.push({ nome: s.nome, detalhe: p.map((t) => `${t.inicio}–${t.fim}`).join(', ') + (d.length ? ' · à distância ' + d.map((t) => `${t.inicio}–${t.fim}`).join(', ') : '') });
+    else if (d.length) grupos.distancia.push({ nome: s.nome, detalhe: d.map((t) => `${t.inicio}–${t.fim}`).join(', ') });
+    else grupos.sem.push({ nome: s.nome, detalhe: '' });
+  }
+  return grupos;
+}
+
+const GRUPOS_CONTAR = [
+  ['presencial', 'Presencial', 'P'],
+  ['distancia', 'À distância', 'D'],
+  ['afastados', 'Afastados', 'A'],
+  ['sem', 'Sem lançamento', 'S'],
+];
+
+function cartaoContarDia(data) {
+  const g = contarDia(data);
+  const c = diaCobertura(data);
+  const colunas = GRUPOS_CONTAR.map(([chave, rotulo, classe]) => `
+    <div class="contar-grupo ${classe}">
+      <div class="contar-titulo"><i class="ponto ${classe}"></i>${rotulo} <b>${g[chave].length}</b></div>
+      ${g[chave].length ? `<ul>${g[chave].map((p) => `<li><strong>${escapar(p.nome)}</strong>${p.detalhe ? `<small>${escapar(p.detalhe)}</small>` : ''}</li>`).join('')}</ul>` : '<p class="vazio">ninguém</p>'}
+    </div>`).join('');
+  const resumo = !c || !c.util
+    ? ''
+    : (c.lacunas.length
+      ? `<span class="lacuna">${icone('alerta')} Sem presencial em ${c.lacunas.map((l) => `${l.inicio}–${l.fim}`).join(', ')}</span>`
+      : `<span class="cob-ok" style="margin:0">${icone('ok')} Presencial garantido das ${estado.cobertura.config.cobertura_inicio} às ${estado.cobertura.config.cobertura_fim}</span>`);
+  return `<div class="cartao">
+    <h2>${icone('ok')} Com quem posso contar — ${dataBonita(data)}</h2>
+    <div class="contar">${colunas}</div>
+    ${resumo ? `<div style="margin-top:10px">${resumo}</div>` : ''}
+  </div>`;
+}
+
+function cartaoContarSemana(dias) {
+  const porDia = dias.map((d) => ({ d, g: contarDia(d), c: diaCobertura(d), f: feriadoEm(d) }));
+  const primeiro = (n) => escapar(n.split(' ')[0]);
+  const linhas = GRUPOS_CONTAR.map(([chave, rotulo, classe]) => `<tr>
+      <td class="nome"><i class="ponto ${classe}"></i>${rotulo}</td>
+      ${porDia.map(({ d, g, c, f }) => (c && !c.util)
+        ? `<td class="${f ? 'feriado' : ''}"><span class="vazio">${f ? 'feriado' : (c.fora_periodo ? 'fora do período' : '—')}</span></td>`
+        : `<td>${g[chave].length ? g[chave].map((p) => `<span class="pessoa ${classe}" title="${escapar(p.detalhe)}">${primeiro(p.nome)}</span>`).join('') : '<span class="vazio">ninguém</span>'}</td>`).join('')}
+    </tr>`).join('');
+  return `<div class="cartao">
+    <h2>${icone('ok')} Com quem posso contar nesta semana</h2>
+    <p class="sub">Passe o mouse no nome para ver o horário. Presencial garante a cobertura; à distância conta para o trabalho, não para o atendimento presencial.</p>
+    <div class="rolagem"><table class="contar-semana">
+      <thead><tr><th></th>${porDia.map(({ d }) => `<th>${dataBonita(d)}</th>`).join('')}</tr></thead>
+      <tbody>${linhas}</tbody>
+    </table></div>
+  </div>`;
 }
 
 /* ---------------- barra de cobertura ----------------
@@ -313,6 +426,7 @@ function desenharDia() {
     </div>` : '';
 
   $('#conteudo').innerHTML = `
+    ${cartaoContarDia(data)}
     <div class="cartao">
       <h2>${icone('calendario')} Linha do tempo — ${dataBonita(data)}${feriado ? ` <span class="chip A fixo">${escapar(feriado.descricao)}</span>` : ''}</h2>
       <p class="sub">Expediente das ${escapar(cfg.cobertura_inicio)} às ${escapar(cfg.cobertura_fim)}: alguém precisa estar presencial em todas as faixas até as ${escapar(cfg.cobertura_fim)}. Ficar depois disso é permitido, mas não é exigido.</p>
@@ -370,6 +484,7 @@ function desenharSemana() {
   }).join('');
 
   $('#conteudo').innerHTML = `
+    ${cartaoContarSemana(dias)}
     <div class="cartao">
       <h2>${icone('calendario')} Escala da semana</h2>
       <p class="sub">Clique num turno para alterar, no ✕ para remover, no + para lançar. Horas contra a meta semanal de cada pessoa.</p>

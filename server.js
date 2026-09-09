@@ -13,6 +13,7 @@ app.use('/api/auth', require('./src/routes/auth'));
 app.use('/api/servidores', require('./src/routes/servidores'));
 app.use('/api/escala', require('./src/routes/escala'));
 app.use('/api/cobertura', require('./src/routes/cobertura'));
+app.use('/api/avisos', require('./src/routes/avisos'));
 
 // A saude diz QUAL sistema esta no ar e o que este build sabe fazer. O SIGAP
 // respondia {situacao:'no ar'} no mesmo endereco: pela chave `sistema` se
@@ -35,6 +36,8 @@ app.get('/api/saude', (req, res) => res.json({
     periodo_hibrido: true,
     configuracoes_em_abas: true,
     minha_conta: true,
+    avisos_para_chefia: true,
+    email_por_resend: Boolean(process.env.RESEND_API_KEY && process.env.EMAIL_REMETENTE),
   },
 }));
 

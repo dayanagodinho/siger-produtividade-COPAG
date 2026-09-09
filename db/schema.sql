@@ -49,6 +49,20 @@ CREATE TABLE IF NOT EXISTS feriados (
   descricao  TEXT NOT NULL
 );
 
+-- Avisos para a chefia: uma linha por dia que ficou sem presencial depois
+-- de uma mudanca (turno, afastamento, feriado ou regra). Quem fez fica em
+-- autor_id; "origem" descreve a mudanca em palavras.
+CREATE TABLE IF NOT EXISTS avisos (
+  id         SERIAL PRIMARY KEY,
+  criado_em  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  data       DATE NOT NULL,
+  mensagem   TEXT NOT NULL,
+  origem     TEXT,
+  autor_id   INTEGER REFERENCES servidores(id) ON DELETE SET NULL,
+  lido       BOOLEAN NOT NULL DEFAULT FALSE
+);
+CREATE INDEX IF NOT EXISTS idx_avisos_lido ON avisos(lido, criado_em DESC);
+
 CREATE TABLE IF NOT EXISTS config (
   chave  TEXT PRIMARY KEY,
   valor  TEXT NOT NULL

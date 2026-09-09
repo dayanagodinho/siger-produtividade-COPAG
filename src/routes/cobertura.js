@@ -3,6 +3,7 @@ const db = require('../db');
 const { autenticar, exigirChefia } = require('../auth');
 const { analisarCobertura, totalizarHoras, interpretarConfig, iso } = require('../cobertura');
 const { ehData, ehHora, ehInteiro, diasUteisOuNulo, numeroOuNulo } = require('../validar');
+const { fotografar, registrarNovas } = require('../avisos');
 
 const router = express.Router();
 router.use(autenticar);
@@ -90,10 +91,16 @@ router.put('/config', exigirChefia, async (req, res) => {
     erros.push(`periodo_fim (${junto.periodo_fim}) precisa ser igual ou depois de periodo_inicio (${junto.periodo_inicio})`);
   }
   if (erros.length) return res.status(400).json({ erro: `Regra recusada: ${erros.join('; ')}`, erros });
+  // Regra nova pode abrir furo em dia que estava em ordem: fotografa os
+  // proximos 30 dias antes e depois, como em qualquer outra mudanca.
+  const hoje = iso(new Date());
+  const ate = iso(new Date(Date.now() + 30 * 86400000));
+  const antes = await fotografar(hoje, ate);
   for (const [chave, valor] of Object.entries(novo)) {
     await db.query('INSERT INTO config (chave, valor) VALUES ($1,$2) ON CONFLICT (chave) DO UPDATE SET valor = $2', [chave, valor]);
   }
-  res.json(await lerConfig());
+  const avisos = await registrarNovas(antes, await fotografar(hoje, ate), { autor: req.usuario, origem: `regras alteradas por ${req.usuario.nome} (${Object.keys(novo).join(', ')})` });
+  res.json({ ...(await lerConfig()), avisos_gerados: avisos });
 });
 
 module.exports = router;
