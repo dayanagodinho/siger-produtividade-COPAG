@@ -444,7 +444,7 @@ function desenharDia() {
     const af = afastamentoDe(s.id, data);
     const editavel = podeEditar(s.id);
     const blocos = af
-      ? `<div class="bloco A${editavel ? '' : ' fixo'}" style="left:0;right:0" ${editavel ? `data-editar-af="${af.id}"` : ''} title="${escapar(af.tipo)} de ${dataBr(af.data_inicio)} a ${dataBr(af.data_fim)}${editavel ? ' — clique para alterar' : ''}">${icone('palmeira')} ${escapar(af.tipo)} · ${dataBr(af.data_inicio)} a ${dataBr(af.data_fim)}</div>`
+      ? `<div class="bloco A${editavel ? '' : ' fixo'}" style="left:0;right:0" ${editavel ? `data-editar-af="${af.id}"` : ''} title="${escapar(af.tipo)} de ${dataBr(af.data_inicio)} a ${dataBr(af.data_fim)}${editavel ? ' — clique para alterar' : ''}">${icone('ferias')} ${escapar(af.tipo)} · ${dataBr(af.data_inicio)} a ${dataBr(af.data_fim)}</div>`
       : turnosDe(s.id, data).map((t) => {
           const e = Math.max(0, pos(emMinutos(t.inicio)));
           const d = Math.min(100, pos(emMinutos(t.fim)));
@@ -470,7 +470,7 @@ function desenharDia() {
   const afastados = estado.dados.afastamentos.filter((a) => a.data_inicio <= data && a.data_fim >= data);
   const listaAfastados = afastados.length ? `
     <div class="cartao">
-      <h2>${icone('palmeira')} Afastamentos que alcançam este dia</h2>
+      <h2>${icone('ferias')} Afastamentos que alcançam este dia</h2>
       <div class="lista">${afastados.map((a) => `
         <div class="item">
           <span class="data">${dataBr(a.data_inicio)}${a.data_inicio !== a.data_fim ? `<small>até ${dataBr(a.data_fim)}</small>` : ''}</span>
@@ -577,7 +577,7 @@ function desenharMes() {
         ${c?.feriado ? `<div>${escapar(c.feriado)}</div>` : ''}
         ${presenciais.size ? `<div><b>${presenciais.size}</b> presencial(is)</div>` : (c?.util ? '<div class="abaixo">sem presencial</div>' : '')}
         ${distancia.size ? `<div><b>${distancia.size}</b> à distância</div>` : ''}
-        ${afastados.length ? `<div>${icone('palmeira')} ${afastados.map((a) => escapar(a.nome.split(' ')[0])).join(', ')}</div>` : ''}
+        ${afastados.length ? `<div>${icone('ferias')} ${afastados.map((a) => escapar(a.nome.split(' ')[0])).join(', ')}</div>` : ''}
       </div></div>`);
   }
   const cabecalhos = uteis.map((n) => `<div class="cab">${DIAS_CURTO[n]}</div>`).join('');

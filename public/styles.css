@@ -72,6 +72,7 @@ body {
 h1, h2, h3 { margin: 0; line-height: 1.25; }
 a { color: var(--acao); }
 .ic { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+.bloco .ic { width: 14px; height: 14px; }
 
 /* ---------- Controles ---------- */
 button {
