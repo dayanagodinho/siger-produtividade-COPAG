@@ -26,6 +26,7 @@
   --ok: #17a34a;
   --ok-fraco: #dcf7e5;
   --ok-texto: #106e33;
+  --lateral: #ffffff;
   --sombra: 0 1px 2px rgba(20, 30, 60, .05), 0 6px 20px rgba(20, 30, 60, .06);
   --raio: 14px;
   --raio-p: 9px;
@@ -33,12 +34,14 @@
 }
 :root[data-tema="escuro"] {
   color-scheme: dark;
-  /* Azul-marinho, e nao preto: pedido da chefia em 10/09/2026. */
-  --fundo: #0c1a33;
-  --cartao: #14294a;
-  --cartao-2: #1a3358;
-  --borda: #27436e;
-  --borda-forte: #3a5a8a;
+  /* Azul-marinho no estilo do Argon (pedido da chefia em 10/09/2026):
+     menu mais fechado, area principal um degrau acima, cartoes outro. */
+  --fundo: #10305a;
+  --lateral: #0c2444;
+  --cartao: #163d6d;
+  --cartao-2: #1b4679;
+  --borda: #2a5a92;
+  --borda-forte: #3f73b0;
   --texto: #f1f4fa;
   --suave: #aab4c8;
   --acao: #4d8571;
@@ -126,7 +129,7 @@ label { display: block; font-size: 12px; font-weight: 600; color: var(--suave); 
 .aplicacao { display: flex; min-height: 100vh; }
 .lateral {
   width: 236px; flex-shrink: 0; position: sticky; top: 0; height: 100vh; overflow-y: auto;
-  background: var(--cartao); border-right: 1px solid var(--borda);
+  background: var(--lateral); border-right: 1px solid var(--borda);
   padding: 16px 12px 12px; display: flex; flex-direction: column; gap: 4px;
 }
 .lateral .marca { padding: 2px 6px 12px; border-bottom: 1px solid var(--borda); margin-bottom: 6px; }
