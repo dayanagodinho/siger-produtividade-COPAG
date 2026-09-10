@@ -36,12 +36,12 @@
   color-scheme: dark;
   /* Azul-marinho no estilo do Argon (pedido da chefia em 10/09/2026):
      menu mais fechado, area principal um degrau acima, cartoes outro. */
-  --fundo: #10305a;
-  --lateral: #0c2444;
-  --cartao: #163d6d;
-  --cartao-2: #1b4679;
-  --borda: #2a5a92;
-  --borda-forte: #3f73b0;
+  --fundo: #1a4380;
+  --lateral: #113163;
+  --cartao: #214f92;
+  --cartao-2: #2859a1;
+  --borda: #3a6fbb;
+  --borda-forte: #5188d1;
   --texto: #f1f4fa;
   --suave: #aab4c8;
   --acao: #4d8571;

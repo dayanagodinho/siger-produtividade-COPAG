@@ -555,7 +555,7 @@ function desenharInicio() {
       <div class="acoes" style="justify-content:flex-start"><button class="primario" id="btn-turno-inicio">${icone('mais')} Lançar horário</button><button data-ir-semana>Ver a semana</button></div></div>`;
   }
 
-  $('#conteudo').innerHTML = `<div class="inicio-topo"><h2>${saudacao()}, ${escapar(estado.usuario.nome.split(' ')[0])}!</h2><p class="sub">${textoPeriodo() || 'Escala híbrida do setor.'}</p></div>
+  $('#conteudo').innerHTML = `<div class="inicio-topo"><h2>${saudacao()}, ${escapar(estado.usuario.nome.split(' ')[0])}!</h2><p class="sub">Escala híbrida do setor.</p></div>
     <div class="inicio">${cartaoHoje}${cartaoMural}${cartaoProx}${cartaoPend}</div>`;
 
   $$('[data-ir-dia]').forEach((b) => b.addEventListener('click', () => irParaDia(b.dataset.irDia)));
