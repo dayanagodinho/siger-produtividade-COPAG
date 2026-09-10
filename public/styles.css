@@ -33,11 +33,12 @@
 }
 :root[data-tema="escuro"] {
   color-scheme: dark;
-  --fundo: #0e1320;
-  --cartao: #161d2c;
-  --cartao-2: #1c2435;
-  --borda: #283246;
-  --borda-forte: #3a465e;
+  /* Azul-marinho, e nao preto: pedido da chefia em 10/09/2026. */
+  --fundo: #0c1a33;
+  --cartao: #14294a;
+  --cartao-2: #1a3358;
+  --borda: #27436e;
+  --borda-forte: #3a5a8a;
   --texto: #f1f4fa;
   --suave: #aab4c8;
   --acao: #4d8571;
