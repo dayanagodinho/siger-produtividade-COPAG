@@ -496,6 +496,40 @@ function saudacao() {
   return h < 12 ? 'Bom dia' : (h < 18 ? 'Boa tarde' : 'Boa noite');
 }
 
+// Quem esta trabalhando neste minuto: presencial, a distancia, e quem ainda
+// entra hoje. Le os turnos de hoje contra a hora atual; afastado nao conta.
+function contarAgora(data) {
+  const agora = new Date();
+  const min = agora.getHours() * 60 + agora.getMinutes();
+  const r = { hora: hhmm(min), presencial: [], distancia: [], depois: [] };
+  for (const s of servidoresAtivos()) {
+    if (afastamentoDe(s.id, data)) continue;
+    const turnos = turnosDe(s.id, data);
+    const atual = turnos.find((t) => emMinutos(t.inicio) <= min && emMinutos(t.fim) > min);
+    if (atual) (atual.modalidade === 'P' ? r.presencial : r.distancia).push({ nome: s.nome, detalhe: `até ${atual.fim}` });
+    else {
+      const proximo = turnos.find((t) => emMinutos(t.inicio) > min);
+      if (proximo) r.depois.push({ nome: s.nome, detalhe: `${proximo.modalidade === 'P' ? 'presencial' : 'à distância'} às ${proximo.inicio}` });
+    }
+  }
+  return r;
+}
+
+function cartaoAgora(data) {
+  const r = contarAgora(data);
+  const lista = (itens, classe) => itens.length
+    ? itens.map((p) => `<span class="pessoa ${classe}" title="${escapar(p.detalhe)}">${escapar(p.nome.split(' ')[0])} <small>${escapar(p.detalhe)}</small></span>`).join('')
+    : '<span class="vazio">ninguém agora</span>';
+  return `<div class="cartao agora">
+    <h2>${icone('ok')} Com quem eu posso contar agora <span class="agora-hora">${r.hora}</span></h2>
+    <div class="agora-grupos">
+      <div class="inicio-grupo P"><span class="contar-titulo"><i class="ponto P"></i>Presencial <b>${r.presencial.length}</b></span><div>${lista(r.presencial, 'P')}</div></div>
+      <div class="inicio-grupo D"><span class="contar-titulo"><i class="ponto D"></i>À distância (online) <b>${r.distancia.length}</b></span><div>${lista(r.distancia, 'D')}</div></div>
+    </div>
+    ${r.depois.length ? `<p class="sub" style="margin:10px 0 0">Entram mais tarde: ${r.depois.map((p) => `<strong>${escapar(p.nome.split(' ')[0])}</strong> (${escapar(p.detalhe)})`).join(', ')}.</p>` : ''}
+  </div>`;
+}
+
 function desenharInicio() {
   const hoje = iso(new Date());
   const cfg = estado.cobertura?.config || {};
@@ -556,6 +590,7 @@ function desenharInicio() {
   }
 
   $('#conteudo').innerHTML = `<div class="inicio-topo"><h2>${saudacao()}, ${escapar(estado.usuario.nome.split(' ')[0])}!</h2><p class="sub">Escala híbrida do setor.</p></div>
+    ${util ? cartaoAgora(hoje) : ''}
     <div class="inicio">${cartaoHoje}${cartaoMural}${cartaoProx}${cartaoPend}</div>`;
 
   $$('[data-ir-dia]').forEach((b) => b.addEventListener('click', () => irParaDia(b.dataset.irDia)));
@@ -1194,6 +1229,9 @@ async function abaRegras(p) {
 }
 
 const ABAS = { periodo: abaPeriodo, pessoas: abaPessoas, feriados: abaFeriados, regras: abaRegras };
+
+// A tela inicial acompanha o relógio: a cada minuto o "agora" é refeito.
+setInterval(() => { if (estado.usuario && estado.visao === 'inicio' && !document.querySelector('.fundo-modal')) desenhar(); }, 60000);
 
 /* ---------------- entrada ---------------- */
 (async () => {
